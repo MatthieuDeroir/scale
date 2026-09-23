@@ -1,0 +1,23 @@
+services:
+  app:
+    image: ${IMAGE:-stramatel-starter-2026:latest}
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - '${PORT:-3000}:3000'
+    volumes:
+      - ./data:/app/data
+    # Accès au port série SANS privilèges étendus.
+    # Ne jamais recourir à `privileged: true` ni `pid: host` : c'est le
+    # constat qui transforme une faille applicative en compromission de l'hôte.
+    devices:
+      - '${SERIAL_PATH:-/dev/ttyAMA0}:${SERIAL_PATH:-/dev/ttyAMA0}'
+    group_add:
+      - dialout
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp

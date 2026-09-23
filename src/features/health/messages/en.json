@@ -1,0 +1,16 @@
+{
+  "health": {
+    "source": "Hardware source",
+    "description": "Link status with the device, refreshed every 5 seconds.",
+    "receiving": "frames received",
+    "silent": "no recent frame",
+    "lastFrame": "Last frame",
+    "never": "never",
+    "frameCount": "Decoded frames",
+    "uptime": "Up for",
+    "loading": "Reading status…"
+  },
+  "nav": {
+    "overview": "Overview"
+  }
+}

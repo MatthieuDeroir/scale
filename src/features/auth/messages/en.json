@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "signIn": "Sign in",
+    "signInHint": "Account provided when the device was installed.",
+    "signingIn": "Signing in…",
+    "username": "Username",
+    "password": "Password",
+    "failed": "Incorrect username or password.",
+    "signOut": "Sign out"
+  }
+}

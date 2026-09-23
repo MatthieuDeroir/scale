@@ -1,0 +1,328 @@
+# =============================================================================
+# Pipeline CI/CD — Stramatel Starter 2026
+#
+# Structure héritée de SL MEDIA (socle de référence), augmentée de la couche
+# sécurité et conformité CRA absente du pipeline d'origine.
+#
+#   install → quality → security → test → build → package → deploy
+#
+# Le stage `install` peuple le cache une fois ; tous les autres jobs le
+# réutilisent en lecture seule.
+# =============================================================================
+
+image: node:22-slim
+
+stages:
+  - install
+  - quality
+  - security
+  - test
+  - build
+  - package
+  - deploy
+
+variables:
+  DATABASE_URL: 'file:./ci-test.db'
+  PNPM_VERSION: '10.32.1'
+
+before_script: []
+
+# ---------------------------------------------------------------------------
+# Cache partagé
+# ---------------------------------------------------------------------------
+.default_cache: &default_cache
+  key: '${CI_COMMIT_REF_SLUG}'
+  paths:
+    - node_modules/
+    - prisma/generated/
+    - messages/
+
+.cached_job: &cached_job
+  cache:
+    <<: *default_cache
+    policy: pull
+
+.node_setup: &node_setup
+  - apt-get update && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+  - corepack enable && corepack prepare pnpm@${PNPM_VERSION} --activate
+
+# ---------------------------------------------------------------------------
+# INSTALL — une seule fois, peuple le cache
+# ---------------------------------------------------------------------------
+install:
+  stage: install
+  before_script: *node_setup
+  script:
+    - pnpm install --frozen-lockfile
+    - pnpm db:generate
+  cache:
+    <<: *default_cache
+    policy: pull-push
+
+# ---------------------------------------------------------------------------
+# QUALITY
+# ---------------------------------------------------------------------------
+lint:
+  <<: *cached_job
+  stage: quality
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm lint          # inclut eslint-plugin-project-structure : la
+                         # convention features/ est vérifiée, pas suggérée
+
+typecheck:
+  <<: *cached_job
+  stage: quality
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm typecheck
+
+format:
+  <<: *cached_job
+  stage: quality
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm format:check
+
+check-translations:
+  <<: *cached_job
+  stage: quality
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm i18n:check
+
+# ---------------------------------------------------------------------------
+# SECURITY — obligatoire. Voir .claude/context/securite.md
+# ---------------------------------------------------------------------------
+
+# 1. Secrets — sur tout l'historique, pas seulement le diff
+gitleaks:
+  stage: security
+  needs: []
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: ['']
+  script:
+    - gitleaks detect --source . --redact --report-format sarif --report-path gitleaks.sarif -v
+  artifacts:
+    when: always
+    paths: [gitleaks.sarif]
+    expire_in: 30 days
+  # Un secret commité est bloquant : pas de allow_failure ici.
+
+# 2. SAST
+semgrep:
+  stage: security
+  needs: []
+  image:
+    name: returntocorp/semgrep:latest
+    entrypoint: ['']
+  script:
+    - semgrep --config=auto --config=p/typescript --config=p/nodejs
+      --sarif --output semgrep.sarif --error
+  artifacts:
+    when: always
+    paths: [semgrep.sarif]
+    expire_in: 30 days
+  allow_failure: true   # à passer bloquant une fois la dette résorbée
+
+# 3. Dépendances — CVE, configuration, licences
+trivy:
+  stage: security
+  needs: []
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: ['']
+  script:
+    - trivy fs --scanners vuln,misconfig,license
+      --severity HIGH,CRITICAL --exit-code 0
+      --format json --output trivy.json .
+    - trivy fs --scanners vuln --severity CRITICAL --exit-code 1 .
+  artifacts:
+    when: always
+    paths: [trivy.json]
+    expire_in: 30 days
+
+# 4. SBOM — CycloneDX JSON, conservé avec chaque release taguée.
+#    Objectif CRA art. 14 : répondre en quelques minutes à « sommes-nous
+#    concernés par cette CVE, sur quels produits, quelle version ».
+sbom:
+  <<: *cached_job
+  stage: security
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm dlx @cyclonedx/cyclonedx-npm
+      --output-format JSON
+      --output-file sbom-${CI_COMMIT_REF_SLUG}.cdx.json
+      --spec-version 1.5
+    - echo "SBOM généré pour ${CI_COMMIT_SHORT_SHA}"
+  artifacts:
+    paths: ['sbom-${CI_COMMIT_REF_SLUG}.cdx.json']
+    expire_in: never          # doit survivre à la release
+  rules:
+    - if: $CI_COMMIT_TAG
+      variables: { SBOM_KEEP: 'release' }
+    - when: always
+
+
+# 5. Centralisation — dépôt du SBOM dans Dependency-Track interne.
+#    L'analyse est asynchrone ; Trivy reste le filtre synchrone bloquant.
+dependency-track:
+  stage: security
+  image:
+    name: curlimages/curl:8.10.1
+    entrypoint: ['']
+  needs:
+    - job: sbom
+      artifacts: true
+  script:
+    - |
+      curl --fail --show-error --silent --retry 3 --connect-timeout 10 --max-time 120 \
+        -X POST "${DTRACK_URL}/api/v1/bom" \
+        -H "X-Api-Key: ${DTRACK_API_KEY}" \
+        -F "project=${DTRACK_PROJECT_UUID}" \
+        -F "bom=@sbom-${CI_COMMIT_REF_SLUG}.cdx.json"
+      echo "SBOM envoyé à Dependency-Track pour ${CI_PROJECT_NAME}"
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'main'"
+    - if: "$CI_COMMIT_TAG"
+
+# ---------------------------------------------------------------------------
+# TEST
+# ---------------------------------------------------------------------------
+# Les décodeurs d'abord : ils ne demandent ni base, ni navigateur, ni matériel.
+# C'est la suite la plus rapide et celle qui casse en premier quand un offset
+# de trame change. Elle est bloquante.
+# Les suites pures d'abord : ni base, ni navigateur, ni matériel. Ce sont les
+# plus rapides et celles qui cassent en premier quand un offset change.
+test:pur:
+  <<: *cached_job
+  stage: test
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm test:transport
+    - pnpm test:frames
+
+# Intégration : VRAIE base SQLite jetable, vrais gestionnaires de route, vraies
+# contraintes de schéma. Une intégration qui simule la base ne prouve rien.
+test:integration:
+  <<: *cached_job
+  stage: test
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm db:generate
+    - pnpm test:integration
+
+# Couverture globale, avec seuil bloquant. Le TDD n'a de sens qu'avec un
+# plancher qui échoue : voir les seuils dans vitest.config.mts.
+test:couverture:
+  <<: *cached_job
+  stage: test
+  needs: [install]
+  before_script: *node_setup
+  script:
+    - pnpm db:generate
+    - pnpm test:coverage
+  coverage: '/Lines\s*:\s*([\d.]+)%/'
+  artifacts:
+    when: always
+    paths: [coverage/]
+    expire_in: 7 days
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+    paths: [coverage/]
+    expire_in: 7 days
+
+test:e2e:
+  <<: *cached_job
+  stage: test
+  needs: [install]
+  image: mcr.microsoft.com/playwright:v1.50.0-noble
+  before_script: *node_setup
+  script:
+    - pnpm db:push && pnpm db:seed
+    - pnpm test:e2e
+  artifacts:
+    when: on_failure
+    paths: [playwright-report/]
+    expire_in: 7 days
+  allow_failure: true
+
+# ---------------------------------------------------------------------------
+# BUILD
+# ---------------------------------------------------------------------------
+build:
+  <<: *cached_job
+  stage: build
+  needs: [install, lint, typecheck]
+  before_script: *node_setup
+  script:
+    - pnpm build
+  artifacts:
+    paths: [.next/, dist/]
+    expire_in: 1 day
+
+# ---------------------------------------------------------------------------
+# PACKAGE — image Docker vers le Package Registry (modèle SL MEDIA)
+# ---------------------------------------------------------------------------
+package:docker:
+  stage: package
+  needs: [build, test:pur, test:integration, test:couverture, gitleaks, trivy, sbom, dependency-track]
+  image: docker:27
+  services: [docker:27-dind]
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - docker build -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - |
+      if [ -n "$CI_COMMIT_TAG" ]; then
+        docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+        docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+      fi
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_TAG
+
+# Archive hors ligne pour les sites sans réseau sortant.
+package:offline:
+  stage: package
+  needs: [build]
+  before_script: *node_setup
+  script:
+    - bash scripts/release-docker.sh --offline
+  artifacts:
+    paths: ['*.tar.gz']
+    expire_in: 30 days
+  rules:
+    - if: $CI_COMMIT_TAG
+
+# ---------------------------------------------------------------------------
+# DEPLOY
+# ---------------------------------------------------------------------------
+deploy:webhook:
+  stage: deploy
+  needs: [package:docker]
+  image: alpine:3
+  before_script:
+    - apk add --no-cache curl openssl
+  script:
+    - |
+      BODY="{\"image\":\"$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA\",\"ref\":\"$CI_COMMIT_REF_NAME\"}"
+      SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$DEPLOY_WEBHOOK_SECRET" | awk '{print $2}')
+      curl -fsS -X POST "$DEPLOY_WEBHOOK_URL" \
+        -H 'Content-Type: application/json' \
+        -H "X-Stramatel-Signature: sha256=$SIG" \
+        -d "$BODY"
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: manual

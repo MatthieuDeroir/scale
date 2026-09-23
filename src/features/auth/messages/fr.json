@@ -1,0 +1,11 @@
+{
+  "auth": {
+    "signIn": "Se connecter",
+    "signInHint": "Compte fourni à l'installation de l'équipement.",
+    "signingIn": "Connexion…",
+    "username": "Identifiant",
+    "password": "Mot de passe",
+    "failed": "Identifiant ou mot de passe incorrect.",
+    "signOut": "Se déconnecter"
+  }
+}

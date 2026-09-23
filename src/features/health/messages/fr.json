@@ -1,0 +1,16 @@
+{
+  "health": {
+    "source": "Source matérielle",
+    "description": "État de la liaison avec l'équipement, rafraîchi toutes les 5 secondes.",
+    "receiving": "trames reçues",
+    "silent": "aucune trame récente",
+    "lastFrame": "Dernière trame",
+    "never": "jamais",
+    "frameCount": "Trames décodées",
+    "uptime": "En service depuis",
+    "loading": "Lecture de l'état…"
+  },
+  "nav": {
+    "overview": "Vue d'ensemble"
+  }
+}

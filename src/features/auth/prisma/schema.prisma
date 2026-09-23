@@ -1,0 +1,17 @@
+model User {
+  id                 Int      @id @default(autoincrement())
+  username           String   @unique
+  passwordHash       String
+  role               Role     @default(OPERATOR)
+  mustChangePassword Boolean  @default(true)
+  failedAttempts     Int      @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  createdAt          DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  OPERATOR
+  VIEWER
+}

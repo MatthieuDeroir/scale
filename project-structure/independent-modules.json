@@ -1,0 +1,75 @@
+{
+  "modules": [
+    {
+      "name": "Décodeurs purs — la règle qui rend le produit testable sans matériel",
+      "pattern": "src/data-modules/*/lib/**",
+      "allowImportsFrom": [
+        "src/data-modules/*/lib/**"
+      ],
+      "errorMessage": "Un décodeur est une fonction pure : Buffer en entrée, objet en sortie. Ni entrée/sortie, ni Prisma, ni feature, ni paquet externe — sinon `pnpm test:frames` ne tourne plus sans pupitre."
+    },
+    {
+      "name": "Services de module — le seul endroit qui touche au matériel",
+      "pattern": "src/data-modules/*/services/**",
+      "allowImportsFrom": [
+        "src/data-modules/*/lib/**",
+        "src/data-modules/*/services/**",
+        "server/**",
+        "{external}"
+      ],
+      "errorMessage": "Un service serveur parle au matériel et émet par Socket.io. Il ne remonte pas dans src/features ni src/app."
+    },
+    {
+      "name": "Data-modules — interface et manifeste",
+      "pattern": "src/data-modules/*/**",
+      "allowImportsFrom": [
+        "src/data-modules/**",
+        "src/shared/**",
+        "src/core/**",
+        "src/i18n/**",
+        "{external}"
+      ],
+      "errorMessage": "Un data-module ne dépend pas d'une feature : c'est l'inverse."
+    },
+    {
+      "name": "Isolation des features",
+      "pattern": "src/features/*/**",
+      "allowImportsFrom": [
+        "src/.generated/**",
+        "{family_1}/**",
+        "src/features/!(family_1)/index",
+        "src/shared/**",
+        "src/core/**",
+        "src/i18n/**",
+        "src/data-modules/*/index",
+        "{external}"
+      ],
+      "errorMessage": "Une feature n'importe une autre feature que par son barrel index.ts, et n'accède JAMAIS à server/** ni à serialport : elle passe par un service de data-module."
+    },
+    {
+      "name": "Shared et core ne remontent pas",
+      "pattern": [
+        "src/shared/**",
+        "src/core/**"
+      ],
+      "allowImportsFrom": [
+        "src/shared/**",
+        "src/core/**",
+        "src/i18n/**",
+        "{external}"
+      ],
+      "errorMessage": "shared/ et core/ sont en bas de la pile : ils ne remontent pas vers features/ ni data-modules/."
+    },
+    {
+      "name": "La couche app peut tout utiliser",
+      "pattern": [
+        "src/app/**",
+        "src/middleware.ts"
+      ],
+      "allowImportsFrom": [
+        "**",
+        "src/.generated/**"
+      ]
+    }
+  ]
+}

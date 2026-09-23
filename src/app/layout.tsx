@@ -1,0 +1,24 @@
+import { getLocale, getMessages } from 'next-intl/server';
+import type { ReactNode } from 'react';
+import { Providers } from '@/shared/providers';
+import { themeInitScript } from '@/shared/theme';
+import './globals.css';
+
+export const metadata = { title: 'Stramatel Starter 2026' };
+
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <body>
+        {/* Applique le thème avant le premier rendu : pas de flash blanc. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Providers locale={locale} messages={messages as Record<string, unknown>}>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,280 @@
+{
+  "structureRoot": "src",
+  "structure": [
+    {
+      "name": ".generated",
+      "children": [
+        {
+          "ruleId": "anyNode"
+        },
+        {
+          "name": "*"
+        }
+      ]
+    },
+    {
+      "name": "app",
+      "children": [
+        {
+          "ruleId": "anyNode"
+        },
+        {
+          "name": "*"
+        }
+      ]
+    },
+    {
+      "name": "core",
+      "children": [
+        {
+          "name": "{kebab-case}.ts"
+        },
+        {
+          "name": "index.ts"
+        },
+        {
+          "ruleId": "anyNode"
+        }
+      ]
+    },
+    {
+      "name": "data-modules",
+      "children": [
+        {
+          "name": "types.ts"
+        },
+        {
+          "name": "index.ts"
+        },
+        {
+          "name": "{kebab-case}",
+          "children": [
+            {
+              "name": "index.ts"
+            },
+            {
+              "name": "manifest.ts"
+            },
+            {
+              "name": "lib",
+              "children": [
+                {
+                  "name": "{kebab-case}.mjs"
+                },
+                {
+                  "name": "{kebab-case}.d.mts"
+                },
+                {
+                  "name": "{kebab-case}.ts"
+                }
+              ]
+            },
+            {
+              "name": "services",
+              "children": [
+                {
+                  "name": "{kebab-case}.service.mjs"
+                }
+              ]
+            },
+            {
+              "name": "components",
+              "children": [
+                {
+                  "name": "index.ts"
+                },
+                {
+                  "name": "{PascalCase}.tsx"
+                },
+                {
+                  "ruleId": "anyNode"
+                }
+              ]
+            },
+            {
+              "name": "api",
+              "children": [
+                {
+                  "ruleId": "anyNode"
+                }
+              ]
+            },
+            {
+              "name": "__tests__",
+              "children": [
+                {
+                  "name": "*.test.ts"
+                },
+                {
+                  "name": "*.frame.test.ts"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "features",
+      "children": [
+        {
+          "name": "types.ts"
+        },
+        {
+          "name": "{kebab-case}",
+          "children": [
+            {
+              "name": "index.ts"
+            },
+            {
+              "name": "api",
+              "children": [
+                {
+                  "name": "index.ts"
+                },
+                {
+                  "name": "*.api.ts"
+                }
+              ]
+            },
+            {
+              "name": "components",
+              "children": [
+                {
+                  "name": "index.ts"
+                },
+                {
+                  "name": "{PascalCase}.tsx"
+                },
+                {
+                  "ruleId": "anyNode"
+                }
+              ]
+            },
+            {
+              "name": "hooks",
+              "children": [
+                {
+                  "name": "index.ts"
+                },
+                {
+                  "name": "use-{kebab-case}.ts"
+                }
+              ]
+            },
+            {
+              "name": "lib",
+              "children": [
+                {
+                  "name": "{kebab-case}.ts"
+                },
+                {
+                  "name": "{kebab-case}.mjs"
+                },
+                {
+                  "name": "{kebab-case}.d.mts"
+                },
+                {
+                  "name": "index.ts"
+                }
+              ]
+            },
+            {
+              "name": "store",
+              "children": [
+                {
+                  "name": "index.ts"
+                },
+                {
+                  "name": "*-store.ts"
+                }
+              ]
+            },
+            {
+              "name": "types",
+              "children": [
+                {
+                  "name": "{kebab-case}.ts"
+                }
+              ]
+            },
+            {
+              "name": "__tests__",
+              "children": [
+                {
+                  "name": "*.test.ts"
+                },
+                {
+                  "name": "*.test.tsx"
+                }
+              ]
+            },
+            {
+              "name": "feature.config.ts"
+            },
+            {
+              "name": "prisma",
+              "children": [
+                {
+                  "name": "schema.prisma"
+                }
+              ]
+            },
+            {
+              "name": "messages",
+              "children": [
+                {
+                  "name": "*.json"
+                }
+              ]
+            },
+            {
+              "name": "services",
+              "children": [
+                {
+                  "name": "{kebab-case}.service.mjs"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "i18n",
+      "children": [
+        {
+          "ruleId": "anyNode"
+        },
+        {
+          "name": "*"
+        }
+      ]
+    },
+    {
+      "name": "shared",
+      "children": [
+        {
+          "ruleId": "anyNode"
+        }
+      ]
+    },
+    {
+      "name": "middleware.ts"
+    }
+  ],
+  "rules": {
+    "anyNode": {
+      "name": "*",
+      "folderRecursionLimit": 12,
+      "children": [
+        {
+          "ruleId": "anyNode"
+        },
+        {
+          "name": "*"
+        }
+      ]
+    }
+  }
+}
