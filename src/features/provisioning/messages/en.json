@@ -1,0 +1,15 @@
+{
+  "provisioning": {
+    "title": "Automatic enrollment",
+    "description": "Internal machines enrolled at first boot, no key shared between clones.",
+    "loading": "Loading log…",
+    "empty": "No machine enrolled automatically yet.",
+    "columns": {
+      "deviceId": "Device id",
+      "enrolledAt": "Enrolled at"
+    }
+  },
+  "nav": {
+    "provisioning": "Enrollment"
+  }
+}

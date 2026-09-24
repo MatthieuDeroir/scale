@@ -1,0 +1,8 @@
+/// Une machine enrôlée automatiquement (F1) : trace qu'un NUC/RPi cloné
+/// depuis l'image dorée s'est bien enrôlé, sans lien vers le nœud Headscale
+/// (pas de corrélation automatique en v1 — la vue d'ensemble du parc suffit
+/// pour retrouver la machine).
+model ProvisioningDevice {
+  deviceId   String   @id
+  enrolledAt DateTime @default(now())
+}

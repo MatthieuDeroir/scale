@@ -9,7 +9,10 @@ import { readSession, sessionCookie } from '@/features/auth';
  * ouvert l'API du G552 : six routes montées avant le middleware, dont la
  * création de compte avec le rôle choisi par l'appelant.
  */
-const PUBLIC_PATHS = ['/api/health', '/login', '/api/auth/login'];
+// `/api/provisioning/enroll` est public par nature (F1) : une machine qui
+// vient de démarrer n'a pas de session Stramatel. Elle s'authentifie par un
+// secret de fabrication propre à la route (voir ce fichier), pas par cookie.
+const PUBLIC_PATHS = ['/api/health', '/login', '/api/auth/login', '/api/provisioning/enroll'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

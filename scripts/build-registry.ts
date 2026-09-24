@@ -124,11 +124,35 @@ const locales = readdirSync(MESSAGES_DIR)
   .filter((f) => f.endsWith('.json'))
   .map((f) => f.replace('.json', ''));
 
+/**
+ * Fusion récursive plutôt qu'`Object.assign` : deux fonctionnalités qui
+ * définissent chacune une entrée sous une même clé de premier niveau (ex.
+ * `nav`, chacune y ajoutant son propre lien) doivent s'additionner, pas
+ * s'écraser l'une l'autre selon l'ordre de `capabilities.config.ts`.
+ */
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(source)) {
+    const existing = target[key];
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      existing &&
+      typeof existing === 'object' &&
+      !Array.isArray(existing)
+    ) {
+      deepMerge(existing as Record<string, unknown>, value as Record<string, unknown>);
+    } else {
+      target[key] = value;
+    }
+  }
+}
+
 for (const locale of locales) {
   const merged = JSON.parse(readFileSync(join(MESSAGES_DIR, `${locale}.json`), 'utf8'));
   for (const id of capabilities) {
     const file = join(locations.get(id)!, 'messages', `${locale}.json`);
-    if (existsSync(file)) Object.assign(merged, JSON.parse(readFileSync(file, 'utf8')));
+    if (existsSync(file)) deepMerge(merged, JSON.parse(readFileSync(file, 'utf8')));
   }
   writeFileSync(join(generatedMessages, `${locale}.json`), JSON.stringify(merged, null, 2) + '\n');
 }

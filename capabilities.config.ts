@@ -29,6 +29,7 @@ export const activeCapabilities = [
   // « du socle » de « propre au projet », seul compte l'emplacement du dossier).
   'fleets', // vue d'ensemble du parc, tags de flotte, état des machines (API Headscale)
   'keys', // émission et révocation de clés machine taguées par flotte (F2)
+  'provisioning', // enrôlement automatique des machines Stramatel au premier boot (F1)
 
   // 'screens',     // écrans, zones, luminosité, allumage
   // 'media',       // bibliothèque d'images et de vidéos

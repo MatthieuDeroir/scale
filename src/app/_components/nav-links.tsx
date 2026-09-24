@@ -6,7 +6,7 @@ import { NavLink } from '@/shared/ui';
  * `page.tsx` protégé — chaque nouvelle page n'a qu'à dire laquelle est
  * active.
  */
-export async function NavLinks({ active }: { active: 'overview' | 'keys' }) {
+export async function NavLinks({ active }: { active: 'overview' | 'keys' | 'provisioning' }) {
   const t = await getTranslations('nav');
 
   return (
@@ -16,6 +16,9 @@ export async function NavLinks({ active }: { active: 'overview' | 'keys' }) {
       </NavLink>
       <NavLink href="/keys" active={active === 'keys'}>
         {t('keys')}
+      </NavLink>
+      <NavLink href="/provisioning" active={active === 'provisioning'}>
+        {t('provisioning')}
       </NavLink>
     </>
   );
