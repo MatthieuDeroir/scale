@@ -1,0 +1,25 @@
+{
+  "acl": {
+    "title": "Fleets and access policy",
+    "description": "Strict fleet-to-fleet isolation, full access for internal.",
+    "loading": "Loading policy…",
+    "machineCount": "{count, plural, =0 {no machine} =1 {1 machine} other {# machines}}",
+    "delete": "Delete",
+    "confirmDelete": "Confirm?",
+    "deleted": "Fleet deleted.",
+    "newFleetPlaceholder": "New fleet name",
+    "create": "Create",
+    "creating": "Creating…",
+    "created": "Fleet created.",
+    "openRaw": "Advanced editor (raw HuJSON)",
+    "rawTitle": "Raw policy",
+    "rawDescription": "Fallback for what the guided editor doesn't cover — always validated before applying, never written live.",
+    "applyRaw": "Validate and apply",
+    "applying": "Applying…",
+    "applied": "Policy applied.",
+    "reset": "Reload from Headscale"
+  },
+  "nav": {
+    "acl": "Fleets & ACL"
+  }
+}

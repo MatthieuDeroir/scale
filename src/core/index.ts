@@ -1,4 +1,5 @@
 export { prisma } from './db';
+export { hujsonToJson } from './hujson';
 export {
   mapNode,
   listNodes,
@@ -12,6 +13,16 @@ export {
   createPreAuthKey,
   listPreAuthKeys,
   expirePreAuthKey,
+  getPolicy,
+  setPolicy,
+  checkPolicy,
   type RawHeadscaleNode,
   type RawHeadscalePreAuthKey,
 } from './headscale';
+export {
+  parsePolicyFleets,
+  fleetTagFromName,
+  addFleetToPolicy,
+  removeFleetFromPolicy,
+  type FleetPolicy,
+} from './acl-policy';

@@ -171,3 +171,32 @@ export function expirePreAuthKey(id: string): Promise<Response> {
     body: JSON.stringify({ id }),
   });
 }
+
+// --- Politique ACL --------------------------------------------------------
+
+/**
+ * Renvoie `{policy, updatedAt}` — `policy` est la politique brute (HuJSON).
+ * `PUT` échoue en 400 si Headscale n'est pas configuré en `policy.mode:
+ * database` (vérifié dans le fork : `setPolicy` refuse sinon) — condition
+ * requise pour que cet éditeur fonctionne, documentée dans le CDC.
+ */
+export function getPolicy(): Promise<Response> {
+  return headscaleFetch('/api/v1/policy');
+}
+
+export function setPolicy(policy: string): Promise<Response> {
+  return headscaleFetch('/api/v1/policy', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ policy }),
+  });
+}
+
+/** Valide sans appliquer — toujours appelé avant `setPolicy` (CDC §7). */
+export function checkPolicy(policy: string): Promise<Response> {
+  return headscaleFetch('/api/v1/policy/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ policy }),
+  });
+}

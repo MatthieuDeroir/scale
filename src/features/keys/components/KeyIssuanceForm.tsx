@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fleetTagFromName } from '@/core';
 import { fetchNodes } from '@/features/fleets';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
@@ -28,12 +29,10 @@ function inputClass() {
   return 'h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 }
 
-/** Headscale exige un tag en minuscules, sans espace (`tag.go` côté fork). */
 function resolveTag(internal: boolean, tagChoice: string, customTag: string): string {
   if (internal) return 'tag:interne';
   if (tagChoice !== OTHER_TAG) return tagChoice;
-  const slug = customTag.trim().toLowerCase().replace(/\s+/g, '-');
-  return slug.startsWith('tag:flotte-') ? slug : `tag:flotte-${slug}`;
+  return fleetTagFromName(customTag);
 }
 
 export function KeyIssuanceForm({ onIssued }: { onIssued: (key: NewAccessKey) => void }) {

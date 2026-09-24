@@ -1,0 +1,25 @@
+{
+  "acl": {
+    "title": "Flottes et politique d'accès",
+    "description": "Cloisonnement strict entre flottes, accès total pour l'interne.",
+    "loading": "Lecture de la politique…",
+    "machineCount": "{count, plural, =0 {aucune machine} =1 {1 machine} other {# machines}}",
+    "delete": "Supprimer",
+    "confirmDelete": "Confirmer ?",
+    "deleted": "Flotte supprimée.",
+    "newFleetPlaceholder": "Nom de la nouvelle flotte",
+    "create": "Créer",
+    "creating": "Création…",
+    "created": "Flotte créée.",
+    "openRaw": "Éditeur avancé (HuJSON brut)",
+    "rawTitle": "Politique brute",
+    "rawDescription": "Secours pour ce que l'éditeur guidé ne couvre pas — toujours validée avant application, jamais écrite en direct.",
+    "applyRaw": "Valider et appliquer",
+    "applying": "Application…",
+    "applied": "Politique appliquée.",
+    "reset": "Recharger depuis Headscale"
+  },
+  "nav": {
+    "acl": "Flottes & ACL"
+  }
+}
