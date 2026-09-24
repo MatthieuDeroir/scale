@@ -1,42 +1,49 @@
+import { KeyRound, LayoutDashboard, ShieldCheck, UploadCloud, Users } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { covers, type Role } from '@/features/auth';
-import { NavLink } from '@/shared/ui';
+import type { NavLinkItem } from '@/shared/ui';
+
+type ActivePage = 'overview' | 'keys' | 'provisioning' | 'acl' | 'accounts';
 
 /**
- * Liste unique des liens de nav, pour ne pas la dupliquer dans chaque
- * `page.tsx` protégé — chaque nouvelle page n'a qu'à dire laquelle est
- * active. `role` est optionnel : seul `/comptes` en a besoin pour se
- * masquer aux non-ADMIN, mais on le passe partout pour que le lien
- * apparaisse de façon cohérente sur tous les écrans.
+ * Fabrique la liste de liens (données, pas du JSX) pour `<AppShell links={...} />` —
+ * un seul endroit à toucher pour ajouter un écran. `role` est optionnel :
+ * seul « Comptes » en a besoin pour se masquer aux non-ADMIN.
  */
-export async function NavLinks({
+export async function navLinks({
   active,
   role,
 }: {
-  active: 'overview' | 'keys' | 'provisioning' | 'acl' | 'accounts';
+  active: ActivePage;
   role?: Role;
-}) {
+}): Promise<NavLinkItem[]> {
   const t = await getTranslations('nav');
 
-  return (
-    <>
-      <NavLink href="/" active={active === 'overview'}>
-        {t('overview')}
-      </NavLink>
-      <NavLink href="/keys" active={active === 'keys'}>
-        {t('keys')}
-      </NavLink>
-      <NavLink href="/acl" active={active === 'acl'}>
-        {t('acl')}
-      </NavLink>
-      <NavLink href="/provisioning" active={active === 'provisioning'}>
-        {t('provisioning')}
-      </NavLink>
-      {role && covers(role, 'ADMIN') && (
-        <NavLink href="/comptes" active={active === 'accounts'}>
-          {t('accounts')}
-        </NavLink>
-      )}
-    </>
-  );
+  const links: NavLinkItem[] = [
+    {
+      href: '/',
+      label: t('overview'),
+      icon: <LayoutDashboard />,
+      active: active === 'overview',
+    },
+    { href: '/keys', label: t('keys'), icon: <KeyRound />, active: active === 'keys' },
+    { href: '/acl', label: t('acl'), icon: <ShieldCheck />, active: active === 'acl' },
+    {
+      href: '/provisioning',
+      label: t('provisioning'),
+      icon: <UploadCloud />,
+      active: active === 'provisioning',
+    },
+  ];
+
+  if (role && covers(role, 'ADMIN')) {
+    links.push({
+      href: '/comptes',
+      label: t('accounts'),
+      icon: <Users />,
+      active: active === 'accounts',
+    });
+  }
+
+  return links;
 }

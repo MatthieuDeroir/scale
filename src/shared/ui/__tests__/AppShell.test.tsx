@@ -1,37 +1,46 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AppShell, NavLink } from '../AppShell';
+import { AppShell } from '../AppShell';
+
+const links = [
+  { href: '/', label: 'Vue d’ensemble', icon: <span />, active: true },
+  { href: '/keys', label: 'Clés d’accès', icon: <span />, active: false },
+];
 
 describe('AppShell', () => {
-  it('porte l’identité produit et le nom du produit', () => {
+  it('porte l’identité produit, le titre d’écran et la navigation', () => {
     render(
-      <AppShell product="Starter 2026">
+      <AppShell product="Stramscale" title="Vue d’ensemble" links={links}>
         <p>contenu</p>
       </AppShell>
     );
-    expect(screen.getByText('STRAMATEL')).toBeInTheDocument();
-    expect(screen.getByText('Starter 2026')).toBeInTheDocument();
+    // La sidebar existe en deux variantes (bureau/mobile), basculées en CSS :
+    // jsdom rend les deux sans appliquer les media queries, d'où `getAllBy*`.
+    expect(screen.getAllByText('Stramscale').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: 'Vue d’ensemble' })).toBeInTheDocument();
     expect(screen.getByText('contenu')).toBeInTheDocument();
+    expect(screen.getAllByAltText('Stramatel').length).toBeGreaterThan(0);
   });
 
   it('expose le sélecteur de thème dans la barre', () => {
-    render(<AppShell product="X">c</AppShell>);
-    expect(screen.getByRole('radiogroup', { name: 'Thème' })).toBeInTheDocument();
-  });
-});
-
-describe('NavLink', () => {
-  it('signale la page courante aux lecteurs d’écran', () => {
     render(
-      <NavLink href="/" active>
-        Vue d’ensemble
-      </NavLink>
+      <AppShell product="Stramscale" title="X" links={links}>
+        c
+      </AppShell>
     );
-    expect(screen.getByRole('link')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByRole('radiogroup', { name: 'Thème' }).length).toBeGreaterThan(0);
   });
 
-  it('ne marque pas les autres liens', () => {
-    render(<NavLink href="/x">Autre</NavLink>);
-    expect(screen.getByRole('link')).not.toHaveAttribute('aria-current');
+  it('signale la page active aux lecteurs d’écran, jamais les autres', () => {
+    render(
+      <AppShell product="Stramscale" title="X" links={links}>
+        c
+      </AppShell>
+    );
+    const activeLinks = screen.getAllByRole('link', { name: /Vue d’ensemble/ });
+    expect(activeLinks.some((link) => link.getAttribute('aria-current') === 'page')).toBe(true);
+
+    const otherLinks = screen.getAllByRole('link', { name: /Clés d’accès/ });
+    expect(otherLinks.every((link) => !link.hasAttribute('aria-current'))).toBe(true);
   });
 });
