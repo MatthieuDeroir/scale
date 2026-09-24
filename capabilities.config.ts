@@ -23,8 +23,11 @@ export const activeCapabilities = [
   'auth', // comptes, session JWT, RBAC, verrouillage progressif
 
   // 'users' n'est pas encore porté au socle (docs/CATALOGUE.md : état ⬜) — la
-  // gestion des flottes/tags/clés sera une feature propre à ce projet
-  // (src/features/fleets/), pas une capacité socle activée ici.
+  // gestion des flottes/tags/clés est donc une feature propre à ce projet,
+  // pas une capacité socle : `src/features/fleets/`, enregistrée ici comme
+  // n'importe quelle autre fonctionnalité (le registre ne distingue pas
+  // « du socle » de « propre au projet », seul compte l'emplacement du dossier).
+  'fleets', // vue d'ensemble du parc, tags de flotte, état des machines (API Headscale)
 
   // 'screens',     // écrans, zones, luminosité, allumage
   // 'media',       // bibliothèque d'images et de vidéos

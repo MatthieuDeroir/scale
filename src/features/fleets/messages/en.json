@@ -1,0 +1,21 @@
+{
+  "fleets": {
+    "title": "Fleet overview",
+    "description": "Enrolled machines, grouped by fleet, with their connection status.",
+    "loading": "Loading fleet…",
+    "empty": "No machine enrolled yet.",
+    "online": "online",
+    "offline": "offline",
+    "never": "never",
+    "columns": {
+      "machine": "Machine",
+      "fleet": "Fleet",
+      "address": "Address",
+      "status": "Status",
+      "lastSeen": "Last seen"
+    }
+  },
+  "nav": {
+    "overview": "Overview"
+  }
+}

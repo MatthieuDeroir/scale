@@ -5,10 +5,10 @@
 
 ## À quoi sert ce dépôt
 
-Interface d'administration du fork Headscale de Stramatel (`../stramscale/`) : gestion des
-flottes clients (groupes logiques de machines par client, par tag), émission et révocation de
-clés d'accès scopées à une flotte, état du parc. Voir `../CAHIER_DES_CHARGES.md` pour le
-périmètre fonctionnel complet et le chiffrage.
+Interface d'administration du fork Headscale de Stramatel (`../stramscale/`, même dépôt) :
+gestion des flottes clients (groupes logiques de machines par client, par tag), émission et
+révocation de clés d'accès scopées à une flotte, état du parc. Voir
+`../../CAHIER_DES_CHARGES.md` pour le périmètre fonctionnel complet et le chiffrage.
 
 Bootstrap depuis `mes_projets/interne/socle/starter_2026/` (skill `bootstrap-projet-stramatel`).
 **Ceci n'est pas un produit embarqué** : c'est une application web hébergée (VPS Lan2Net),
@@ -48,7 +48,7 @@ bootstrappé en hérite.
 
 ## Prochaine étape
 
-Voir `../CAHIER_DES_CHARGES.md` §6 (phasage) et §8 (points à préciser) avant de commencer le
+Voir `../../CAHIER_DES_CHARGES.md` §6 (phasage) et §8 (points à préciser) avant de commencer le
 développement des fonctionnalités : spike NAT traversal sur le vrai parc 4G, modèle ACL par
 tag de flotte, puis les premiers écrans d'admin.
 

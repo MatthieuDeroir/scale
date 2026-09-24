@@ -1,0 +1,21 @@
+{
+  "fleets": {
+    "title": "Vue d'ensemble du parc",
+    "description": "Machines enrôlées, par flotte, avec leur état de connexion.",
+    "loading": "Lecture du parc…",
+    "empty": "Aucune machine enrôlée.",
+    "online": "en ligne",
+    "offline": "hors ligne",
+    "never": "jamais",
+    "columns": {
+      "machine": "Machine",
+      "fleet": "Flotte",
+      "address": "Adresse",
+      "status": "État",
+      "lastSeen": "Dernière connexion"
+    }
+  },
+  "nav": {
+    "overview": "Vue d'ensemble"
+  }
+}

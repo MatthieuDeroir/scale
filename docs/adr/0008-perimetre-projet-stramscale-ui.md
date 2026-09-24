@@ -4,8 +4,8 @@
 
 ## Contexte
 
-Ce projet est l'UI d'administration d'un fork Headscale (`../stramscale/`, dépôt Go séparé),
-pas un produit embarqué. Bootstrap depuis `starter_2026`, dont le catalogue de capacités
+Ce projet est l'UI d'administration d'un fork Headscale (`../stramscale/`, même dépôt), pas un
+produit embarqué. Bootstrap depuis `starter_2026`, dont le catalogue de capacités
 (`capabilities.config.ts`, `docs/CATALOGUE.md`) est pensé pour les afficheurs de la gamme
 (SL MEDIA, ServeurTemps, G552) : transports série/UDP/websocket, écrans, médias, diaporamas.
 Aucun de ces axes n'a de sens pour une application web hébergée consultée par des humains.
