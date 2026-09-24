@@ -1,4 +1,4 @@
-import { prisma } from '@/core';
+import { logActivity, prisma } from '@/core';
 import { generatePassword, hashPassword, ROLES, type Role } from '@/features/auth';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
@@ -75,6 +75,12 @@ export async function POST(request: Request) {
       passwordHash: await hashPassword(password),
       mustChangePassword: true,
     },
+  });
+
+  await logActivity({
+    actor: session.session.username,
+    action: 'users-create',
+    target: `${username} (${role})`,
   });
 
   return NextResponse.json({ ...serialize(user), password });

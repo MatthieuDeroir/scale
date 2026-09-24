@@ -3,6 +3,7 @@ import {
   checkPolicy,
   fleetTagFromName,
   getPolicy,
+  logActivity,
   parsePolicyFleets,
   setPolicy,
 } from '@/core';
@@ -32,9 +33,10 @@ export async function POST(request: Request) {
   }
   const { policy: raw } = (await current.json()) as { policy: string };
 
+  const tag = fleetTagFromName(name);
   let updated: string;
   try {
-    updated = addFleetToPolicy(raw, fleetTagFromName(name));
+    updated = addFleetToPolicy(raw, tag);
   } catch (error) {
     return NextResponse.json(
       { message: error instanceof Error ? error.message : 'Requête invalide' },
@@ -55,6 +57,8 @@ export async function POST(request: Request) {
   if (!applied.ok) {
     return NextResponse.json({ message: 'Application refusée par Headscale' }, { status: 502 });
   }
+
+  await logActivity({ actor: session.session.username, action: 'acl-fleet-create', target: tag });
 
   const { policy, updatedAt } = (await applied.json()) as { policy: string; updatedAt: string };
   return NextResponse.json({ fleets: parsePolicyFleets(policy), raw: policy, updatedAt });

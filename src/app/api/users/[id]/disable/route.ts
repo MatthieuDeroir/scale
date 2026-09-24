@@ -1,4 +1,4 @@
-import { prisma } from '@/core';
+import { logActivity, prisma } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -23,5 +23,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const user = await prisma.user.update({ where: { id: userId }, data: { disabled: true } });
+  await logActivity({
+    actor: session.session.username,
+    action: 'users-disable',
+    target: user.username,
+  });
   return NextResponse.json({ id: user.id, disabled: user.disabled });
 }

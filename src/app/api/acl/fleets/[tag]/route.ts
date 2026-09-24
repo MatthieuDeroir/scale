@@ -1,6 +1,7 @@
 import {
   checkPolicy,
   getPolicy,
+  logActivity,
   parsePolicyFleets,
   removeFleetFromPolicy,
   setPolicy,
@@ -53,6 +54,8 @@ export async function DELETE(
   if (!applied.ok) {
     return NextResponse.json({ message: 'Application refusée par Headscale' }, { status: 502 });
   }
+
+  await logActivity({ actor: session.session.username, action: 'acl-fleet-delete', target: tag });
 
   const { policy, updatedAt } = (await applied.json()) as { policy: string; updatedAt: string };
   return NextResponse.json({ fleets: parsePolicyFleets(policy), raw: policy, updatedAt });

@@ -1,0 +1,35 @@
+{
+  "activity": {
+    "title": "Activity log",
+    "description": "Administration actions performed through the interface (CRA baseline LOG-01).",
+    "loading": "Loading log…",
+    "empty": "No event yet.",
+    "columns": {
+      "at": "Timestamp",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target"
+    },
+    "actions": {
+      "auth-login-success": "Successful sign-in",
+      "auth-login-failed": "Sign-in refused",
+      "keys-create": "Key issued",
+      "keys-revoke": "Key revoked",
+      "fleets-node-rename": "Machine renamed",
+      "fleets-node-retag": "Fleet changed",
+      "fleets-node-expire": "Machine expired",
+      "fleets-node-delete": "Machine deleted",
+      "acl-fleet-create": "Fleet created",
+      "acl-fleet-delete": "Fleet deleted",
+      "acl-raw-apply": "ACL policy applied (raw editor)",
+      "provisioning-enroll": "Automatic enrollment",
+      "users-create": "Account created",
+      "users-disable": "Account disabled",
+      "users-enable": "Account enabled",
+      "users-reset-password": "Password reset"
+    }
+  },
+  "nav": {
+    "activity": "Log"
+  }
+}

@@ -1,4 +1,4 @@
-import { expirePreAuthKey } from '@/core';
+import { expirePreAuthKey, logActivity } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -19,5 +19,6 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ message: 'Révocation refusée par Headscale' }, { status: 502 });
   }
 
+  await logActivity({ actor: session.session.username, action: 'keys-revoke', target: id });
   return NextResponse.json({ ok: true });
 }

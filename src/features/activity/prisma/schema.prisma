@@ -1,0 +1,13 @@
+/// Journal d'activité (F6, baseline CRA LOG-01 : connexions, échecs,
+/// changements de droits, modifications de configuration). `target` ne
+/// contient jamais de secret (LOG-03) — un tag, un identifiant, jamais une
+/// clé ou un mot de passe en clair.
+model ActivityLog {
+  id     Int      @id @default(autoincrement())
+  at     DateTime @default(now())
+  actor  String
+  action String
+  target String?
+
+  @@index([at])
+}

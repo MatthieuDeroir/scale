@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/core';
+import { logActivity, prisma } from '@/core';
 import { createSession, loginSchema, sessionCookie, verifyLogin } from '@/features/auth';
 
 export async function POST(request: Request) {
@@ -12,7 +12,12 @@ export async function POST(request: Request) {
 
   if (!result.ok) {
     // Même réponse pour « inconnu », « mot de passe faux » et « verrouillé ».
-    // Le détail n'aide que l'attaquant.
+    // Le détail n'aide que l'attaquant — mais le journal interne, lui, garde
+    // l'identifiant tenté (LOG-01 : connexions, échecs).
+    await logActivity({
+      actor: parsed.data.username,
+      action: 'auth-login-failed',
+    });
     return NextResponse.json({ message: 'Connexion refusée' }, { status: 401 });
   }
 
@@ -21,6 +26,8 @@ export async function POST(request: Request) {
     username: result.user.username,
     role: result.user.role,
   });
+
+  await logActivity({ actor: result.user.username, action: 'auth-login-success' });
 
   const response = NextResponse.json({ mustChangePassword: result.user.mustChangePassword });
   response.cookies.set(sessionCookie.name, token, sessionCookie.options);

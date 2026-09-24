@@ -1,0 +1,35 @@
+{
+  "activity": {
+    "title": "Journal d'activité",
+    "description": "Actions d'administration passées par l'interface (LOG-01 baseline CRA).",
+    "loading": "Lecture du journal…",
+    "empty": "Aucun événement pour l'instant.",
+    "columns": {
+      "at": "Horodatage",
+      "actor": "Auteur",
+      "action": "Action",
+      "target": "Cible"
+    },
+    "actions": {
+      "auth-login-success": "Connexion réussie",
+      "auth-login-failed": "Connexion refusée",
+      "keys-create": "Émission d'une clé",
+      "keys-revoke": "Révocation d'une clé",
+      "fleets-node-rename": "Renommage d'une machine",
+      "fleets-node-retag": "Changement de flotte",
+      "fleets-node-expire": "Expiration d'une machine",
+      "fleets-node-delete": "Suppression d'une machine",
+      "acl-fleet-create": "Création d'une flotte",
+      "acl-fleet-delete": "Suppression d'une flotte",
+      "acl-raw-apply": "Politique ACL appliquée (éditeur brut)",
+      "provisioning-enroll": "Enrôlement automatique",
+      "users-create": "Création d'un compte",
+      "users-disable": "Désactivation d'un compte",
+      "users-enable": "Réactivation d'un compte",
+      "users-reset-password": "Réinitialisation d'un mot de passe"
+    }
+  },
+  "nav": {
+    "activity": "Journal"
+  }
+}

@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { createPreAuthKey, mapNewPreAuthKey } from '@/core';
+import { createPreAuthKey, logActivity, mapNewPreAuthKey } from '@/core';
 import { prisma } from '@/core';
 import { NextResponse } from 'next/server';
 
@@ -59,6 +59,7 @@ export async function POST(request: Request) {
   }
 
   await prisma.provisioningDevice.create({ data: { deviceId } });
+  await logActivity({ actor: 'provisioning', action: 'provisioning-enroll', target: deviceId });
 
   const { preAuthKey } = (await response.json()) as { preAuthKey: Parameters<typeof mapNewPreAuthKey>[0] };
   return NextResponse.json({

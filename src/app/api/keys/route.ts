@@ -1,6 +1,7 @@
 import {
   createPreAuthKey,
   listPreAuthKeys,
+  logActivity,
   mapNewPreAuthKey,
   mapPreAuthKey,
   type RawHeadscalePreAuthKey,
@@ -67,5 +68,10 @@ export async function POST(request: Request) {
   }
 
   const { preAuthKey } = (await response.json()) as { preAuthKey: RawHeadscalePreAuthKey };
+  await logActivity({
+    actor: session.session.username,
+    action: 'keys-create',
+    target: tags.join(','),
+  });
   return NextResponse.json(mapNewPreAuthKey(preAuthKey));
 }

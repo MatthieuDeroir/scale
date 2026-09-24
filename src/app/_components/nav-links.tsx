@@ -1,14 +1,14 @@
-import { KeyRound, LayoutDashboard, ShieldCheck, UploadCloud, Users } from 'lucide-react';
+import { History, KeyRound, LayoutDashboard, ShieldCheck, UploadCloud, Users } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { covers, type Role } from '@/features/auth';
 import type { NavLinkItem } from '@/shared/ui';
 
-type ActivePage = 'overview' | 'keys' | 'provisioning' | 'acl' | 'accounts';
+type ActivePage = 'overview' | 'keys' | 'provisioning' | 'acl' | 'accounts' | 'activity';
 
 /**
  * Fabrique la liste de liens (données, pas du JSX) pour `<AppShell links={...} />` —
  * un seul endroit à toucher pour ajouter un écran. `role` est optionnel :
- * seul « Comptes » en a besoin pour se masquer aux non-ADMIN.
+ * « Comptes » et « Journal » en ont besoin pour se masquer aux non-ADMIN.
  */
 export async function navLinks({
   active,
@@ -37,12 +37,20 @@ export async function navLinks({
   ];
 
   if (role && covers(role, 'ADMIN')) {
-    links.push({
-      href: '/comptes',
-      label: t('accounts'),
-      icon: <Users />,
-      active: active === 'accounts',
-    });
+    links.push(
+      {
+        href: '/comptes',
+        label: t('accounts'),
+        icon: <Users />,
+        active: active === 'accounts',
+      },
+      {
+        href: '/activite',
+        label: t('activity'),
+        icon: <History />,
+        active: active === 'activity',
+      }
+    );
   }
 
   return links;

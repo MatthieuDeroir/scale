@@ -1,4 +1,4 @@
-import { checkPolicy, parsePolicyFleets, setPolicy } from '@/core';
+import { checkPolicy, logActivity, parsePolicyFleets, setPolicy } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -36,6 +36,8 @@ export async function PUT(request: Request) {
   if (!applied.ok) {
     return NextResponse.json({ message: 'Application refusée par Headscale' }, { status: 502 });
   }
+
+  await logActivity({ actor: session.session.username, action: 'acl-raw-apply' });
 
   const { policy: appliedPolicy, updatedAt } = (await applied.json()) as {
     policy: string;

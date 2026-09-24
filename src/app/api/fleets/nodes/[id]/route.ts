@@ -1,4 +1,4 @@
-import { mapNode, getNode, deleteNode, type RawHeadscaleNode } from '@/core';
+import { deleteNode, getNode, logActivity, mapNode, type RawHeadscaleNode } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -39,5 +39,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ message: 'Suppression refusée par Headscale' }, { status: 502 });
   }
 
+  await logActivity({ actor: session.session.username, action: 'fleets-node-delete', target: id });
   return NextResponse.json({ ok: true });
 }
