@@ -28,6 +28,7 @@ export const activeCapabilities = [
   // n'importe quelle autre fonctionnalité (le registre ne distingue pas
   // « du socle » de « propre au projet », seul compte l'emplacement du dossier).
   'fleets', // vue d'ensemble du parc, tags de flotte, état des machines (API Headscale)
+  'keys', // émission et révocation de clés machine taguées par flotte (F2)
 
   // 'screens',     // écrans, zones, luminosité, allumage
   // 'media',       // bibliothèque d'images et de vidéos

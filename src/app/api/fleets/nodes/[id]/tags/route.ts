@@ -1,5 +1,5 @@
-import { mapNode, setNodeTags, type RawHeadscaleNode } from '@/features/fleets/lib/headscale-client';
-import { requireSession } from '@/features/fleets/lib/require-session';
+import { mapNode, setNodeTags, type RawHeadscaleNode } from '@/core';
+import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';

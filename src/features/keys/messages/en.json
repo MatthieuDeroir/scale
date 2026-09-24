@@ -1,0 +1,34 @@
+{
+  "keys": {
+    "issueTitle": "Issue a key",
+    "issueDescription": "One key = one machine, never shared between devices.",
+    "internal": "Internal Stramatel key (tag:interne)",
+    "fleet": "Fleet",
+    "newFleet": "New fleet…",
+    "reusable": "Reusable",
+    "expiration": "Expiration",
+    "issue": "Issue",
+    "issuing": "Issuing…",
+    "issued": "Key issued.",
+    "revealTitle": "Key issued — copy it now",
+    "revealWarning": "This key will never be shown again once this panel is closed.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "dismiss": "I copied the key",
+    "listTitle": "Current keys",
+    "listDescription": "Issued, used or not, until revoked or expired.",
+    "loading": "Loading keys…",
+    "empty": "No key issued yet.",
+    "yes": "yes",
+    "no": "no",
+    "revoke": "Revoke",
+    "confirmRevoke": "Confirm?",
+    "revoked": "Key revoked.",
+    "columns": {
+      "fleet": "Fleet",
+      "reusable": "Reusable",
+      "used": "Used",
+      "expiration": "Expiration"
+    }
+  }
+}

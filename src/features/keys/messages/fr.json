@@ -1,0 +1,34 @@
+{
+  "keys": {
+    "issueTitle": "Émettre une clé",
+    "issueDescription": "Une clé = une machine, jamais partagée entre plusieurs appareils.",
+    "internal": "Clé interne Stramatel (tag:interne)",
+    "fleet": "Flotte",
+    "newFleet": "Nouvelle flotte…",
+    "reusable": "Réutilisable",
+    "expiration": "Expiration",
+    "issue": "Émettre",
+    "issuing": "Émission…",
+    "issued": "Clé émise.",
+    "revealTitle": "Clé émise — à copier maintenant",
+    "revealWarning": "Cette clé ne sera plus jamais affichée après fermeture de ce panneau.",
+    "copy": "Copier",
+    "copied": "Copiée",
+    "dismiss": "J'ai copié la clé",
+    "listTitle": "Clés en cours",
+    "listDescription": "Émises, utilisées ou non, jusqu'à révocation ou expiration.",
+    "loading": "Lecture des clés…",
+    "empty": "Aucune clé émise pour l'instant.",
+    "yes": "oui",
+    "no": "non",
+    "revoke": "Révoquer",
+    "confirmRevoke": "Confirmer ?",
+    "revoked": "Clé révoquée.",
+    "columns": {
+      "fleet": "Flotte",
+      "reusable": "Réutilisable",
+      "used": "Utilisée",
+      "expiration": "Expiration"
+    }
+  }
+}

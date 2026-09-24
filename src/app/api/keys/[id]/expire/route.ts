@@ -1,4 +1,4 @@
-import { mapNode, expireNode, type RawHeadscaleNode } from '@/core';
+import { expirePreAuthKey } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -14,11 +14,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const response = await expireNode(id);
+  const response = await expirePreAuthKey(id);
   if (!response.ok) {
-    return NextResponse.json({ message: 'Expiration refusée par Headscale' }, { status: 502 });
+    return NextResponse.json({ message: 'Révocation refusée par Headscale' }, { status: 502 });
   }
 
-  const { node } = (await response.json()) as { node: RawHeadscaleNode };
-  return NextResponse.json(mapNode(node));
+  return NextResponse.json({ ok: true });
 }

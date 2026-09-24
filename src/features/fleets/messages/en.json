@@ -33,6 +33,7 @@
     }
   },
   "nav": {
-    "overview": "Overview"
+    "overview": "Overview",
+    "keys": "Access keys"
   }
 }
