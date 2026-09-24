@@ -7,12 +7,29 @@
     "online": "online",
     "offline": "offline",
     "never": "never",
+    "search": "Search a machine or fleet…",
+    "noMatch": "No machine matches the search.",
     "columns": {
       "machine": "Machine",
       "fleet": "Fleet",
       "address": "Address",
       "status": "Status",
       "lastSeen": "Last seen"
+    },
+    "detail": {
+      "tags": "Tags",
+      "rename": "Rename",
+      "changeFleet": "Change fleet",
+      "otherTag": "Other (type a tag)",
+      "apply": "Apply",
+      "expire": "Expire",
+      "confirmExpire": "Confirm expiry?",
+      "delete": "Delete",
+      "confirmDelete": "Confirm deletion?",
+      "renamed": "Machine renamed.",
+      "retagged": "Fleet updated.",
+      "expired": "Machine expired.",
+      "deleted": "Machine deleted."
     }
   },
   "nav": {

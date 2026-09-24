@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import messages from '../messages/fr.json';
@@ -55,6 +55,61 @@ describe('FleetOverview', () => {
     expect(screen.getByText('en ligne')).toBeInTheDocument();
     expect(screen.getByText('hors ligne')).toBeInTheDocument();
     expect(screen.getByText('jamais')).toBeInTheDocument();
+  });
+
+  it('filtre par recherche', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      reponse([
+        {
+          id: '1',
+          name: 'node-clienta',
+          givenName: 'node-clienta',
+          ipAddresses: ['100.64.0.2'],
+          online: true,
+          lastSeen: null,
+          tags: ['tag:flotte-clienta'],
+        },
+        {
+          id: '2',
+          name: 'node-interne',
+          givenName: 'node-interne',
+          ipAddresses: ['100.64.0.3'],
+          online: true,
+          lastSeen: null,
+          tags: ['tag:interne'],
+        },
+      ]) as never
+    );
+    afficher();
+
+    await screen.findByText('node-clienta');
+    fireEvent.change(screen.getByPlaceholderText('Rechercher une machine ou une flotte…'), {
+      target: { value: 'interne' },
+    });
+
+    expect(screen.queryByText('node-clienta')).not.toBeInTheDocument();
+    expect(screen.getByText('node-interne')).toBeInTheDocument();
+  });
+
+  it('ouvre le panneau de détail au clic sur une ligne', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      reponse([
+        {
+          id: '1',
+          name: 'node-clienta',
+          givenName: 'node-clienta',
+          ipAddresses: ['100.64.0.2'],
+          online: true,
+          lastSeen: null,
+          tags: ['tag:flotte-clienta'],
+        },
+      ]) as never
+    );
+    afficher();
+
+    fireEvent.click(await screen.findByText('node-clienta'));
+
+    expect(await screen.findByRole('heading', { name: 'node-clienta' })).toBeInTheDocument();
   });
 
   it('affiche un état vide plutôt qu’un tableau creux', async () => {

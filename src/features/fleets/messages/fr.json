@@ -7,12 +7,29 @@
     "online": "en ligne",
     "offline": "hors ligne",
     "never": "jamais",
+    "search": "Rechercher une machine ou une flotte…",
+    "noMatch": "Aucune machine ne correspond à la recherche.",
     "columns": {
       "machine": "Machine",
       "fleet": "Flotte",
       "address": "Adresse",
       "status": "État",
       "lastSeen": "Dernière connexion"
+    },
+    "detail": {
+      "tags": "Tags",
+      "rename": "Renommer",
+      "changeFleet": "Changer de flotte",
+      "otherTag": "Autre (saisir un tag)",
+      "apply": "Appliquer",
+      "expire": "Expirer",
+      "confirmExpire": "Confirmer l'expiration ?",
+      "delete": "Supprimer",
+      "confirmDelete": "Confirmer la suppression ?",
+      "renamed": "Machine renommée.",
+      "retagged": "Flotte mise à jour.",
+      "expired": "Machine expirée.",
+      "deleted": "Machine supprimée."
     }
   },
   "nav": {
