@@ -4,6 +4,9 @@ model User {
   passwordHash       String
   role               Role     @default(OPERATOR)
   mustChangePassword Boolean  @default(true)
+  /// Désactivation par un ADMIN (Phase 5) — distinct de `lockedUntil`, qui
+  /// est un verrouillage temporaire automatique après échecs répétés.
+  disabled           Boolean  @default(false)
   failedAttempts     Int      @default(0)
   lockedUntil        DateTime?
   lastLoginAt        DateTime?

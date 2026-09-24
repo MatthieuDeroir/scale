@@ -4,7 +4,7 @@ export const config: FeatureConfig = {
   id: 'auth',
   name: 'Comptes, session et contrôle d’accès',
   requires: [],
-  nav: [],
+  nav: [{ href: '/comptes', labelKey: 'nav.accounts' }],
 };
 
 export default config;

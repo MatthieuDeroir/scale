@@ -8,7 +8,7 @@ const LOCK_MINUTES = 15;
 
 export type LoginResult =
   | { ok: true; user: { id: number; username: string; role: string; mustChangePassword: boolean } }
-  | { ok: false; reason: 'invalid' | 'locked' };
+  | { ok: false; reason: 'invalid' | 'locked' | 'disabled' };
 
 /**
  * Vérifie un couple identifiant / mot de passe.
@@ -29,6 +29,10 @@ export async function verifyLogin(
     // rapide et trahit les comptes inexistants.
     await bcrypt.compare(password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinva');
     return { ok: false, reason: 'invalid' };
+  }
+
+  if (user.disabled) {
+    return { ok: false, reason: 'disabled' };
   }
 
   if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -68,4 +72,18 @@ export async function verifyLogin(
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
+}
+
+/**
+ * Web Crypto plutôt que `node:crypto` : ce fichier est réexporté par le
+ * barrel `auth`, que `src/middleware.ts` importe — `node:crypto` y fait
+ * échouer le bundle Edge (« Native module not found »), repéré en
+ * vérification réelle. `crypto.getRandomValues`/`btoa` fonctionnent sur les
+ * deux runtimes.
+ */
+export function generatePassword(): string {
+  const bytes = new Uint8Array(12);
+  crypto.getRandomValues(bytes);
+  const binary = String.fromCharCode(...bytes);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

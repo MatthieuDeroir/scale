@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AclScreen } from '@/features/acl';
-import { readSession, sessionCookie } from '@/features/auth';
+import { readSession, sessionCookie, type Role } from '@/features/auth';
 import { AppShell } from '@/shared/ui';
 import { NavLinks } from '../_components/nav-links';
 
@@ -11,7 +11,7 @@ export default async function AclPage() {
   if (!session) redirect('/login');
 
   return (
-    <AppShell product="Stramscale" nav={<NavLinks active="acl" />}>
+    <AppShell product="Stramscale" nav={<NavLinks active="acl" role={session.role as Role} />}>
       <AclScreen />
     </AppShell>
   );

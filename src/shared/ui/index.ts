@@ -13,3 +13,4 @@ export {
   DialogDescription,
   DialogFooter,
 } from './dialog';
+export { SecretReveal } from './secret-reveal';

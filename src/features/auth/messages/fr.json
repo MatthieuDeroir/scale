@@ -7,5 +7,38 @@
     "password": "Mot de passe",
     "failed": "Identifiant ou mot de passe incorrect.",
     "signOut": "Se déconnecter"
+  },
+  "accounts": {
+    "title": "Comptes Stramatel",
+    "description": "Accès à l'interface, réservé au bureau d'études — jamais au client ni à Lan2Net.",
+    "loading": "Lecture des comptes…",
+    "lastLogin": "Dernière connexion",
+    "never": "jamais",
+    "statusActive": "actif",
+    "statusDisabled": "désactivé",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "disable": "Désactiver",
+    "confirmDisable": "Confirmer ?",
+    "disabled": "Compte désactivé.",
+    "enable": "Réactiver",
+    "enabled": "Compte réactivé.",
+    "resetDone": "Mot de passe réinitialisé.",
+    "revealTitle": "Mot de passe — {username}",
+    "revealWarning": "Ce mot de passe ne sera plus jamais affiché après fermeture de ce panneau.",
+    "copy": "Copier",
+    "copied": "Copié",
+    "dismiss": "J'ai copié le mot de passe",
+    "newUsernamePlaceholder": "Identifiant du nouveau compte",
+    "create": "Créer",
+    "creating": "Création…",
+    "created": "Compte créé.",
+    "role": {
+      "ADMIN": "Administrateur",
+      "OPERATOR": "Opérateur",
+      "VIEWER": "Lecture seule"
+    }
+  },
+  "nav": {
+    "accounts": "Comptes"
   }
 }

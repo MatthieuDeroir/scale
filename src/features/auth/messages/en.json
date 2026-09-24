@@ -7,5 +7,38 @@
     "password": "Password",
     "failed": "Incorrect username or password.",
     "signOut": "Sign out"
+  },
+  "accounts": {
+    "title": "Stramatel accounts",
+    "description": "Access to the interface, reserved to the engineering team — never the client nor Lan2Net.",
+    "loading": "Loading accounts…",
+    "lastLogin": "Last login",
+    "never": "never",
+    "statusActive": "active",
+    "statusDisabled": "disabled",
+    "resetPassword": "Reset password",
+    "disable": "Disable",
+    "confirmDisable": "Confirm?",
+    "disabled": "Account disabled.",
+    "enable": "Enable",
+    "enabled": "Account enabled.",
+    "resetDone": "Password reset.",
+    "revealTitle": "Password — {username}",
+    "revealWarning": "This password will never be shown again once this panel is closed.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "dismiss": "I copied the password",
+    "newUsernamePlaceholder": "New account username",
+    "create": "Create",
+    "creating": "Creating…",
+    "created": "Account created.",
+    "role": {
+      "ADMIN": "Administrator",
+      "OPERATOR": "Operator",
+      "VIEWER": "Read-only"
+    }
+  },
+  "nav": {
+    "accounts": "Accounts"
   }
 }

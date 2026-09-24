@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { readSession, sessionCookie } from '@/features/auth';
+import { readSession, sessionCookie, type Role } from '@/features/auth';
 import { ProvisioningLog } from '@/features/provisioning';
 import { AppShell } from '@/shared/ui';
 import { NavLinks } from '../_components/nav-links';
@@ -11,7 +11,10 @@ export default async function ProvisioningPage() {
   if (!session) redirect('/login');
 
   return (
-    <AppShell product="Stramscale" nav={<NavLinks active="provisioning" />}>
+    <AppShell
+      product="Stramscale"
+      nav={<NavLinks active="provisioning" role={session.role as Role} />}
+    >
       <ProvisioningLog />
     </AppShell>
   );
