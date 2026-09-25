@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { retagNode, withFleet, type FleetNode } from '@/features/fleets';
+import { renameNode, retagNode, withFleet, type FleetNode } from '@/features/fleets';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -11,10 +11,22 @@ export function useAssignNodes(onDone?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ nodes, fleetTag }: { nodes: FleetNode[]; fleetTag: string }) => {
+    mutationFn: async ({
+      nodes,
+      fleetTag,
+      name,
+    }: {
+      nodes: FleetNode[];
+      fleetTag: string;
+      /** Nouveau nom, pour une affectation unitaire seulement. */
+      name?: string;
+    }) => {
       const results = await Promise.allSettled(
         // `withFleet` garde les tags de type (hypervision) et remplace a-assigner.
-        nodes.map((node) => retagNode(node.id, withFleet(node.tags, fleetTag)))
+        nodes.map(async (node) => {
+          await retagNode(node.id, withFleet(node.tags, fleetTag));
+          if (name && nodes.length === 1) await renameNode(node.id, name);
+        })
       );
       return { total: nodes.length, failed: results.filter((r) => r.status === 'rejected').length };
     },

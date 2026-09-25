@@ -26,7 +26,26 @@
       "users-create": "Account created",
       "users-disable": "Account disabled",
       "users-enable": "Account enabled",
-      "users-reset-password": "Password reset"
+      "users-reset-password": "Password reset",
+      "auth-password-change": "Password changed",
+      "auth-password-change-failed": "Password change refused",
+      "fleets-profile-update": "Fleet sheet updated"
+    },
+    "search": "Search (author, target…)",
+    "category": "Category",
+    "allActors": "All authors",
+    "export": "Export (CSV)",
+    "noResult": "No matching event.",
+    "pagination": "{from}–{to} of {total}",
+    "retention": "Retention: {days} days, then automatic deletion. {shown} events loaded out of {total}.",
+    "categories": {
+      "all": "All categories",
+      "auth": "Sign-ins",
+      "keys": "Keys",
+      "fleets": "Machines and fleets",
+      "acl": "Access policy",
+      "provisioning": "Enrollment",
+      "users": "Accounts"
     }
   },
   "nav": {

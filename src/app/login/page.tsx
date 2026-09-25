@@ -1,12 +1,12 @@
-import Image from "next/image";
-import { getTranslations } from "next-intl/server";
-import { LoginForm } from "@/features/auth";
-import { StramscaleMark, StramscaleWordmark } from "@/shared/ui";
+import Image from 'next/image';
+import { getTranslations } from 'next-intl/server';
+import { LoginForm } from '@/features/auth';
+import { StramscaleMark, StramscaleWordmark } from '@/shared/ui';
 
-export const metadata = { title: "Connexion" };
+export const metadata = { title: 'Connexion' };
 
 export default async function LoginPage() {
-  const t = await getTranslations("nav");
+  const t = await getTranslations('nav');
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 overflow-hidden bg-sidebar p-6">
       {/* Halo de marque discret derrière le formulaire. */}
@@ -20,7 +20,7 @@ export default async function LoginPage() {
           <StramscaleWordmark className="text-3xl text-sidebar-accent-foreground" />
         </h1>
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-sidebar-muted">
-          {t("tagline")}
+          {t('tagline')}
         </p>
       </div>
       <div className="relative w-full max-w-sm">

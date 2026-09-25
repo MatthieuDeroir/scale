@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/shared/ui";
-import { deleteFleet } from "../api";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/shared/ui';
+import { deleteFleet } from '../api';
 
 /**
  * Supprime la flotte de la politique (tagOwners + règle de cloisonnement).
@@ -22,15 +22,15 @@ export function DeleteFleetButton({
   machineCount: number;
   onDeleted?: () => void;
 }) {
-  const t = useTranslations("acl");
+  const t = useTranslations('acl');
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
 
   const mutation = useMutation({
     mutationFn: () => deleteFleet(tag),
     onSuccess: (policy) => {
-      queryClient.setQueryData(["acl", "policy"], policy);
-      toast.success(t("deleted"));
+      queryClient.setQueryData(['acl', 'policy'], policy);
+      toast.success(t('deleted'));
       onDeleted?.();
     },
     onError: (error: Error) => {
@@ -43,13 +43,13 @@ export function DeleteFleetButton({
 
   return (
     <Button
-      variant={confirming ? "destructive" : "outline"}
+      variant={confirming ? 'destructive' : 'outline'}
       disabled={blocked || mutation.isPending}
-      title={blocked ? t("deleteBlocked") : undefined}
+      title={blocked ? t('deleteBlocked') : undefined}
       onClick={() => (confirming ? mutation.mutate() : setConfirming(true))}
     >
       <Trash2 aria-hidden />
-      {confirming ? t("confirmDelete") : t("delete")}
+      {confirming ? t('confirmDelete') : t('delete')}
     </Button>
   );
 }

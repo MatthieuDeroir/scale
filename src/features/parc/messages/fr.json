@@ -33,7 +33,9 @@
       "noFleet": "Aucune flotte pour l'instant",
       "noFleetHint": "Créez la flotte d'un client pour lui ouvrir un réseau cloisonné.",
       "noResult": "Aucune flotte ne correspond",
-      "pagination": "{from}–{to} sur {total} flottes"
+      "pagination": "{from}–{to} sur {total} flottes",
+      "sector": "Secteur",
+      "allSectors": "Tous secteurs"
     },
     "fleet": {
       "back": "Flottes",
@@ -84,7 +86,18 @@
       "hypervision": "Postes d'hypervision",
       "equipment": "Équipements",
       "none": "Aucune machine enrôlée",
-      "noResult": "Aucune machine ne correspond"
+      "noResult": "Aucune machine ne correspond",
+      "export": "Exporter (CSV)",
+      "stale": "Hors ligne depuis +{days} j",
+      "staleHint": "{count, plural, =1 {1 machine est hors ligne} other {# machines sont hors ligne}} depuis plus de {days} jours : anciens enregistrements ou machines démontées ? Cliquez pour les afficher.",
+      "selected": "{count, plural, =1 {1 machine sélectionnée} other {# machines sélectionnées}}",
+      "bulkRetag": "Changer de flotte",
+      "bulkExpire": "Expirer",
+      "bulkDelete": "Supprimer",
+      "confirm": "Confirmer ?",
+      "clearSelection": "Désélectionner",
+      "bulkDone": "{count, plural, =1 {1 machine traitée.} other {# machines traitées.}}",
+      "bulkFailed": "{count, plural, =1 {1 machine en échec.} other {# machines en échec.}}"
     },
     "add": {
       "hypervisionTitle": "Ajouter un poste d'hypervision",
@@ -99,7 +112,35 @@
       "noPending": "Aucune machine en attente",
       "noPendingHint": "Une machine flashée apparaît ici à son premier démarrage. Sinon, passez par une installation manuelle.",
       "search": "Rechercher une machine en attente…",
-      "assign": "{count, plural, =0 {Ajouter à {fleet}} other {Ajouter à {fleet} ({count})}}"
+      "assign": "{count, plural, =0 {Ajouter à {fleet}} other {Ajouter à {fleet} ({count})}}",
+      "rename": "Nom de la machine (facultatif)",
+      "renameHint": "Minuscules, chiffres et tirets. Laissez vide pour garder le nom actuel."
+    },
+    "profile": {
+      "title": "Fiche client",
+      "edit": "Modifier",
+      "empty": "Aucune information : ajoutez le contact, le site et le numéro d'affaire pour les retrouver quand le client appelle.",
+      "editTitle": "Fiche client",
+      "editDescription": "Informations de la flotte {tag}. Le tag technique ne change pas.",
+      "displayName": "Nom affiché",
+      "displayNamePlaceholder": "ex. Keolis Lyon",
+      "sector": "Secteur",
+      "sectorPlaceholder": "ex. Transport",
+      "reference": "N° d'affaire",
+      "referencePlaceholder": "ex. AFF-2026-042",
+      "contact": "Contact",
+      "contactPlaceholder": "Nom et fonction",
+      "phone": "Téléphone",
+      "phonePlaceholder": "04 00 00 00 00",
+      "email": "E-mail",
+      "emailPlaceholder": "contact@client.fr",
+      "site": "Site",
+      "sitePlaceholder": "Adresse d'installation",
+      "notes": "Notes",
+      "notesPlaceholder": "Particularités d'installation, accès, horaires…",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saved": "Fiche enregistrée."
     }
   },
   "nav": {

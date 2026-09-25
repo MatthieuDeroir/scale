@@ -6,7 +6,13 @@ export interface ActivityEvent {
   target: string | null;
 }
 
-export async function fetchActivity(): Promise<ActivityEvent[]> {
+export interface ActivityPage {
+  retentionDays: number;
+  total: number;
+  events: ActivityEvent[];
+}
+
+export async function fetchActivity(): Promise<ActivityPage> {
   const response = await fetch('/api/activity');
   if (!response.ok) throw new Error(`Journal indisponible (${response.status})`);
   return response.json();

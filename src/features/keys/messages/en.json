@@ -7,7 +7,6 @@
     "issuedWarning": "This key will never be shown again once closed. It works only once.",
     "key": "Key",
     "command": "Command to run on the machine",
-    "commandHint": "Tailscale must be installed on the machine. The command registers it on the Stramatel network with this key.",
     "copy": "Copy",
     "copied": "Copied",
     "done": "Done",
@@ -18,6 +17,22 @@
     "issueHypervision": "Issue hypervision key",
     "issueEquipment": "Issue equipment key",
     "pendingHypervision": "Hypervision station key",
-    "pendingEquipment": "Equipment key"
+    "pendingEquipment": "Equipment key",
+    "platform": "Machine system",
+    "platformInstalled": "Tailscale already installed",
+    "commandHint": {
+      "windows": "In PowerShell run as administrator. Installs Tailscale, then enrolls the station.",
+      "linux": "Installs Tailscale with the official script, then enrolls the machine (sudo required).",
+      "installed": "Tailscale must already be installed; the command enrolls the machine with this key."
+    },
+    "machineName": "Machine name (optional)",
+    "machineNameHypervision": "e.g. supervision-station-workshop",
+    "machineNameEquipment": "e.g. platform-2-north-station",
+    "machineNameHint": "Otherwise the machine keeps its hostname.",
+    "machineNamePreview": "It will show up as “{hostname}”.",
+    "expirationPresets": "Validity",
+    "days": "{count, plural, =1 {1 day} other {# days}}",
+    "usedBy": "Used by {name}",
+    "recentlyUsed": "{count, plural, =1 {1 key used in the last 7 days} other {# keys used in the last 7 days}}"
   }
 }

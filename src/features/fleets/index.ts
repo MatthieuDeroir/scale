@@ -1,6 +1,6 @@
 export { config, default as fleetsConfig } from './feature.config';
 export { MachinesTable, MachineDetailPanel, StatusDot, formatLastSeen, type FleetOption } from './components';
-export { fetchNodes, retagNode, type FleetNode } from './api';
+export { fetchNodes, retagNode, renameNode, expireNode, deleteNode, type FleetNode } from './api';
 export {
   parseFleetLabel,
   INTERNAL_TAG,

@@ -26,7 +26,26 @@
       "users-create": "Création d'un compte",
       "users-disable": "Désactivation d'un compte",
       "users-enable": "Réactivation d'un compte",
-      "users-reset-password": "Réinitialisation d'un mot de passe"
+      "users-reset-password": "Réinitialisation d'un mot de passe",
+      "auth-password-change": "Mot de passe changé",
+      "auth-password-change-failed": "Changement de mot de passe refusé",
+      "fleets-profile-update": "Fiche flotte modifiée"
+    },
+    "search": "Rechercher (auteur, cible…)",
+    "category": "Catégorie",
+    "allActors": "Tous les auteurs",
+    "export": "Exporter (CSV)",
+    "noResult": "Aucun événement ne correspond.",
+    "pagination": "{from}–{to} sur {total}",
+    "retention": "Conservation : {days} jours, puis suppression automatique. {shown} événements chargés sur {total}.",
+    "categories": {
+      "all": "Toutes catégories",
+      "auth": "Connexions",
+      "keys": "Clés",
+      "fleets": "Machines et flottes",
+      "acl": "Politique d'accès",
+      "provisioning": "Enrôlement",
+      "users": "Comptes"
     }
   },
   "nav": {

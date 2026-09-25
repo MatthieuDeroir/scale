@@ -25,15 +25,19 @@ describe('ActivityLog', () => {
 
   it("traduit le code d'action en libellé lisible", async () => {
     vi.mocked(fetch).mockResolvedValue(
-      reponse([
-        {
-          id: 1,
-          at: '2026-09-24T08:00:00.000Z',
-          actor: 'admin',
-          action: 'keys-create',
-          target: 'tag:flotte-clienta',
-        },
-      ]) as never
+      reponse({
+        retentionDays: 365,
+        total: 1,
+        events: [
+          {
+            id: 1,
+            at: '2026-09-24T08:00:00.000Z',
+            actor: 'admin',
+            action: 'keys-create',
+            target: 'tag:flotte-clienta',
+          },
+        ],
+      }) as never
     );
     afficher();
 
@@ -43,7 +47,7 @@ describe('ActivityLog', () => {
   });
 
   it('affiche un état vide plutôt qu’un tableau creux', async () => {
-    vi.mocked(fetch).mockResolvedValue(reponse([]) as never);
+    vi.mocked(fetch).mockResolvedValue(reponse({ retentionDays: 365, total: 0, events: [] }) as never);
     afficher();
 
     expect(await screen.findByText("Aucun événement pour l'instant.")).toBeInTheDocument();

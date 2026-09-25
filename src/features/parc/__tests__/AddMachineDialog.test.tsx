@@ -70,10 +70,21 @@ describe('AddMachineDialog', () => {
 
   it('poste d’hypervision : uniquement par clé, marquée hypervision', async () => {
     afficher('hypervision');
-    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument();
+    // Pas de choix d'origine : un poste d'hypervision arrive toujours par une clé.
+    expect(screen.queryByRole('radio', { name: /Déjà démarré/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Nom de la machine (facultatif)'), {
+      target: { value: 'Poste Atelier' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Émettre la clé d'hypervision/ }));
 
-    expect(await screen.findByText(/tailscale up --login-server=http:\/\/hs:8080 --authkey=hskey-auth-test/)).toBeInTheDocument();
+    // Poste client : commande Windows par défaut, nom normalisé passé à Tailscale.
+    expect(
+      await screen.findByText(
+        /tailscale\.exe" up --login-server=http:\/\/hs:8080 --authkey=hskey-auth-test --hostname=poste-atelier/
+      )
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: 'Linux' }));
+    expect(screen.getByText(/sudo tailscale up --login-server/)).toBeInTheDocument();
     const body = JSON.parse(vi.mocked(fetch).mock.calls.find(([url]) => url === '/api/keys')![1]!.body as string);
     expect(body.tags).toEqual(['tag:flotte-keolis', 'tag:hypervision']);
   });

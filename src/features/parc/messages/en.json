@@ -33,7 +33,9 @@
       "noFleet": "No fleet yet",
       "noFleetHint": "Create a customer fleet to open an isolated network for them.",
       "noResult": "No matching fleet",
-      "pagination": "{from}–{to} of {total} fleets"
+      "pagination": "{from}–{to} of {total} fleets",
+      "sector": "Sector",
+      "allSectors": "All sectors"
     },
     "fleet": {
       "back": "Fleets",
@@ -84,7 +86,18 @@
       "hypervision": "Hypervision stations",
       "equipment": "Equipment",
       "none": "No machine enrolled",
-      "noResult": "No matching machine"
+      "noResult": "No matching machine",
+      "export": "Export (CSV)",
+      "stale": "Offline for {days}+ days",
+      "staleHint": "{count, plural, =1 {1 machine has been offline} other {# machines have been offline}} for more than {days} days: old records or removed machines? Click to show them.",
+      "selected": "{count, plural, =1 {1 machine selected} other {# machines selected}}",
+      "bulkRetag": "Change fleet",
+      "bulkExpire": "Expire",
+      "bulkDelete": "Delete",
+      "confirm": "Confirm?",
+      "clearSelection": "Clear selection",
+      "bulkDone": "{count, plural, =1 {1 machine processed.} other {# machines processed.}}",
+      "bulkFailed": "{count, plural, =1 {1 machine failed.} other {# machines failed.}}"
     },
     "add": {
       "hypervisionTitle": "Add a hypervision station",
@@ -99,7 +112,35 @@
       "noPending": "No machine waiting",
       "noPendingHint": "A flashed machine shows up here at first boot. Otherwise, use a manual install.",
       "search": "Search a waiting machine…",
-      "assign": "{count, plural, =0 {Add to {fleet}} other {Add to {fleet} ({count})}}"
+      "assign": "{count, plural, =0 {Add to {fleet}} other {Add to {fleet} ({count})}}",
+      "rename": "Machine name (optional)",
+      "renameHint": "Lowercase, digits and dashes. Leave empty to keep the current name."
+    },
+    "profile": {
+      "title": "Customer sheet",
+      "edit": "Edit",
+      "empty": "No information yet: add contact, site and job number to find them when the customer calls.",
+      "editTitle": "Customer sheet",
+      "editDescription": "Information for fleet {tag}. The technical tag does not change.",
+      "displayName": "Display name",
+      "displayNamePlaceholder": "e.g. Keolis Lyon",
+      "sector": "Sector",
+      "sectorPlaceholder": "e.g. Transport",
+      "reference": "Job number",
+      "referencePlaceholder": "e.g. AFF-2026-042",
+      "contact": "Contact",
+      "contactPlaceholder": "Name and role",
+      "phone": "Phone",
+      "phonePlaceholder": "+33 4 00 00 00 00",
+      "email": "Email",
+      "emailPlaceholder": "contact@customer.com",
+      "site": "Site",
+      "sitePlaceholder": "Installation address",
+      "notes": "Notes",
+      "notesPlaceholder": "Installation specifics, access, hours…",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Sheet saved."
     }
   },
   "nav": {

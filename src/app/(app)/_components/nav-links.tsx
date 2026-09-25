@@ -1,41 +1,34 @@
-import {
-  History,
-  Inbox,
-  Layers,
-  Server,
-  ShieldCheck,
-  Users,
-} from "lucide-react";
-import { getTranslations } from "next-intl/server";
-import { covers, type Role } from "@/features/auth";
-import type { NavSection } from "@/shared/ui";
+import { History, Inbox, Layers, Server, ShieldCheck, Users } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
+import { covers, type Role } from '@/features/auth';
+import type { NavSection } from '@/shared/ui';
 
 /** Navigation selon le rôle : un seul endroit à toucher pour ajouter un écran. */
 export async function navSections(role: Role): Promise<NavSection[]> {
-  const t = await getTranslations("nav");
+  const t = await getTranslations('nav');
 
   const sections: NavSection[] = [
     {
       links: [
-        { href: "/", label: t("fleets"), icon: <Layers /> },
-        { href: "/machines", label: t("machines"), icon: <Server /> },
-        { href: "/a-assigner", label: t("unassigned"), icon: <Inbox /> },
+        { href: '/', label: t('fleets'), icon: <Layers /> },
+        { href: '/machines', label: t('machines'), icon: <Server /> },
+        { href: '/a-assigner', label: t('unassigned'), icon: <Inbox /> },
       ],
     },
   ];
 
   const admin = [
-    ...(covers(role, "OPERATOR")
-      ? [{ href: "/politique", label: t("policy"), icon: <ShieldCheck /> }]
+    ...(covers(role, 'OPERATOR')
+      ? [{ href: '/politique', label: t('policy'), icon: <ShieldCheck /> }]
       : []),
-    ...(covers(role, "ADMIN")
+    ...(covers(role, 'ADMIN')
       ? [
-          { href: "/comptes", label: t("accounts"), icon: <Users /> },
-          { href: "/activite", label: t("activity"), icon: <History /> },
+          { href: '/comptes', label: t('accounts'), icon: <Users /> },
+          { href: '/activite', label: t('activity'), icon: <History /> },
         ]
       : []),
   ];
-  if (admin.length > 0) sections.push({ title: t("admin"), links: admin });
+  if (admin.length > 0) sections.push({ title: t('admin'), links: admin });
 
   return sections;
 }

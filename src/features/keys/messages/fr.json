@@ -7,7 +7,6 @@
     "issuedWarning": "Cette clé ne sera plus jamais affichée après fermeture. Elle ne sert qu'une fois.",
     "key": "Clé",
     "command": "Commande à lancer sur la machine",
-    "commandHint": "Tailscale doit être installé sur la machine. La commande l'inscrit sur le réseau Stramatel avec cette clé.",
     "copy": "Copier",
     "copied": "Copié",
     "done": "Terminé",
@@ -18,6 +17,22 @@
     "issueHypervision": "Émettre la clé d'hypervision",
     "issueEquipment": "Émettre la clé d'équipement",
     "pendingHypervision": "Clé de poste d'hypervision",
-    "pendingEquipment": "Clé d'équipement"
+    "pendingEquipment": "Clé d'équipement",
+    "platform": "Système de la machine",
+    "platformInstalled": "Tailscale déjà installé",
+    "commandHint": {
+      "windows": "Dans PowerShell ouvert en administrateur. Installe Tailscale puis inscrit le poste.",
+      "linux": "Installe Tailscale par le script officiel puis inscrit la machine (droits sudo requis).",
+      "installed": "Tailscale doit déjà être installé ; la commande inscrit la machine avec cette clé."
+    },
+    "machineName": "Nom de la machine (facultatif)",
+    "machineNameHypervision": "ex. poste-supervision-atelier",
+    "machineNameEquipment": "ex. quai-2-gare-nord",
+    "machineNameHint": "Sinon, la machine gardera son nom d'hôte.",
+    "machineNamePreview": "Elle apparaîtra sous le nom « {hostname} ».",
+    "expirationPresets": "Durée de validité",
+    "days": "{count, plural, =1 {1 jour} other {# jours}}",
+    "usedBy": "Utilisée par {name}",
+    "recentlyUsed": "{count, plural, =1 {1 clé utilisée ces 7 derniers jours} other {# clés utilisées ces 7 derniers jours}}"
   }
 }

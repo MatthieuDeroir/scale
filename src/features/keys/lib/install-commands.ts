@@ -1,0 +1,38 @@
+export type Platform = 'windows' | 'linux' | 'installed';
+
+/** Nom d'hôte acceptable par Tailscale : minuscules, chiffres, tirets, 63 caractères. */
+export function toHostname(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 63);
+}
+
+/**
+ * Commande à coller sur la machine à raccorder. Windows et Linux installent
+ * Tailscale par la voie officielle avant de l'enregistrer ; « installed »
+ * suppose le client déjà présent.
+ */
+export function installCommand(
+  platform: Platform,
+  { loginServer, key, hostname }: { loginServer: string; key: string; hostname?: string }
+): string {
+  const args = [`--login-server=${loginServer}`, `--authkey=${key}`];
+  if (hostname) args.push(`--hostname=${hostname}`);
+  const up = args.join(' ');
+
+  if (platform === 'windows') {
+    return [
+      'winget install --id Tailscale.Tailscale -e --accept-source-agreements --accept-package-agreements',
+      `& "$env:ProgramFiles\\Tailscale\\tailscale.exe" up ${up} --unattended`,
+    ].join('\n');
+  }
+  if (platform === 'linux') {
+    return `curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up ${up}`;
+  }
+  return `tailscale up ${up}`;
+}

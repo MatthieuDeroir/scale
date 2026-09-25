@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import {
   Badge,
   Button,
@@ -23,7 +23,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/ui";
+} from '@/shared/ui';
 import {
   createUser,
   disableUser,
@@ -31,34 +31,33 @@ import {
   fetchUsers,
   resetUserPassword,
   type AccountUser,
-} from "../api";
-import { ROLES, type Role } from "../lib/roles";
+} from '../api';
+import { ROLES, type Role } from '../lib/roles';
 
 function formatDate(value: string | null): string | null {
   if (!value) return null;
   return new Date(value).toLocaleString(undefined, {
-    dateStyle: "short",
-    timeStyle: "short",
+    dateStyle: 'short',
+    timeStyle: 'short',
   });
 }
 
 function UserRow({ user }: { user: AccountUser }) {
-  const t = useTranslations("accounts");
+  const t = useTranslations('accounts');
   const queryClient = useQueryClient();
   const [confirmingDisable, setConfirmingDisable] = useState(false);
   const [revealedPassword, setRevealedPassword] = useState<string | null>(null);
 
   function invalidate() {
-    return queryClient.invalidateQueries({ queryKey: ["users"] });
+    return queryClient.invalidateQueries({ queryKey: ['users'] });
   }
 
   const toggleMutation = useMutation({
-    mutationFn: () =>
-      user.disabled ? enableUser(user.id) : disableUser(user.id),
+    mutationFn: () => (user.disabled ? enableUser(user.id) : disableUser(user.id)),
     onSuccess: async () => {
       await invalidate();
       setConfirmingDisable(false);
-      toast.success(user.disabled ? t("enabled") : t("disabled"));
+      toast.success(user.disabled ? t('enabled') : t('disabled'));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -71,7 +70,7 @@ function UserRow({ user }: { user: AccountUser }) {
     onSuccess: async ({ password }) => {
       await invalidate();
       setRevealedPassword(password);
-      toast.success(t("resetDone"));
+      toast.success(t('resetDone'));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -81,12 +80,12 @@ function UserRow({ user }: { user: AccountUser }) {
       <TableRow>
         <TableCell colSpan={5}>
           <SecretReveal
-            title={t("revealTitle", { username: user.username })}
-            description={t("revealWarning")}
+            title={t('revealTitle', { username: user.username })}
+            description={t('revealWarning')}
             value={revealedPassword}
-            copyLabel={t("copy")}
-            copiedLabel={t("copied")}
-            dismissLabel={t("dismiss")}
+            copyLabel={t('copy')}
+            copiedLabel={t('copied')}
+            dismissLabel={t('dismiss')}
             onDismiss={() => setRevealedPassword(null)}
           />
         </TableCell>
@@ -99,11 +98,11 @@ function UserRow({ user }: { user: AccountUser }) {
       <TableCell className="font-medium">{user.username}</TableCell>
       <TableCell>{t(`role.${user.role}`)}</TableCell>
       <TableCell className="text-muted-foreground">
-        {formatDate(user.lastLoginAt) ?? t("never")}
+        {formatDate(user.lastLoginAt) ?? t('never')}
       </TableCell>
       <TableCell>
-        <Badge variant={user.disabled ? "critical" : "ok"}>
-          {user.disabled ? t("statusDisabled") : t("statusActive")}
+        <Badge variant={user.disabled ? 'critical' : 'ok'}>
+          {user.disabled ? t('statusDisabled') : t('statusActive')}
         </Badge>
       </TableCell>
       <TableCell className="text-right">
@@ -114,11 +113,11 @@ function UserRow({ user }: { user: AccountUser }) {
             disabled={resetMutation.isPending}
             onClick={() => resetMutation.mutate()}
           >
-            {t("resetPassword")}
+            {t('resetPassword')}
           </Button>
           <Button
             size="sm"
-            variant={confirmingDisable ? "destructive" : "outline"}
+            variant={confirmingDisable ? 'destructive' : 'outline'}
             disabled={toggleMutation.isPending}
             onClick={() =>
               user.disabled || confirmingDisable
@@ -126,11 +125,7 @@ function UserRow({ user }: { user: AccountUser }) {
                 : setConfirmingDisable(true)
             }
           >
-            {user.disabled
-              ? t("enable")
-              : confirmingDisable
-                ? t("confirmDisable")
-                : t("disable")}
+            {user.disabled ? t('enable') : confirmingDisable ? t('confirmDisable') : t('disable')}
           </Button>
         </div>
       </TableCell>
@@ -139,14 +134,14 @@ function UserRow({ user }: { user: AccountUser }) {
 }
 
 export function AccountsScreen() {
-  const t = useTranslations("accounts");
+  const t = useTranslations('accounts');
   const queryClient = useQueryClient();
   const { data, error } = useQuery({
-    queryKey: ["users"],
+    queryKey: ['users'],
     queryFn: fetchUsers,
   });
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState<Role>("OPERATOR");
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState<Role>('OPERATOR');
   const [createdPassword, setCreatedPassword] = useState<{
     username: string;
     password: string;
@@ -155,10 +150,10 @@ export function AccountsScreen() {
   const createMutation = useMutation({
     mutationFn: () => createUser(username, role),
     onSuccess: async (user) => {
-      await queryClient.invalidateQueries({ queryKey: ["users"] });
+      await queryClient.invalidateQueries({ queryKey: ['users'] });
       setCreatedPassword({ username: user.username, password: user.password });
-      setUsername("");
-      toast.success(t("created"));
+      setUsername('');
+      toast.success(t('created'));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -167,12 +162,12 @@ export function AccountsScreen() {
     <div className="flex flex-col gap-6">
       {createdPassword && (
         <SecretReveal
-          title={t("revealTitle", { username: createdPassword.username })}
-          description={t("revealWarning")}
+          title={t('revealTitle', { username: createdPassword.username })}
+          description={t('revealWarning')}
           value={createdPassword.password}
-          copyLabel={t("copy")}
-          copiedLabel={t("copied")}
-          dismissLabel={t("dismiss")}
+          copyLabel={t('copy')}
+          copiedLabel={t('copied')}
+          dismissLabel={t('dismiss')}
           onDismiss={() => setCreatedPassword(null)}
         />
       )}
@@ -193,10 +188,10 @@ export function AccountsScreen() {
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>{t("columns.username")}</TableHead>
-                  <TableHead>{t("columns.role")}</TableHead>
-                  <TableHead>{t("lastLogin")}</TableHead>
-                  <TableHead>{t("columns.status")}</TableHead>
+                  <TableHead>{t('columns.username')}</TableHead>
+                  <TableHead>{t('columns.role')}</TableHead>
+                  <TableHead>{t('lastLogin')}</TableHead>
+                  <TableHead>{t('columns.status')}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -211,14 +206,11 @@ export function AccountsScreen() {
           <div className="flex flex-wrap gap-2 border-t pt-4">
             <Input
               className="max-w-xs"
-              placeholder={t("newUsernamePlaceholder")}
+              placeholder={t('newUsernamePlaceholder')}
               value={username}
               onChange={(event) => setUsername(event.target.value)}
             />
-            <Select
-              value={role}
-              onValueChange={(value) => setRole(value as Role)}
-            >
+            <Select value={role} onValueChange={(value) => setRole(value as Role)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -235,7 +227,7 @@ export function AccountsScreen() {
               disabled={!username.trim() || createMutation.isPending}
               onClick={() => createMutation.mutate()}
             >
-              {createMutation.isPending ? t("creating") : t("create")}
+              {createMutation.isPending ? t('creating') : t('create')}
             </Button>
           </div>
         </CardContent>
