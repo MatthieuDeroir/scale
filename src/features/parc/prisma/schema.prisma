@@ -1,0 +1,14 @@
+/// Fiche d'une flotte : ce qu'on cherche quand un client appelle. Le tag
+/// Headscale reste l'identifiant technique ; `displayName` n'est qu'un libellé.
+model FleetProfile {
+  tag         String   @id
+  displayName String?
+  sector      String?
+  contact     String?
+  phone       String?
+  email       String?
+  site        String?
+  reference   String?
+  notes       String?
+  updatedAt   DateTime @updatedAt
+}

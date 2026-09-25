@@ -1,4 +1,4 @@
-import { mapNode, listNodes, type RawHeadscaleNode } from '@/core';
+import { mapNode, listNodes, prisma, type RawHeadscaleNode } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -27,5 +27,25 @@ export async function GET() {
   }
 
   const { nodes } = (await response.json()) as { nodes: RawHeadscaleNode[] };
-  return NextResponse.json(nodes.map(mapNode));
+  // Enrôlement automatique relié par la clé émise : numéro de série et modèle
+  // déclarés par la machine au premier démarrage.
+  const devices = await prisma.provisioningDevice.findMany({ where: { keyId: { not: null } } });
+  const byKey = new Map(devices.map((device) => [device.keyId, device]));
+  return NextResponse.json(
+    nodes.map((raw) => {
+      const node = mapNode(raw);
+      const device = node.keyId ? byKey.get(node.keyId) : undefined;
+      return {
+        ...node,
+        enrollment: device
+          ? {
+              deviceId: device.deviceId,
+              serial: device.serial,
+              model: device.model,
+              enrolledAt: device.enrolledAt.toISOString(),
+            }
+          : null,
+      };
+    })
+  );
 }

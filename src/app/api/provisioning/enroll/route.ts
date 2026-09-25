@@ -37,8 +37,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Non autorisé' }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as { deviceId?: string } | null;
+  const body = (await request.json().catch(() => null)) as {
+    deviceId?: string;
+    serial?: string;
+    model?: string;
+    hostname?: string;
+  } | null;
   const deviceId = body?.deviceId?.trim();
+  // Champs libres déclarés par la machine : bornés, jamais interprétés.
+  const clean = (value?: string) => value?.trim().slice(0, 128) || null;
   if (!deviceId) {
     return NextResponse.json({ message: 'deviceId requis' }, { status: 400 });
   }
@@ -69,10 +76,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Émission refusée par Headscale' }, { status: 502 });
   }
 
-  await prisma.provisioningDevice.create({ data: { deviceId } });
-  await logActivity({ actor: 'provisioning', action: 'provisioning-enroll', target: deviceId });
-
   const { preAuthKey } = (await response.json()) as { preAuthKey: Parameters<typeof mapNewPreAuthKey>[0] };
+  const serial = clean(body?.serial);
+  await prisma.provisioningDevice.create({
+    data: {
+      deviceId,
+      keyId: preAuthKey.id,
+      serial,
+      model: clean(body?.model),
+      hostname: clean(body?.hostname),
+    },
+  });
+  await logActivity({
+    actor: 'provisioning',
+    action: 'provisioning-enroll',
+    target: serial ? `${deviceId} (n° ${serial})` : deviceId,
+  });
+
   return NextResponse.json({
     authKey: mapNewPreAuthKey(preAuthKey).key,
     loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,

@@ -33,6 +33,9 @@ export interface RawHeadscaleNode {
   online: boolean;
   lastSeen: string | null;
   tags: string[];
+  createdAt?: string | null;
+  /** Clé qui a enregistré la machine : relie une clé émise à la machine qui l'a utilisée. */
+  preAuthKey?: { id: string } | null;
 }
 
 /** Champs exposés à l'UI — un sous-ensemble de ce que renvoie Headscale. */
@@ -45,7 +48,26 @@ export function mapNode(node: RawHeadscaleNode) {
     online: node.online,
     lastSeen: node.lastSeen,
     tags: node.tags,
+    createdAt: node.createdAt ?? null,
+    keyId: node.preAuthKey?.id ?? null,
   };
+}
+
+/**
+ * Libellé lisible d'une machine pour le journal : « nom [flotte] #id ». Lu
+ * AVANT l'action, pour qu'une entrée reste compréhensible une fois la machine
+ * supprimée. Retombe sur « #id » si Headscale ne répond pas.
+ */
+export async function describeNode(id: string): Promise<string> {
+  try {
+    const response = await getNode(id);
+    if (!response.ok) return `#${id}`;
+    const { node } = (await response.json()) as { node: RawHeadscaleNode };
+    const fleet = node.tags.find((tag) => /^tag:(interne|a-assigner|flotte-.+)$/.test(tag));
+    return `${node.givenName || node.name}${fleet ? ` [${fleet.slice(4)}]` : ''} #${id}`;
+  } catch {
+    return `#${id}`;
+  }
 }
 
 export function listNodes(): Promise<Response> {

@@ -1,11 +1,13 @@
 import {
   createPreAuthKey,
   ensureSystemTagsInPolicy,
+  listNodes,
   listPreAuthKeys,
   logActivity,
   mapNewPreAuthKey,
   mapPreAuthKey,
   SYSTEM_TAGS,
+  type RawHeadscaleNode,
   type RawHeadscalePreAuthKey,
 } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
@@ -25,7 +27,21 @@ export async function GET() {
   }
 
   const { preAuthKeys } = (await response.json()) as { preAuthKeys: RawHeadscalePreAuthKey[] };
-  return NextResponse.json(preAuthKeys.map(mapPreAuthKey));
+  // Machine enregistrée avec chaque clé : « utilisée par … », sans deviner.
+  const nodesResponse = await listNodes();
+  const nodes = nodesResponse.ok
+    ? ((await nodesResponse.json()) as { nodes: RawHeadscaleNode[] }).nodes
+    : [];
+  const byKey = new Map(nodes.filter((node) => node.preAuthKey).map((node) => [node.preAuthKey!.id, node]));
+  return NextResponse.json(
+    preAuthKeys.map((key) => {
+      const node = byKey.get(key.id);
+      return {
+        ...mapPreAuthKey(key),
+        usedBy: node ? { id: node.id, name: node.givenName || node.name, at: node.createdAt ?? null } : null,
+      };
+    })
+  );
 }
 
 interface CreateKeyBody {

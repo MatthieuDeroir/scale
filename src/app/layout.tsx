@@ -1,12 +1,18 @@
-import { getLocale, getMessages } from 'next-intl/server';
-import type { ReactNode } from 'react';
-import { Providers } from '@/shared/providers';
-import { themeInitScript } from '@/shared/theme';
-import './globals.css';
+import { getLocale, getMessages } from "next-intl/server";
+import type { ReactNode } from "react";
+import { Providers } from "@/shared/providers";
+import { themeInitScript } from "@/shared/theme";
+import "./globals.css";
 
-export const metadata = { title: { default: 'Stramscale', template: '%s · Stramscale' } };
+export const metadata = {
+  title: { default: "Stramscale", template: "%s · Stramscale" },
+};
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const locale = await getLocale();
   const messages = await getMessages();
 
@@ -15,7 +21,10 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         {/* Applique le thème avant le premier rendu : pas de flash blanc. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <Providers locale={locale} messages={messages as Record<string, unknown>}>
+        <Providers
+          locale={locale}
+          messages={messages as Record<string, unknown>}
+        >
           {children}
         </Providers>
       </body>

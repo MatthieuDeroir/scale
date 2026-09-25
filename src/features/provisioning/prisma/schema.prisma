@@ -1,8 +1,11 @@
-/// Une machine enrôlée automatiquement (F1) : trace qu'un NUC/RPi cloné
-/// depuis l'image dorée s'est bien enrôlé, sans lien vers le nœud Headscale
-/// (pas de corrélation automatique en v1 — la vue d'ensemble du parc suffit
-/// pour retrouver la machine).
+/// Une machine enrôlée automatiquement (F1). `keyId` est la clé Headscale
+/// émise pour elle : un nœud Headscale porte l'identifiant de la clé qui l'a
+/// enregistré, c'est ce qui relie l'enrôlement à la machine.
 model ProvisioningDevice {
   deviceId   String   @id
   enrolledAt DateTime @default(now())
+  keyId      String?
+  serial     String?
+  model      String?
+  hostname   String?
 }

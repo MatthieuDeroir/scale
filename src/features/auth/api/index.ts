@@ -1,4 +1,4 @@
-export { login, logout, type LoginInput } from './auth.api';
+export { login, logout, changePassword, type LoginInput } from './auth.api';
 export {
   fetchUsers,
   createUser,

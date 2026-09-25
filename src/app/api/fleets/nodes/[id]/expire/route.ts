@@ -1,4 +1,4 @@
-import { expireNode, logActivity, mapNode, type RawHeadscaleNode } from '@/core';
+import { describeNode, expireNode, logActivity, mapNode, type RawHeadscaleNode } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -14,12 +14,13 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
+  const label = await describeNode(id);
   const response = await expireNode(id);
   if (!response.ok) {
     return NextResponse.json({ message: 'Expiration refusée par Headscale' }, { status: 502 });
   }
 
-  await logActivity({ actor: session.session.username, action: 'fleets-node-expire', target: id });
+  await logActivity({ actor: session.session.username, action: 'fleets-node-expire', target: label });
 
   const { node } = (await response.json()) as { node: RawHeadscaleNode };
   return NextResponse.json(mapNode(node));

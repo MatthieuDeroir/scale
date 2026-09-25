@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { History } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useQuery } from "@tanstack/react-query";
+import { History } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Badge,
   Card,
@@ -15,17 +15,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/ui';
-import { fetchActivity } from '../api';
+} from "@/shared/ui";
+import { fetchActivity } from "../api";
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'medium' });
+  return new Date(value).toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "medium",
+  });
 }
 
 export function ActivityLog() {
-  const t = useTranslations('activity');
+  const t = useTranslations("activity");
   const { data, error } = useQuery({
-    queryKey: ['activity'],
+    queryKey: ["activity"],
     queryFn: fetchActivity,
     refetchInterval: 15000,
   });
@@ -44,15 +47,15 @@ export function ActivityLog() {
             ))}
           </div>
         ) : data.length === 0 ? (
-          <EmptyState icon={History} title={t('empty')} />
+          <EmptyState icon={History} title={t("empty")} />
         ) : (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead>{t('columns.at')}</TableHead>
-                <TableHead>{t('columns.actor')}</TableHead>
-                <TableHead>{t('columns.action')}</TableHead>
-                <TableHead>{t('columns.target')}</TableHead>
+                <TableHead>{t("columns.at")}</TableHead>
+                <TableHead>{t("columns.actor")}</TableHead>
+                <TableHead>{t("columns.action")}</TableHead>
+                <TableHead>{t("columns.target")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,11 +66,17 @@ export function ActivityLog() {
                   </TableCell>
                   <TableCell className="font-medium">{event.actor}</TableCell>
                   <TableCell>
-                    <Badge variant={event.action.endsWith('failed') ? 'critical' : 'outline'}>
+                    <Badge
+                      variant={
+                        event.action.endsWith("failed") ? "critical" : "outline"
+                      }
+                    >
                       {t(`actions.${event.action}`)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{event.target ?? '—'}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {event.target ?? "—"}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

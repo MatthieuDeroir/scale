@@ -28,7 +28,10 @@
       "renamed": "Machine renamed.",
       "retagged": "Fleet updated.",
       "expired": "Machine expired.",
-      "deleted": "Machine deleted."
+      "deleted": "Machine deleted.",
+      "joinedAt": "Joined on",
+      "serial": "Serial number",
+      "model": "Model"
     }
   }
 }

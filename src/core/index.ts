@@ -1,8 +1,9 @@
 export { prisma } from './db';
-export { logActivity } from './activity-log';
+export { logActivity, activityRetentionDays } from './activity-log';
 export { hujsonToJson } from './hujson';
 export {
   mapNode,
+  describeNode,
   listNodes,
   getNode,
   renameNode,

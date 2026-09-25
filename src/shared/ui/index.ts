@@ -27,3 +27,4 @@ export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 export { EmptyState } from './empty-state';
 export { StatCard } from './stat-card';
 export { StramscaleMark, StramscaleWordmark } from './brand';
+export { PermissionsProvider, usePermissions, type Permissions } from './permissions';

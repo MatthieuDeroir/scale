@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { StatusDot, formatLastSeen, type FleetNode } from '@/features/fleets';
-import { IssueKeyPanel, type MachineKind } from '@/features/keys';
-import { Inbox, KeyRound, Search } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { StatusDot, formatLastSeen, type FleetNode } from "@/features/fleets";
+import { IssueKeyPanel, type MachineKind } from "@/features/keys";
+import { Inbox, KeyRound, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 import {
   Badge,
   Button,
@@ -16,11 +16,11 @@ import {
   DialogTitle,
   EmptyState,
   Input,
-} from '@/shared/ui';
-import { cn } from '@/shared/lib';
-import { nodeMatches, unassignedNodes, useAssignNodes, useNodes } from '../lib';
+} from "@/shared/ui";
+import { cn } from "@/shared/lib";
+import { nodeMatches, unassignedNodes, useAssignNodes, useNodes } from "../lib";
 
-type Source = 'pending' | 'key';
+type Source = "pending" | "key";
 
 function SourceOption({
   selected,
@@ -44,15 +44,22 @@ function SourceOption({
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        'flex flex-1 items-start gap-2.5 rounded-lg border p-3 text-left transition-colors',
-        selected ? 'border-brand bg-brand/5' : 'hover:bg-muted/50'
+        "flex flex-1 items-start gap-2.5 rounded-lg border p-3 text-left transition-colors",
+        selected ? "border-brand bg-brand/5" : "hover:bg-muted/50",
       )}
     >
-      <Icon className={cn('mt-0.5 size-4 shrink-0', selected ? 'text-brand' : 'text-muted-foreground')} />
+      <Icon
+        className={cn(
+          "mt-0.5 size-4 shrink-0",
+          selected ? "text-brand" : "text-muted-foreground",
+        )}
+      />
       <span className="flex flex-col gap-0.5">
         <span className="flex items-center gap-1.5 text-sm font-medium">
           {title}
-          {badge !== undefined && <Badge variant={badge > 0 ? 'warning' : 'secondary'}>{badge}</Badge>}
+          {badge !== undefined && (
+            <Badge variant={badge > 0 ? "warning" : "secondary"}>{badge}</Badge>
+          )}
         </span>
         <span className="text-xs text-muted-foreground">{description}</span>
       </span>
@@ -71,9 +78,9 @@ function PendingPicker({
   fleetLabel: string;
   onDone: () => void;
 }) {
-  const t = useTranslations('parc');
-  const tf = useTranslations('fleets');
-  const [query, setQuery] = useState('');
+  const t = useTranslations("parc");
+  const tf = useTranslations("fleets");
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const mutation = useAssignNodes(onDone);
 
@@ -81,7 +88,13 @@ function PendingPicker({
   const chosen = nodes.filter((node) => selected.has(node.id));
 
   if (nodes.length === 0) {
-    return <EmptyState icon={Inbox} title={t('add.noPending')} description={t('add.noPendingHint')} />;
+    return (
+      <EmptyState
+        icon={Inbox}
+        title={t("add.noPending")}
+        description={t("add.noPendingHint")}
+      />
+    );
   }
 
   function toggle(id: string) {
@@ -98,10 +111,13 @@ function PendingPicker({
       <div className="flex flex-col gap-3">
         {nodes.length > 6 && (
           <div className="relative">
-            <Search className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Search
+              className="absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden
+            />
             <Input
-              aria-label={t('add.search')}
-              placeholder={t('add.search')}
+              aria-label={t("add.search")}
+              placeholder={t("add.search")}
               className="pl-8"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -119,12 +135,17 @@ function PendingPicker({
                     className="size-4 accent-brand"
                     checked={selected.has(node.id)}
                     onChange={() => toggle(node.id)}
-                    aria-label={t('inbox.select', { name })}
+                    aria-label={t("inbox.select", { name })}
                   />
-                  <StatusDot online={node.online} label={node.online ? tf('online') : tf('offline')} />
+                  <StatusDot
+                    online={node.online}
+                    label={node.online ? tf("online") : tf("offline")}
+                  />
                   <span className="flex-1 text-sm font-medium">{name}</span>
                   <span className="text-xs text-muted-foreground tabular-nums">
-                    {node.online ? tf('online') : (formatLastSeen(node.lastSeen) ?? tf('never'))}
+                    {node.online
+                      ? tf("online")
+                      : (formatLastSeen(node.lastSeen) ?? tf("never"))}
                   </span>
                 </label>
               </li>
@@ -139,8 +160,8 @@ function PendingPicker({
           onClick={() => mutation.mutate({ nodes: chosen, fleetTag })}
         >
           {mutation.isPending
-            ? t('inbox.assigning')
-            : t('add.assign', { count: chosen.length, fleet: fleetLabel })}
+            ? t("inbox.assigning")
+            : t("add.assign", { count: chosen.length, fleet: fleetLabel })}
         </Button>
       </DialogFooter>
     </>
@@ -167,14 +188,20 @@ export function AddMachineDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const t = useTranslations('parc');
+  const t = useTranslations("parc");
   const nodesQuery = useNodes();
-  const pending = useMemo(() => unassignedNodes(nodesQuery.data ?? []), [nodesQuery.data]);
+  const pending = useMemo(
+    () => unassignedNodes(nodesQuery.data ?? []),
+    [nodesQuery.data],
+  );
   const [source, setSource] = useState<Source | null>(null);
   const [keyIssued, setKeyIssued] = useState(false);
 
   // Par défaut, piocher dans « À assigner » s'il y a de quoi : c'est le cas nominal d'une NUC.
-  const effectiveSource: Source = kind === 'hypervision' ? 'key' : (source ?? (pending.length > 0 ? 'pending' : 'key'));
+  const effectiveSource: Source =
+    kind === "hypervision"
+      ? "key"
+      : (source ?? (pending.length > 0 ? "pending" : "key"));
 
   function close(next: boolean) {
     onOpenChange(next);
@@ -184,40 +211,53 @@ export function AddMachineDialog({
     }
   }
 
-  const hypervision = kind === 'hypervision';
+  const hypervision = kind === "hypervision";
 
   return (
     <Dialog open={open} onOpenChange={close}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{hypervision ? t('add.hypervisionTitle') : t('add.equipmentTitle')}</DialogTitle>
+          <DialogTitle>
+            {hypervision ? t("add.hypervisionTitle") : t("add.equipmentTitle")}
+          </DialogTitle>
           <DialogDescription>
-            {hypervision ? t('add.hypervisionIntro', { fleet: fleetLabel }) : t('add.equipmentIntro', { fleet: fleetLabel })}
+            {hypervision
+              ? t("add.hypervisionIntro", { fleet: fleetLabel })
+              : t("add.equipmentIntro", { fleet: fleetLabel })}
           </DialogDescription>
         </DialogHeader>
 
         {!hypervision && !keyIssued && (
-          <div role="radiogroup" aria-label={t('add.source')} className="flex flex-col gap-2 sm:flex-row">
+          <div
+            role="radiogroup"
+            aria-label={t("add.source")}
+            className="flex flex-col gap-2 sm:flex-row"
+          >
             <SourceOption
-              selected={effectiveSource === 'pending'}
-              onSelect={() => setSource('pending')}
+              selected={effectiveSource === "pending"}
+              onSelect={() => setSource("pending")}
               icon={Inbox}
-              title={t('add.fromPending')}
-              description={t('add.fromPendingHint')}
+              title={t("add.fromPending")}
+              description={t("add.fromPendingHint")}
               badge={pending.length}
             />
             <SourceOption
-              selected={effectiveSource === 'key'}
-              onSelect={() => setSource('key')}
+              selected={effectiveSource === "key"}
+              onSelect={() => setSource("key")}
               icon={KeyRound}
-              title={t('add.fromKey')}
-              description={t('add.fromKeyHint')}
+              title={t("add.fromKey")}
+              description={t("add.fromKeyHint")}
             />
           </div>
         )}
 
-        {effectiveSource === 'pending' ? (
-          <PendingPicker nodes={pending} fleetTag={fleetTag} fleetLabel={fleetLabel} onDone={() => close(false)} />
+        {effectiveSource === "pending" ? (
+          <PendingPicker
+            nodes={pending}
+            fleetTag={fleetTag}
+            fleetLabel={fleetLabel}
+            onDone={() => close(false)}
+          />
         ) : (
           <IssueKeyPanel
             fleetTag={fleetTag}

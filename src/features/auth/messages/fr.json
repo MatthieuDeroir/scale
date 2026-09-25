@@ -4,9 +4,23 @@
     "signInHint": "Accès réservé au bureau d'études Stramatel.",
     "signingIn": "Connexion…",
     "username": "Identifiant",
-    "password": "Mot de passe",
     "failed": "Identifiant ou mot de passe incorrect.",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "passwordChange": {
+      "menu": "Mon mot de passe",
+      "title": "Changer de mot de passe",
+      "forced": "Ce compte utilise un mot de passe provisoire : choisissez le vôtre pour continuer.",
+      "voluntary": "Choisissez un nouveau mot de passe.",
+      "rule": "Au moins {min} caractères, sans votre identifiant.",
+      "current": "Mot de passe actuel",
+      "next": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "changed": "Mot de passe changé.",
+      "cancel": "Annuler"
+    },
+    "password": "Mot de passe"
   },
   "accounts": {
     "title": "Comptes Stramatel",

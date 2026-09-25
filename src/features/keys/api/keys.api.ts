@@ -5,6 +5,8 @@ export interface AccessKey {
   expiration: string;
   createdAt: string;
   tags: string[];
+  /** Machine enregistrée avec cette clé, si elle a servi. */
+  usedBy?: { id: string; name: string; at: string | null } | null;
 }
 
 export interface NewAccessKey extends AccessKey {

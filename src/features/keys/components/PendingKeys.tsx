@@ -1,21 +1,22 @@
-'use client';
+"use client";
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { HYPERVISION_TAG } from '@/features/fleets';
-import { Monitor, Server } from 'lucide-react';
-import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/shared/ui';
-import { revokeKey, type AccessKey } from '../api';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { HYPERVISION_TAG } from "@/features/fleets";
+import { Monitor, Server } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button, usePermissions } from "@/shared/ui";
+import { revokeKey, type AccessKey } from "../api";
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, { dateStyle: 'medium' });
+  return new Date(value).toLocaleDateString(undefined, { dateStyle: "medium" });
 }
 
 function PendingKeyRow({ accessKey }: { accessKey: AccessKey }) {
-  const t = useTranslations('keys');
+  const t = useTranslations("keys");
   const queryClient = useQueryClient();
+  const { operate } = usePermissions();
   const [confirming, setConfirming] = useState(false);
   const hypervision = accessKey.tags.includes(HYPERVISION_TAG);
   const Icon = hypervision ? Monitor : Server;
@@ -23,8 +24,8 @@ function PendingKeyRow({ accessKey }: { accessKey: AccessKey }) {
   const mutation = useMutation({
     mutationFn: () => revokeKey(accessKey.id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['keys'] });
-      toast.success(t('revoked'));
+      await queryClient.invalidateQueries({ queryKey: ["keys"] });
+      toast.success(t("revoked"));
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -37,23 +38,27 @@ function PendingKeyRow({ accessKey }: { accessKey: AccessKey }) {
       <span className="flex min-w-0 items-center gap-2.5">
         <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <span className="flex flex-col">
-          <span className="text-sm">{hypervision ? t('pendingHypervision') : t('pendingEquipment')}</span>
+          <span className="text-sm">
+            {hypervision ? t("pendingHypervision") : t("pendingEquipment")}
+          </span>
           <span className="text-xs text-muted-foreground">
-            {t('pendingSince', {
+            {t("pendingSince", {
               created: formatDate(accessKey.createdAt),
               expires: formatDate(accessKey.expiration),
             })}
           </span>
         </span>
       </span>
-      <Button
-        size="sm"
-        variant={confirming ? 'destructive' : 'ghost'}
-        disabled={mutation.isPending}
-        onClick={() => (confirming ? mutation.mutate() : setConfirming(true))}
-      >
-        {confirming ? t('confirmRevoke') : t('revoke')}
-      </Button>
+      {operate && (
+        <Button
+          size="sm"
+          variant={confirming ? "destructive" : "ghost"}
+          disabled={mutation.isPending}
+          onClick={() => (confirming ? mutation.mutate() : setConfirming(true))}
+        >
+          {confirming ? t("confirmRevoke") : t("revoke")}
+        </Button>
+      )}
     </li>
   );
 }

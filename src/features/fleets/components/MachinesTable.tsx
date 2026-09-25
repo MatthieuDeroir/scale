@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Monitor, Server } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { Monitor, Server } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Pagination,
   Table,
@@ -11,14 +11,17 @@ import {
   TableHeader,
   TableRow,
   usePagination,
-} from '@/shared/ui';
-import type { FleetNode } from '../api';
-import { isHypervision, parseFleetLabel } from '../lib';
-import { StatusDot } from './StatusDot';
+} from "@/shared/ui";
+import type { FleetNode } from "../api";
+import { isHypervision, parseFleetLabel } from "../lib";
+import { StatusDot } from "./StatusDot";
 
 export function formatLastSeen(lastSeen: string | null): string | null {
   if (!lastSeen) return null;
-  return new Date(lastSeen).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+  return new Date(lastSeen).toLocaleString(undefined, {
+    dateStyle: "short",
+    timeStyle: "short",
+  });
 }
 
 /**
@@ -37,7 +40,7 @@ export function MachinesTable({
   showFleet?: boolean;
   pageSize?: number;
 }) {
-  const t = useTranslations('fleets');
+  const t = useTranslations("fleets");
   const pagination = usePagination(nodes, pageSize);
 
   return (
@@ -45,10 +48,12 @@ export function MachinesTable({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead>{t('columns.machine')}</TableHead>
-            {showFleet && <TableHead>{t('columns.fleet')}</TableHead>}
-            <TableHead>{t('columns.address')}</TableHead>
-            <TableHead className="text-right">{t('columns.lastSeen')}</TableHead>
+            <TableHead>{t("columns.machine")}</TableHead>
+            {showFleet && <TableHead>{t("columns.fleet")}</TableHead>}
+            <TableHead>{t("columns.address")}</TableHead>
+            <TableHead className="text-right">
+              {t("columns.lastSeen")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -57,29 +62,41 @@ export function MachinesTable({
             return (
               <TableRow
                 key={node.id}
-                className={onSelect ? 'cursor-pointer' : undefined}
+                className={onSelect ? "cursor-pointer" : undefined}
                 onClick={onSelect ? () => onSelect(node) : undefined}
               >
                 <TableCell>
                   <span className="flex items-center gap-2.5">
-                    <StatusDot online={node.online} label={node.online ? t('online') : t('offline')} />
-                    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                    <span className="font-medium">{node.givenName || node.name}</span>
+                    <StatusDot
+                      online={node.online}
+                      label={node.online ? t("online") : t("offline")}
+                    />
+                    <Icon
+                      className="size-4 shrink-0 text-muted-foreground"
+                      aria-hidden
+                    />
+                    <span className="font-medium">
+                      {node.givenName || node.name}
+                    </span>
                   </span>
                 </TableCell>
-                {showFleet && <TableCell>{parseFleetLabel(node.tags)}</TableCell>}
+                {showFleet && (
+                  <TableCell>{parseFleetLabel(node.tags)}</TableCell>
+                )}
                 <TableCell className="font-mono text-xs text-muted-foreground">
-                  {node.ipAddresses[0] ?? '—'}
+                  {node.ipAddresses[0] ?? "—"}
                 </TableCell>
                 <TableCell className="text-right tabular-nums text-muted-foreground">
-                  {node.online ? t('online') : (formatLastSeen(node.lastSeen) ?? t('never'))}
+                  {node.online
+                    ? t("online")
+                    : (formatLastSeen(node.lastSeen) ?? t("never"))}
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
-      <Pagination {...pagination} label={(range) => t('pagination', range)} />
+      <Pagination {...pagination} label={(range) => t("pagination", range)} />
     </div>
   );
 }

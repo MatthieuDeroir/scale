@@ -7,3 +7,25 @@ export const loginSchema = z.object({
 });
 
 export type LoginValues = z.infer<typeof loginSchema>;
+
+export const PASSWORD_MIN_LENGTH = 12;
+
+export const changePasswordSchema = z
+  .object({
+    current: z.string().min(1, 'Mot de passe actuel requis').max(256),
+    next: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH, `Au moins ${PASSWORD_MIN_LENGTH} caractères`)
+      .max(256),
+    confirm: z.string(),
+  })
+  .refine((values) => values.next === values.confirm, {
+    message: 'Les deux saisies ne correspondent pas',
+    path: ['confirm'],
+  })
+  .refine((values) => values.next !== values.current, {
+    message: "Le nouveau mot de passe doit être différent de l'actuel",
+    path: ['next'],
+  });
+
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;

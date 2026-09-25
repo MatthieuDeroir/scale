@@ -4,9 +4,23 @@
     "signInHint": "Restricted to the Stramatel engineering team.",
     "signingIn": "Signing in…",
     "username": "Username",
-    "password": "Password",
     "failed": "Incorrect username or password.",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "passwordChange": {
+      "menu": "My password",
+      "title": "Change password",
+      "forced": "This account uses a temporary password: choose your own to continue.",
+      "voluntary": "Choose a new password.",
+      "rule": "At least {min} characters, without your username.",
+      "current": "Current password",
+      "next": "New password",
+      "confirm": "Confirm new password",
+      "save": "Save",
+      "saving": "Saving…",
+      "changed": "Password changed.",
+      "cancel": "Cancel"
+    },
+    "password": "Password"
   },
   "accounts": {
     "title": "Stramatel accounts",

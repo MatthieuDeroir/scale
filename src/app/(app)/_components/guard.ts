@@ -1,12 +1,16 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { covers, readSession, sessionCookie, type Role } from '@/features/auth';
+import { covers, type Role } from '@/features/auth';
+import { currentUser } from '@/features/auth/lib/require-session';
 
-/** Session obligatoire ; en dessous du rôle requis, retour à l'accueil. */
+/**
+ * Compte obligatoire (relu en base : désactivé = déconnecté) ; mot de passe
+ * provisoire = passage obligé par le changement ; en dessous du rôle requis,
+ * retour à l'accueil.
+ */
 export async function guard(minRole: Role = 'VIEWER') {
-  const token = (await cookies()).get(sessionCookie.name)?.value;
-  const session = await readSession(token);
-  if (!session) redirect('/login');
-  if (!covers(session.role as Role, minRole)) redirect('/');
-  return session;
+  const user = await currentUser();
+  if (!user) redirect('/login');
+  if (user.mustChangePassword) redirect('/mot-de-passe');
+  if (!covers(user.role, minRole)) redirect('/');
+  return user;
 }
