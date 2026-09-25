@@ -1,2 +1,2 @@
-export { IssueKeyDialog } from './IssueKeyDialog';
+export { IssueKeyPanel, type MachineKind } from './IssueKeyPanel';
 export { PendingKeys } from './PendingKeys';

@@ -26,7 +26,7 @@
       "expand": "Expand {name}",
       "collapse": "Collapse {name}",
       "noMachine": "No machine in this fleet.",
-      "openFleet": "Open the fleet to issue a key",
+      "openFleet": "Open fleet",
       "seeAll": "See all {count} machines",
       "unassignedBanner": "{count, plural, =1 {1 machine is waiting} other {# machines are waiting}} for a fleet.",
       "unassignedHint": "Auto-enrolled, no access until assigned.",
@@ -44,13 +44,15 @@
       "search": "Filter this fleet's machines…",
       "hypervisionTitle": "Customer hypervision stations",
       "hypervisionDescription": "The customer's stations that supervise their equipment.",
-      "noHypervision": "No hypervision station. Issue a hypervision key to connect the customer's one.",
+      "noHypervision": "No hypervision station yet.",
       "equipmentTitle": "Stramatel equipment",
       "internalTitle": "Internal machines",
       "noEquipment": "No equipment yet.",
       "noMatch": "No matching machine.",
-      "pendingKeysTitle": "Pending keys",
-      "pendingKeysDescription": "Issued, not used yet. Revoke the ones that won't be used."
+      "addHypervision": "Add hypervision station",
+      "addEquipment": "Add equipment",
+      "equipmentDescription": "Stramatel NUCs and Raspberry Pis installed at the customer site.",
+      "pendingKeys": "{count, plural, =1 {1 key issued, not used yet} other {# keys issued, not used yet}}"
     },
     "inbox": {
       "title": "To assign",
@@ -83,6 +85,21 @@
       "equipment": "Equipment",
       "none": "No machine enrolled",
       "noResult": "No matching machine"
+    },
+    "add": {
+      "hypervisionTitle": "Add a hypervision station",
+      "hypervisionIntro": "The customer PC that supervises their equipment. It joins “{fleet}” with a single-use key you hand over, and only sees this fleet's machines.",
+      "equipmentTitle": "Add Stramatel equipment",
+      "equipmentIntro": "Choose where the equipment to place in “{fleet}” comes from.",
+      "source": "Equipment origin",
+      "fromPending": "Already booted",
+      "fromPendingHint": "Auto-enrolled at the workshop, waiting in “To assign”.",
+      "fromKey": "Manual install",
+      "fromKeyHint": "Issue an equipment key to enter on the machine.",
+      "noPending": "No machine waiting",
+      "noPendingHint": "A flashed machine shows up here at first boot. Otherwise, use a manual install.",
+      "search": "Search a waiting machine…",
+      "assign": "{count, plural, =0 {Add to {fleet}} other {Add to {fleet} ({count})}}"
     }
   },
   "nav": {

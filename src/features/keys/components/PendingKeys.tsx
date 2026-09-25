@@ -37,7 +37,7 @@ function PendingKeyRow({ accessKey }: { accessKey: AccessKey }) {
       <span className="flex min-w-0 items-center gap-2.5">
         <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         <span className="flex flex-col">
-          <span className="text-sm">{hypervision ? t('kindHypervision') : t('kindEquipment')}</span>
+          <span className="text-sm">{hypervision ? t('pendingHypervision') : t('pendingEquipment')}</span>
           <span className="text-xs text-muted-foreground">
             {t('pendingSince', {
               created: formatDate(accessKey.createdAt),

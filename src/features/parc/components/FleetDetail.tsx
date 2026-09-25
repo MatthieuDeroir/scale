@@ -9,13 +9,14 @@ import {
   tagFromSlug,
   type FleetNode,
 } from '@/features/fleets';
-import { IssueKeyDialog, PendingKeys, fetchKeys, isPending } from '@/features/keys';
-import { KeyRound, Monitor, Search, Server, ShieldCheck } from 'lucide-react';
+import { PendingKeys, fetchKeys, isPending, type MachineKind } from '@/features/keys';
+import { KeyRound, Monitor, Plus, Search, Server, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState, type ComponentType, type ReactNode } from 'react';
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardDescription,
@@ -27,6 +28,7 @@ import {
   Skeleton,
 } from '@/shared/ui';
 import { nodeMatches, summarizeFleets, useNodes, usePolicy } from '../lib';
+import { AddMachineDialog } from './AddMachineDialog';
 
 /** Au-delà, un champ de recherche apparaît : inutile pour trois machines. */
 const SEARCH_THRESHOLD = 10;
@@ -36,23 +38,30 @@ function Section({
   title,
   description,
   count,
+  action,
   children,
 }: {
   icon: ComponentType<{ className?: string }>;
   title: string;
   description?: string;
   count?: number;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <Card>
       <CardHeader className="px-5 pt-5 pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Icon className="size-4 text-muted-foreground" aria-hidden />
-          {title}
-          {count !== undefined && <Badge variant="secondary">{count}</Badge>}
-        </CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Icon className="size-4 text-muted-foreground" aria-hidden />
+              {title}
+              {count !== undefined && <Badge variant="secondary">{count}</Badge>}
+            </CardTitle>
+            {description && <CardDescription>{description}</CardDescription>}
+          </div>
+          {action}
+        </div>
       </CardHeader>
       <CardContent className="px-5 pb-4">{children}</CardContent>
     </Card>
@@ -74,6 +83,7 @@ export function FleetDetail({ slug }: { slug: string }) {
 
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<FleetNode | null>(null);
+  const [adding, setAdding] = useState<MachineKind | null>(null);
 
   const policyFleets = useMemo(() => policyQuery.data?.fleets ?? [], [policyQuery.data]);
   const fleet = useMemo(
@@ -111,7 +121,27 @@ export function FleetDetail({ slug }: { slug: string }) {
   const shown = fleet.nodes.filter((node) => nodeMatches(node, query.trim()));
   const hypervision = shown.filter((node) => isHypervision(node.tags));
   const equipment = shown.filter((node) => !isHypervision(node.tags));
+  const hypervisionKeys = pendingKeys.filter((key) => isHypervision(key.tags));
+  const equipmentKeys = pendingKeys.filter((key) => !isHypervision(key.tags));
   const deletable = fleet.inPolicy && !fleet.internal;
+
+  const addButton = (kind: MachineKind) => (
+    <Button variant={kind === 'hypervision' ? 'brand' : 'outline'} size="sm" onClick={() => setAdding(kind)}>
+      <Plus aria-hidden />
+      {kind === 'hypervision' ? t('fleet.addHypervision') : t('fleet.addEquipment')}
+    </Button>
+  );
+
+  const pendingBlock = (keys: typeof pendingKeys) =>
+    keys.length > 0 && (
+      <div className="mt-4 rounded-lg border border-dashed px-3 pt-2">
+        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <KeyRound className="size-3.5" aria-hidden />
+          {t('fleet.pendingKeys', { count: keys.length })}
+        </p>
+        <PendingKeys keys={keys} />
+      </div>
+    );
 
   return (
     <>
@@ -130,16 +160,13 @@ export function FleetDetail({ slug }: { slug: string }) {
           </span>
         }
         actions={
-          <>
-            {deletable && (
-              <DeleteFleetButton
-                tag={fleet.tag}
-                machineCount={fleet.nodes.length}
-                onDeleted={() => router.push('/')}
-              />
-            )}
-            <IssueKeyDialog fleetTag={fleet.tag} fleetLabel={fleet.label} />
-          </>
+          deletable && (
+            <DeleteFleetButton
+              tag={fleet.tag}
+              machineCount={fleet.nodes.length}
+              onDeleted={() => router.push('/')}
+            />
+          )
         }
       />
 
@@ -175,6 +202,7 @@ export function FleetDetail({ slug }: { slug: string }) {
           title={t('fleet.hypervisionTitle')}
           description={t('fleet.hypervisionDescription')}
           count={hypervision.length}
+          action={addButton('hypervision')}
         >
           {hypervision.length > 0 ? (
             <MachinesTable nodes={hypervision} onSelect={setSelected} pageSize={10} />
@@ -183,13 +211,16 @@ export function FleetDetail({ slug }: { slug: string }) {
               {query ? t('fleet.noMatch') : t('fleet.noHypervision')}
             </p>
           )}
+          {pendingBlock(hypervisionKeys)}
         </Section>
       )}
 
       <Section
         icon={Server}
         title={fleet.internal ? t('fleet.internalTitle') : t('fleet.equipmentTitle')}
+        description={t('fleet.equipmentDescription')}
         count={equipment.length}
+        action={addButton('equipment')}
       >
         {equipment.length > 0 ? (
           <MachinesTable nodes={equipment} onSelect={setSelected} />
@@ -198,18 +229,16 @@ export function FleetDetail({ slug }: { slug: string }) {
             {query ? t('fleet.noMatch') : t('fleet.noEquipment')}
           </p>
         )}
+        {pendingBlock(equipmentKeys)}
       </Section>
 
-      {pendingKeys.length > 0 && (
-        <Section
-          icon={KeyRound}
-          title={t('fleet.pendingKeysTitle')}
-          description={t('fleet.pendingKeysDescription')}
-          count={pendingKeys.length}
-        >
-          <PendingKeys keys={pendingKeys} />
-        </Section>
-      )}
+      <AddMachineDialog
+        fleetTag={fleet.tag}
+        fleetLabel={fleet.label}
+        kind={adding ?? 'equipment'}
+        open={adding !== null}
+        onOpenChange={(open) => !open && setAdding(null)}
+      />
 
       {selected && (
         <MachineDetailPanel

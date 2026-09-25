@@ -2,6 +2,7 @@
 
 import { CreateFleetDialog } from '@/features/acl';
 import { StatusDot, fleetSlug, isHypervision } from '@/features/fleets';
+import type { MachineKind } from '@/features/keys';
 import {
   AlertTriangle,
   ChevronRight,
@@ -43,6 +44,7 @@ import {
   usePolicy,
   type FleetSummary,
 } from '../lib';
+import { AddMachineDialog } from './AddMachineDialog';
 
 type Sort = 'name' | 'size' | 'offline';
 
@@ -75,11 +77,13 @@ function FleetRow({
   query,
   expanded,
   onToggle,
+  onAdd,
 }: {
   fleet: FleetSummary;
   query: string;
   expanded: boolean;
   onToggle: () => void;
+  onAdd: (kind: MachineKind) => void;
 }) {
   const t = useTranslations('parc');
   const tf = useTranslations('fleets');
@@ -130,30 +134,34 @@ function FleetRow({
       {expanded && (
         <div className="border-t bg-muted/30 px-3 py-3 sm:pl-12">
           {fleet.nodes.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t('home.noMachine')}{' '}
-              <Link href={href} className="font-medium text-foreground underline-offset-4 hover:underline">
-                {t('home.openFleet')}
-              </Link>
-            </p>
+            <p className="text-sm text-muted-foreground">{t('home.noMachine')}</p>
           ) : (
             <>
-              <ul className="flex flex-wrap gap-1.5">
-                {shown.slice(0, CHIP_LIMIT).map((node) => {
-                  const Icon = isHypervision(node.tags) ? Monitor : Server;
-                  return (
-                    <li
-                      key={node.id}
-                      className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-xs"
-                    >
-                      <StatusDot online={node.online} label={node.online ? tf('online') : tf('offline')} />
-                      <Icon className="size-3.5 text-muted-foreground" aria-hidden />
-                      <span className="font-medium">{node.givenName || node.name}</span>
-                      <span className="font-mono text-muted-foreground">{node.ipAddresses[0]}</span>
-                    </li>
-                  );
-                })}
-              </ul>
+              {(['hypervision', 'equipment'] as const).map((kind) => {
+                const group = shown.filter((node) => isHypervision(node.tags) === (kind === 'hypervision'));
+                if (group.length === 0) return null;
+                const Icon = kind === 'hypervision' ? Monitor : Server;
+                return (
+                  <div key={kind} className="mb-2 flex flex-col gap-1.5">
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                      <Icon className="size-3.5" aria-hidden />
+                      {kind === 'hypervision' ? t('home.hypervisionCount') : t('home.equipmentCount')}
+                    </p>
+                    <ul className="flex flex-wrap gap-1.5">
+                      {group.slice(0, CHIP_LIMIT).map((node) => (
+                        <li
+                          key={node.id}
+                          className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-xs"
+                        >
+                          <StatusDot online={node.online} label={node.online ? tf('online') : tf('offline')} />
+                          <span className="font-medium">{node.givenName || node.name}</span>
+                          <span className="font-mono text-muted-foreground">{node.ipAddresses[0]}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
               {shown.length > CHIP_LIMIT && (
                 <Link href={href} className="mt-2 inline-block text-xs font-medium hover:underline">
                   {t('home.seeAll', { count: shown.length })}
@@ -161,6 +169,24 @@ function FleetRow({
               )}
             </>
           )}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {!fleet.internal && (
+              <Button size="sm" variant="outline" onClick={() => onAdd('hypervision')}>
+                <Monitor aria-hidden />
+                {t('fleet.addHypervision')}
+              </Button>
+            )}
+            <Button size="sm" variant="outline" onClick={() => onAdd('equipment')}>
+              <Server aria-hidden />
+              {t('fleet.addEquipment')}
+            </Button>
+            <Link
+              href={href}
+              className="inline-flex h-8 items-center px-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              {t('home.openFleet')}
+            </Link>
+          </div>
         </div>
       )}
     </li>
@@ -183,6 +209,7 @@ export function FleetsHome() {
   const [sort, setSort] = useState<Sort>('name');
   const [offlineOnly, setOfflineOnly] = useState(false);
   const [toggled, setToggled] = useState<Set<string>>(new Set());
+  const [adding, setAdding] = useState<{ fleet: FleetSummary; kind: MachineKind } | null>(null);
 
   const nodes = useMemo(() => nodesQuery.data ?? [], [nodesQuery.data]);
   const fleets = useMemo(
@@ -334,6 +361,7 @@ export function FleetsHome() {
                     query={byDefault ? q : ''}
                     expanded={byDefault !== toggled.has(fleet.tag)}
                     onToggle={() => toggle(fleet.tag)}
+                    onAdd={(kind) => setAdding({ fleet, kind })}
                   />
                 );
               })}
@@ -341,6 +369,15 @@ export function FleetsHome() {
           </Card>
           <Pagination {...pagination} label={(range) => t('home.pagination', range)} />
         </div>
+      )}
+      {adding && (
+        <AddMachineDialog
+          fleetTag={adding.fleet.tag}
+          fleetLabel={adding.fleet.label}
+          kind={adding.kind}
+          open
+          onOpenChange={(open) => !open && setAdding(null)}
+        />
       )}
     </>
   );

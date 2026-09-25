@@ -9,8 +9,9 @@ const nextConfig = {
   // Le lecteur série n'est jamais bundlé côté client : il vit dans server/.
   serverExternalPackages: ['serialport', '@prisma/client'],
   poweredByHeader: false,
-  // En bas à gauche, l'indicateur de dev masque le bouton de repli de la sidebar.
-  devIndicators: { position: 'bottom-right' },
+  // Où qu'il soit, l'indicateur de dev masque un bouton (repli de la sidebar,
+  // validation des panneaux latéraux).
+  devIndicators: false,
   headers: async () => [
     {
       source: '/:path*',

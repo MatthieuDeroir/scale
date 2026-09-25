@@ -1,11 +1,9 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { StatusDot, formatLastSeen, retagNode, withFleet } from '@/features/fleets';
+import { StatusDot, formatLastSeen } from '@/features/fleets';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
 import {
   Badge,
   Button,
@@ -25,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui';
-import { unassignedNodes, useNodes, usePolicy } from '../lib';
+import { unassignedNodes, useAssignNodes, useNodes, usePolicy } from '../lib';
 
 /**
  * Boîte de réception des machines auto-enrôlées (`tag:a-assigner`) : elles
@@ -35,7 +33,6 @@ import { unassignedNodes, useNodes, usePolicy } from '../lib';
 export function UnassignedInbox() {
   const t = useTranslations('parc');
   const tf = useTranslations('fleets');
-  const queryClient = useQueryClient();
   const nodesQuery = useNodes();
   const policyQuery = usePolicy();
 
@@ -48,22 +45,7 @@ export function UnassignedInbox() {
   const chosen = nodes.filter((node) => selected.has(node.id));
   const allChecked = nodes.length > 0 && chosen.length === nodes.length;
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const results = await Promise.allSettled(
-        chosen.map((node) => retagNode(node.id, withFleet(node.tags, target)))
-      );
-      return results.filter((result) => result.status === 'rejected').length;
-    },
-    onSuccess: async (failed) => {
-      await queryClient.invalidateQueries({ queryKey: ['fleets', 'nodes'] });
-      const done = chosen.length - failed;
-      if (done > 0) toast.success(t('inbox.assigned', { count: done }));
-      if (failed > 0) toast.error(t('inbox.failed', { count: failed }));
-      setSelected(new Set());
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
+  const mutation = useAssignNodes(() => setSelected(new Set()));
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -130,7 +112,7 @@ export function UnassignedInbox() {
           <Button
             variant="brand"
             disabled={chosen.length === 0 || !target || mutation.isPending}
-            onClick={() => mutation.mutate()}
+            onClick={() => mutation.mutate({ nodes: chosen, fleetTag: target })}
           >
             {mutation.isPending ? t('inbox.assigning') : t('inbox.assign', { count: chosen.length })}
           </Button>

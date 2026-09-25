@@ -1,19 +1,9 @@
 {
   "keys": {
-    "issueHypervision": "Issue a hypervision key",
-    "issueEquipment": "Issue a key",
-    "dialogTitle": "New machine key",
-    "dialogDescription": "For a single machine, which will join the \"{fleet}\" fleet and only see its machines.",
-    "kind": "Machine type",
-    "kindHypervision": "Client hypervision station",
-    "kindHypervisionHint": "Client workstation that supervises its equipment remotely.",
-    "kindEquipment": "Stramatel equipment",
-    "kindEquipmentHint": "NUC or Raspberry Pi installed on site, outside automatic enrollment.",
     "expiration": "Valid until",
     "expirationHint": "After that, the key can no longer enroll a machine. Already enrolled machines are not affected.",
-    "issue": "Issue key",
     "issuing": "Issuing…",
-    "issuedTitle": "Key issued — hand it over now",
+    "issuedTitle": "Key issued, hand it over now",
     "issuedWarning": "This key will never be shown again once closed. It works only once.",
     "key": "Key",
     "command": "Command to run on the machine",
@@ -24,6 +14,10 @@
     "pendingSince": "Issued {created} · expires {expires}",
     "revoke": "Revoke",
     "confirmRevoke": "Confirm?",
-    "revoked": "Key revoked."
+    "revoked": "Key revoked.",
+    "issueHypervision": "Issue hypervision key",
+    "issueEquipment": "Issue equipment key",
+    "pendingHypervision": "Hypervision station key",
+    "pendingEquipment": "Equipment key"
   }
 }

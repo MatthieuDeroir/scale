@@ -26,7 +26,7 @@
       "expand": "Déplier {name}",
       "collapse": "Replier {name}",
       "noMachine": "Aucune machine dans cette flotte.",
-      "openFleet": "Ouvrir la flotte pour émettre une clé",
+      "openFleet": "Ouvrir la flotte",
       "seeAll": "Voir les {count} machines",
       "unassignedBanner": "{count, plural, =1 {1 machine attend} other {# machines attendent}} une flotte.",
       "unassignedHint": "Auto-enrôlées, sans accès tant qu'elles ne sont pas rangées.",
@@ -44,13 +44,15 @@
       "search": "Filtrer les machines de la flotte…",
       "hypervisionTitle": "Postes d'hypervision client",
       "hypervisionDescription": "Les postes du client qui supervisent ses équipements.",
-      "noHypervision": "Aucun poste d'hypervision. Émettez une clé d'hypervision pour raccorder celui du client.",
+      "noHypervision": "Aucun poste d'hypervision pour l'instant.",
       "equipmentTitle": "Équipements Stramatel",
       "internalTitle": "Machines internes",
       "noEquipment": "Aucun équipement pour l'instant.",
       "noMatch": "Aucune machine ne correspond.",
-      "pendingKeysTitle": "Clés en attente",
-      "pendingKeysDescription": "Émises, pas encore utilisées. Révoquez celles qui ne serviront pas."
+      "addHypervision": "Ajouter un poste d'hypervision",
+      "addEquipment": "Ajouter un équipement",
+      "equipmentDescription": "NUC et Raspberry Pi Stramatel installés chez le client.",
+      "pendingKeys": "{count, plural, =1 {1 clé émise, pas encore utilisée} other {# clés émises, pas encore utilisées}}"
     },
     "inbox": {
       "title": "À assigner",
@@ -83,6 +85,21 @@
       "equipment": "Équipements",
       "none": "Aucune machine enrôlée",
       "noResult": "Aucune machine ne correspond"
+    },
+    "add": {
+      "hypervisionTitle": "Ajouter un poste d'hypervision",
+      "hypervisionIntro": "Le PC du client qui supervise ses équipements. Il rejoindra « {fleet} » avec une clé à usage unique que vous lui transmettez, et ne verra que les machines de cette flotte.",
+      "equipmentTitle": "Ajouter un équipement Stramatel",
+      "equipmentIntro": "Choisissez d'où vient l'équipement à ranger dans « {fleet} ».",
+      "source": "Origine de l'équipement",
+      "fromPending": "Déjà démarré",
+      "fromPendingHint": "Auto-enrôlé en atelier, il attend dans « À assigner ».",
+      "fromKey": "Installation manuelle",
+      "fromKeyHint": "Émettre une clé d'équipement à saisir sur la machine.",
+      "noPending": "Aucune machine en attente",
+      "noPendingHint": "Une machine flashée apparaît ici à son premier démarrage. Sinon, passez par une installation manuelle.",
+      "search": "Rechercher une machine en attente…",
+      "assign": "{count, plural, =0 {Ajouter à {fleet}} other {Ajouter à {fleet} ({count})}}"
     }
   },
   "nav": {
