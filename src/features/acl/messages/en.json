@@ -3,6 +3,7 @@
     "title": "Fleets and access policy",
     "description": "Strict fleet-to-fleet isolation, full access for internal.",
     "loading": "Loading policy…",
+    "empty": "No fleet defined yet.",
     "machineCount": "{count, plural, =0 {no machine} =1 {1 machine} other {# machines}}",
     "delete": "Delete",
     "confirmDelete": "Confirm?",

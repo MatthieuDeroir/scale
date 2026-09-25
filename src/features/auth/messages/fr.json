@@ -36,6 +36,11 @@
       "ADMIN": "Administrateur",
       "OPERATOR": "Opérateur",
       "VIEWER": "Lecture seule"
+    },
+    "columns": {
+      "username": "Identifiant",
+      "role": "Rôle",
+      "status": "État"
     }
   },
   "nav": {

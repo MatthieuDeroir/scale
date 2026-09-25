@@ -1,8 +1,24 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui';
 import { fetchActivity } from '../api';
 
 function formatDate(value: string): string {
@@ -29,30 +45,40 @@ export function ActivityLog() {
             {error.message}
           </Badge>
         ) : !data ? (
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 5 }, (_, index) => (
+              <Skeleton key={index} className="h-9 w-full" />
+            ))}
+          </div>
         ) : data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+          <EmptyState icon={History} title={t('empty')} />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="py-2 font-medium">{t('columns.at')}</th>
-                <th className="py-2 font-medium">{t('columns.actor')}</th>
-                <th className="py-2 font-medium">{t('columns.action')}</th>
-                <th className="py-2 font-medium">{t('columns.target')}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>{t('columns.at')}</TableHead>
+                <TableHead>{t('columns.actor')}</TableHead>
+                <TableHead>{t('columns.action')}</TableHead>
+                <TableHead>{t('columns.target')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {data.map((event) => (
-                <tr key={event.id} className="border-b last:border-0">
-                  <td className="py-2 tabular-nums">{formatDate(event.at)}</td>
-                  <td className="py-2">{event.actor}</td>
-                  <td className="py-2">{t(`actions.${event.action}`)}</td>
-                  <td className="py-2 font-mono text-xs">{event.target ?? '—'}</td>
-                </tr>
+                <TableRow key={event.id}>
+                  <TableCell className="tabular-nums text-muted-foreground">
+                    {formatDate(event.at)}
+                  </TableCell>
+                  <TableCell className="font-medium">{event.actor}</TableCell>
+                  <TableCell>
+                    <Badge variant={event.action.endsWith('failed') ? 'critical' : 'outline'}>
+                      {t(`actions.${event.action}`)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">{event.target ?? '—'}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

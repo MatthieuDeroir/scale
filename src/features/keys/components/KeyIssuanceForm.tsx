@@ -13,6 +13,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
 } from '@/shared/ui';
 import { createKey, type NewAccessKey } from '../api';
 
@@ -23,10 +31,6 @@ function defaultExpiration(): string {
   const date = new Date();
   date.setDate(date.getDate() + DEFAULT_EXPIRATION_DAYS);
   return date.toISOString().slice(0, 10);
-}
-
-function inputClass() {
-  return 'h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
 }
 
 function resolveTag(internal: boolean, tagChoice: string, customTag: string): string {
@@ -78,37 +82,30 @@ export function KeyIssuanceForm({ onIssued }: { onIssued: (key: NewAccessKey) =>
         <CardTitle>{t('issueTitle')}</CardTitle>
         <CardDescription>{t('issueDescription')}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={internal}
-            onChange={(event) => setInternal(event.target.checked)}
-          />
-          {t('internal')}
-        </label>
+      <CardContent className="flex flex-col gap-5">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="key-internal">{t('internal')}</Label>
+          <Switch id="key-internal" checked={internal} onCheckedChange={setInternal} />
+        </div>
 
         {!internal && (
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="key-fleet">
-              {t('fleet')}
-            </label>
-            <select
-              id="key-fleet"
-              className={inputClass()}
-              value={tagChoice}
-              onChange={(event) => setTagChoice(event.target.value)}
-            >
-              {knownFleetTags.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-              <option value={OTHER_TAG}>{t('newFleet')}</option>
-            </select>
+            <Label htmlFor="key-fleet">{t('fleet')}</Label>
+            <Select value={tagChoice} onValueChange={setTagChoice}>
+              <SelectTrigger id="key-fleet">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {knownFleetTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+                <SelectItem value={OTHER_TAG}>{t('newFleet')}</SelectItem>
+              </SelectContent>
+            </Select>
             {tagChoice === OTHER_TAG && (
-              <input
-                className={inputClass()}
+              <Input
                 placeholder="nouveauclient"
                 value={customTag}
                 onChange={(event) => setCustomTag(event.target.value)}
@@ -117,23 +114,16 @@ export function KeyIssuanceForm({ onIssued }: { onIssued: (key: NewAccessKey) =>
           </div>
         )}
 
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={reusable}
-            onChange={(event) => setReusable(event.target.checked)}
-          />
-          {t('reusable')}
-        </label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="key-reusable">{t('reusable')}</Label>
+          <Switch id="key-reusable" checked={reusable} onCheckedChange={setReusable} />
+        </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium" htmlFor="key-expiration">
-            {t('expiration')}
-          </label>
-          <input
+          <Label htmlFor="key-expiration">{t('expiration')}</Label>
+          <Input
             id="key-expiration"
             type="date"
-            className={inputClass()}
             value={expiration}
             min={new Date().toISOString().slice(0, 10)}
             onChange={(event) => setExpiration(event.target.value)}

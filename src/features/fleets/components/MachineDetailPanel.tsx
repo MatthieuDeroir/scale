@@ -13,6 +13,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
 } from '@/shared/ui';
 import { deleteNode, expireNode, renameNode, retagNode, type FleetNode } from '../api';
@@ -20,8 +27,9 @@ import { parseFleetLabel } from '../lib';
 
 const OTHER_TAG = '__other__';
 
-function inputClass() {
-  return 'h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
+function formatLastSeen(lastSeen: string | null): string | null {
+  if (!lastSeen) return null;
+  return new Date(lastSeen).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
 }
 
 export function MachineDetailPanel({
@@ -92,17 +100,20 @@ export function MachineDetailPanel({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{node.givenName || node.name}</DialogTitle>
-          <DialogDescription>
-            {parseFleetLabel(node.tags)} · {node.online ? t('online') : t('offline')}
-          </DialogDescription>
+          <div className="flex items-center gap-2">
+            <DialogTitle>{node.givenName || node.name}</DialogTitle>
+            <Badge variant={node.online ? 'ok' : 'critical'}>
+              {node.online ? t('online') : t('offline')}
+            </Badge>
+          </div>
+          <DialogDescription>{parseFleetLabel(node.tags)}</DialogDescription>
         </DialogHeader>
 
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{t('columns.address')}</dt>
           <dd className="tabular-nums">{node.ipAddresses.join(', ')}</dd>
           <dt className="text-muted-foreground">{t('columns.lastSeen')}</dt>
-          <dd className="tabular-nums">{node.lastSeen ?? t('never')}</dd>
+          <dd className="tabular-nums">{formatLastSeen(node.lastSeen) ?? t('never')}</dd>
           <dt className="text-muted-foreground">{t('detail.tags')}</dt>
           <dd className="flex flex-wrap gap-1">
             {node.tags.map((tag) => (
@@ -116,16 +127,9 @@ export function MachineDetailPanel({
         <Separator />
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium" htmlFor="machine-name">
-            {t('detail.rename')}
-          </label>
+          <Label htmlFor="machine-name">{t('detail.rename')}</Label>
           <div className="flex gap-2">
-            <input
-              id="machine-name"
-              className={inputClass()}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-            />
+            <Input id="machine-name" value={name} onChange={(event) => setName(event.target.value)} />
             <Button
               variant="outline"
               disabled={!name.trim() || name === node.givenName || renameMutation.isPending}
@@ -137,24 +141,22 @@ export function MachineDetailPanel({
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium" htmlFor="machine-fleet">
-            {t('detail.changeFleet')}
-          </label>
+          <Label htmlFor="machine-fleet">{t('detail.changeFleet')}</Label>
           <div className="flex gap-2">
-            <select
-              id="machine-fleet"
-              className={inputClass()}
-              value={tagChoice}
-              onChange={(event) => setTagChoice(event.target.value)}
-            >
-              {node.tags[0] && <option value={node.tags[0]}>{node.tags[0]}</option>}
-              {otherFleetTags.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-              <option value={OTHER_TAG}>{t('detail.otherTag')}</option>
-            </select>
+            <Select value={tagChoice} onValueChange={setTagChoice}>
+              <SelectTrigger id="machine-fleet" className="flex-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {node.tags[0] && <SelectItem value={node.tags[0]}>{node.tags[0]}</SelectItem>}
+                {otherFleetTags.map((tag) => (
+                  <SelectItem key={tag} value={tag}>
+                    {tag}
+                  </SelectItem>
+                ))}
+                <SelectItem value={OTHER_TAG}>{t('detail.otherTag')}</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               disabled={
@@ -167,8 +169,7 @@ export function MachineDetailPanel({
             </Button>
           </div>
           {tagChoice === OTHER_TAG && (
-            <input
-              className={inputClass()}
+            <Input
               placeholder="tag:flotte-nouveauclient"
               value={customTag}
               onChange={(event) => setCustomTag(event.target.value)}

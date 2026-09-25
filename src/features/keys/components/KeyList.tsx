@@ -2,10 +2,27 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { parseFleetLabel } from '@/features/fleets';
+import { KeyRound } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui';
 import { fetchKeys, revokeKey } from '../api';
 
 function formatDate(value: string): string {
@@ -40,34 +57,40 @@ export function KeyList() {
             {error.message}
           </Badge>
         ) : !data ? (
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-9 w-full" />
+            ))}
+          </div>
         ) : data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+          <EmptyState icon={KeyRound} title={t('empty')} />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="py-2 font-medium">{t('columns.fleet')}</th>
-                <th className="py-2 font-medium">{t('columns.reusable')}</th>
-                <th className="py-2 font-medium">{t('columns.used')}</th>
-                <th className="py-2 font-medium">{t('columns.expiration')}</th>
-                <th className="py-2 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>{t('columns.fleet')}</TableHead>
+                <TableHead>{t('columns.reusable')}</TableHead>
+                <TableHead>{t('columns.used')}</TableHead>
+                <TableHead>{t('columns.expiration')}</TableHead>
+                <TableHead />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {data.map((key) => (
-                <tr key={key.id} className="border-b last:border-0">
-                  <td className="py-2">{parseFleetLabel(key.tags)}</td>
-                  <td className="py-2">
+                <TableRow key={key.id}>
+                  <TableCell className="font-medium">{parseFleetLabel(key.tags)}</TableCell>
+                  <TableCell>
                     <Badge variant={key.reusable ? 'default' : 'outline'}>
                       {key.reusable ? t('yes') : t('no')}
                     </Badge>
-                  </td>
-                  <td className="py-2">
-                    <Badge variant={key.used ? 'ok' : 'outline'}>{key.used ? t('yes') : t('no')}</Badge>
-                  </td>
-                  <td className="py-2 tabular-nums">{formatDate(key.expiration)}</td>
-                  <td className="py-2 text-right">
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={key.used ? 'ok' : 'outline'}>
+                      {key.used ? t('yes') : t('no')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="tabular-nums">{formatDate(key.expiration)}</TableCell>
+                  <TableCell className="text-right">
                     <Button
                       size="sm"
                       variant={confirmingId === key.id ? 'destructive' : 'outline'}
@@ -80,11 +103,11 @@ export function KeyList() {
                     >
                       {confirmingId === key.id ? t('confirmRevoke') : t('revoke')}
                     </Button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

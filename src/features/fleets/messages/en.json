@@ -9,6 +9,11 @@
     "never": "never",
     "search": "Search a machine or fleet…",
     "noMatch": "No machine matches the search.",
+    "stats": {
+      "total": "Machines",
+      "online": "Online",
+      "fleets": "Fleets"
+    },
     "columns": {
       "machine": "Machine",
       "fleet": "Fleet",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Code2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -37,6 +38,7 @@ export function RawPolicyEditor({ policy }: { policy: AclPolicy }) {
   if (!open) {
     return (
       <Button variant="ghost" onClick={() => setOpen(true)}>
+        <Code2 className="size-4" aria-hidden />
         {t('openRaw')}
       </Button>
     );

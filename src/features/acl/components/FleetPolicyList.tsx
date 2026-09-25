@@ -2,17 +2,25 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchNodes } from '@/features/fleets';
+import { Layers } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Input,
+  Skeleton,
+} from '@/shared/ui';
 import { createFleet, deleteFleet, fetchPolicy, type Fleet } from '../api';
 
-function inputClass() {
-  return 'h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none';
-}
-
-function FleetRow({ fleet, machineCount }: { fleet: Fleet; machineCount: number }) {
+function FleetCard({ fleet, machineCount }: { fleet: Fleet; machineCount: number }) {
   const t = useTranslations('acl');
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
@@ -30,13 +38,20 @@ function FleetRow({ fleet, machineCount }: { fleet: Fleet; machineCount: number 
   });
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b py-3 last:border-0">
-      <div>
-        <p className="font-medium">{fleet.label}</p>
-        <p className="text-xs text-muted-foreground">{fleet.tag}</p>
-      </div>
-      <div className="flex items-center gap-3">
-        <Badge variant="outline">{t('machineCount', { count: machineCount })}</Badge>
+    <Card className="shadow-xs">
+      <CardContent className="flex flex-col gap-3 py-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand">
+              <Layers className="size-4" aria-hidden />
+            </div>
+            <div>
+              <p className="font-medium leading-tight">{fleet.label}</p>
+              <p className="font-mono text-xs text-muted-foreground">{fleet.tag}</p>
+            </div>
+          </div>
+          <Badge variant="outline">{t('machineCount', { count: machineCount })}</Badge>
+        </div>
         {fleet.deletable && (
           <Button
             size="sm"
@@ -47,8 +62,8 @@ function FleetRow({ fleet, machineCount }: { fleet: Fleet; machineCount: number 
             {confirming ? t('confirmDelete') : t('delete')}
           </Button>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -86,18 +101,24 @@ export function FleetPolicyList() {
             {error.message}
           </Badge>
         ) : !policy ? (
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-20 w-full" />
+            ))}
+          </div>
+        ) : policy.fleets.length === 0 ? (
+          <EmptyState icon={Layers} title={t('empty')} />
         ) : (
-          <div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {policy.fleets.map((fleet) => (
-              <FleetRow key={fleet.tag} fleet={fleet} machineCount={machineCountFor(fleet.tag)} />
+              <FleetCard key={fleet.tag} fleet={fleet} machineCount={machineCountFor(fleet.tag)} />
             ))}
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
-          <input
-            className={inputClass()}
+        <div className="flex gap-2 border-t pt-4">
+          <Input
+            className="max-w-xs"
             placeholder={t('newFleetPlaceholder')}
             value={newFleetName}
             onChange={(event) => setNewFleetName(event.target.value)}

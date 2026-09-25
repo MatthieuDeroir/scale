@@ -1,8 +1,24 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { UploadCloud } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  EmptyState,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/shared/ui';
 import { fetchDevices } from '../api';
 
 function formatDate(value: string): string {
@@ -29,26 +45,30 @@ export function ProvisioningLog() {
             {error.message}
           </Badge>
         ) : !data ? (
-          <p className="text-sm text-muted-foreground">{t('loading')}</p>
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 3 }, (_, index) => (
+              <Skeleton key={index} className="h-9 w-full" />
+            ))}
+          </div>
         ) : data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+          <EmptyState icon={UploadCloud} title={t('empty')} />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="py-2 font-medium">{t('columns.deviceId')}</th>
-                <th className="py-2 font-medium">{t('columns.enrolledAt')}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>{t('columns.deviceId')}</TableHead>
+                <TableHead>{t('columns.enrolledAt')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {data.map((device) => (
-                <tr key={device.deviceId} className="border-b last:border-0">
-                  <td className="py-2 font-mono text-xs">{device.deviceId}</td>
-                  <td className="py-2 tabular-nums">{formatDate(device.enrolledAt)}</td>
-                </tr>
+                <TableRow key={device.deviceId}>
+                  <TableCell className="font-mono text-xs">{device.deviceId}</TableCell>
+                  <TableCell className="tabular-nums">{formatDate(device.enrolledAt)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>
