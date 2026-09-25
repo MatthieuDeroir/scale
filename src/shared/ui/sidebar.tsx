@@ -2,11 +2,11 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
-import Image from 'next/image';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { cn } from '../lib';
+import { StramscaleMark, StramscaleWordmark } from './brand';
 
 /**
  * Sidebar ouverte par défaut, repliable par un bouton — pas d'ouverture au
@@ -114,18 +114,13 @@ function Reveal({ children, className }: { children: ReactNode; className?: stri
   return <span className={cn('truncate whitespace-nowrap', className)}>{children}</span>;
 }
 
-export function SidebarLogo({ product }: { product: string }) {
+export function SidebarLogo({ tagline }: { tagline: string }) {
   return (
-    <Link href="/" className="flex h-8 items-center gap-2.5 px-2">
-      <Image
-        src="/images/Logo_Stramatel.png"
-        alt="Stramatel"
-        width={26}
-        height={20}
-        className="h-5 w-auto shrink-0 object-contain"
-      />
-      <Reveal className="text-sm font-semibold tracking-wide text-sidebar-accent-foreground">
-        {product}
+    <Link href="/" aria-label="Stramscale" className="flex h-10 items-center gap-2.5 px-1.5">
+      <StramscaleMark className="size-7" />
+      <Reveal className="flex flex-col leading-tight">
+        <StramscaleWordmark className="text-[15px] text-sidebar-accent-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-sidebar-muted">{tagline}</span>
       </Reveal>
     </Link>
   );

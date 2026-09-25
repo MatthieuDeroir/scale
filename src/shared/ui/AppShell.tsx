@@ -18,13 +18,13 @@ import {
  * d'un tableau s'écartent de plusieurs centaines de pixels.
  */
 export function AppShell({
-  product,
+  tagline,
   sections,
   toggleLabels,
   footer,
   children,
 }: {
-  product: string;
+  tagline: string;
   sections: NavSection[];
   toggleLabels: { collapse: string; expand: string };
   /** Actions de pied de sidebar (compte, déconnexion) — fournies par l'app, pas par le socle UI. */
@@ -36,7 +36,7 @@ export function AppShell({
       <Sidebar>
         <SidebarBody className="justify-between">
           <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            <SidebarLogo product={product} />
+            <SidebarLogo tagline={tagline} />
             <nav className="mt-6 flex flex-col gap-0.5">
               {sections.map((section, index) => (
                 <div key={section.title ?? index} className="flex flex-col gap-0.5">

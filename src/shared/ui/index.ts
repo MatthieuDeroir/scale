@@ -26,3 +26,4 @@ export { Skeleton } from './skeleton';
 export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './table';
 export { EmptyState } from './empty-state';
 export { StatCard } from './stat-card';
+export { StramscaleMark, StramscaleWordmark } from './brand';

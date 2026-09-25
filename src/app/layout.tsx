@@ -4,7 +4,7 @@ import { Providers } from '@/shared/providers';
 import { themeInitScript } from '@/shared/theme';
 import './globals.css';
 
-export const metadata = { title: 'Stramscale' };
+export const metadata = { title: { default: 'Stramscale', template: '%s · Stramscale' } };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();

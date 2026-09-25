@@ -1,7 +1,7 @@
 {
   "auth": {
     "signIn": "Sign in",
-    "signInHint": "Account provided when the device was installed.",
+    "signInHint": "Restricted to the Stramatel engineering team.",
     "signingIn": "Signing in…",
     "username": "Username",
     "password": "Password",

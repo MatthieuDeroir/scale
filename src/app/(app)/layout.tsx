@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <AppShell
-      product="Stramscale"
+      tagline={t('tagline')}
       sections={sections}
       toggleLabels={{ collapse: t('collapse'), expand: t('expand') }}
       footer={<SignOutButton username={session.username} />}

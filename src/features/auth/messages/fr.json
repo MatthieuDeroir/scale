@@ -1,7 +1,7 @@
 {
   "auth": {
     "signIn": "Se connecter",
-    "signInHint": "Compte fourni à l'installation de l'équipement.",
+    "signInHint": "Accès réservé au bureau d'études Stramatel.",
     "signingIn": "Connexion…",
     "username": "Identifiant",
     "password": "Mot de passe",

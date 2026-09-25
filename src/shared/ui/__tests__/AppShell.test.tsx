@@ -16,7 +16,7 @@ const sections = [
 
 function afficher() {
   return render(
-    <AppShell product="Stramscale" sections={sections} toggleLabels={{ collapse: 'Réduire', expand: 'Déplier' }}>
+    <AppShell tagline="Réseau des flottes" sections={sections} toggleLabels={{ collapse: 'Réduire', expand: 'Déplier' }}>
       <p>contenu</p>
     </AppShell>
   );
@@ -27,7 +27,8 @@ describe('AppShell', () => {
     afficher();
     // La sidebar existe en deux variantes (bureau/mobile), basculées en CSS :
     // jsdom rend les deux sans appliquer les media queries, d'où `getAllBy*`.
-    expect(screen.getAllByText('Stramscale').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('link', { name: 'Stramscale' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Réseau des flottes').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Administration').length).toBeGreaterThan(0);
     expect(screen.getByText('contenu')).toBeInTheDocument();
     expect(screen.getAllByRole('radiogroup', { name: 'Thème' }).length).toBeGreaterThan(0);
