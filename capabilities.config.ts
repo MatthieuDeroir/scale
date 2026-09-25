@@ -31,6 +31,7 @@ export const activeCapabilities = [
   'keys', // émission et révocation de clés machine taguées par flotte (F2)
   'provisioning', // enrôlement automatique des machines Stramatel au premier boot (F1)
   'acl', // éditeur de politique ACL par flotte, guidé + secours HuJSON brut (F3)
+  'parc', // accueil par flottes, page flotte, machines, « à assigner » (assemble fleets/keys/acl)
   'activity', // journal d'activité des actions d'admin (F6, baseline CRA LOG-01)
 
   // 'screens',     // écrans, zones, luminosité, allumage

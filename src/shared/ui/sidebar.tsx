@@ -1,23 +1,29 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import Image from 'next/image';
 import Link, { type LinkProps } from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { cn } from '../lib';
 
 /**
- * Repris de ServeurTemps (`mes_projets/gamme/serveur_temps/src/shared/components/ui/sidebar.tsx`,
- * lui-même Aceternity UI) — mais avec les jetons `sidebar*` du projet plutôt
- * que le neutral-100/800 d'origine : la sidebar Stramatel est sombre dans
- * les deux thèmes (barre de navigation brandée), pas juste en dark mode.
+ * Sidebar ouverte par défaut, repliable par un bouton — pas d'ouverture au
+ * survol : la version survol (reprise de ServeurTemps) se refermait dès qu'on
+ * quittait la barre, et chaque clic de navigation la remontait fermée.
+ * Rendue par le layout `(app)`, elle n'est plus remontée à la navigation :
+ * son état ouvert/replié survit d'un écran à l'autre.
  */
 export interface NavLinkItem {
   label: string;
   href: string;
   icon: ReactNode;
-  active?: boolean;
+}
+
+export interface NavSection {
+  title?: string;
+  links: NavLinkItem[];
 }
 
 interface SidebarContextProps {
@@ -34,7 +40,7 @@ function useSidebar() {
 }
 
 export function Sidebar({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   return <SidebarContext.Provider value={{ open, setOpen }}>{children}</SidebarContext.Provider>;
 }
 
@@ -53,17 +59,16 @@ export function SidebarBody(props: SidebarBodyProps) {
 }
 
 function DesktopSidebar({ className, children }: SidebarBodyProps) {
-  const { open, setOpen } = useSidebar();
+  const { open } = useSidebar();
   return (
     <motion.div
       className={cn(
-        'hidden h-full flex-col bg-sidebar px-3 py-4 text-sidebar-foreground md:flex',
+        'hidden h-full shrink-0 flex-col bg-sidebar px-3 py-4 text-sidebar-foreground md:flex',
         className
       )}
-      animate={{ width: open ? '260px' : '68px' }}
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      initial={false}
+      animate={{ width: open ? 232 : 64 }}
+      transition={{ duration: 0.18, ease: 'easeInOut' }}
     >
       {children}
     </motion.div>
@@ -71,24 +76,30 @@ function DesktopSidebar({ className, children }: SidebarBodyProps) {
 }
 
 function MobileSidebar({ className, children }: SidebarBodyProps) {
-  const { open, setOpen } = useSidebar();
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
     <div className="flex h-12 w-full items-center justify-between bg-sidebar px-4 text-sidebar-foreground md:hidden">
       <span className="text-sm font-semibold tracking-wide">STRAMATEL</span>
-      <Menu className="cursor-pointer" onClick={() => setOpen(!open)} />
+      <Menu className="cursor-pointer" onClick={() => setMobileOpen(true)} />
       <AnimatePresence>
-        {open && (
+        {mobileOpen && (
           <motion.div
-            initial={{ x: '-100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '-100%', opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ duration: 0.2 }}
             className={cn(
               'fixed inset-0 z-100 flex flex-col bg-sidebar p-6 text-sidebar-foreground',
               className
             )}
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest('a')) setMobileOpen(false);
+            }}
           >
-            <X className="absolute right-6 top-6 cursor-pointer" onClick={() => setOpen(false)} />
+            <X
+              className="absolute right-6 top-6 cursor-pointer"
+              onClick={() => setMobileOpen(false)}
+            />
             {children}
           </motion.div>
         )}
@@ -97,18 +108,15 @@ function MobileSidebar({ className, children }: SidebarBodyProps) {
   );
 }
 
-/**
- * Marque compacte (`Logo_Stramatel.png`, 230×178 — proche du carré) toujours
- * affichée ; le nom du produit apparaît à côté seulement sidebar ouverte,
- * même comportement que le libellé d'un `SidebarLink`. Les fichiers
- * `Logo_Stramatel_White/Dark.png` sont un bandeau texte très large
- * (1370×178) : pas adaptés à une case compacte, réservés à un usage plein
- * format ailleurs si besoin.
- */
-export function SidebarLogo({ product }: { product: string }) {
+function Reveal({ children, className }: { children: ReactNode; className?: string }) {
   const { open } = useSidebar();
+  if (!open) return null;
+  return <span className={cn('truncate whitespace-nowrap', className)}>{children}</span>;
+}
+
+export function SidebarLogo({ product }: { product: string }) {
   return (
-    <Link href="/" className="flex items-center gap-2.5 px-1.5 py-1.5">
+    <Link href="/" className="flex h-8 items-center gap-2.5 px-2">
       <Image
         src="/images/Logo_Stramatel.png"
         alt="Stramatel"
@@ -116,35 +124,99 @@ export function SidebarLogo({ product }: { product: string }) {
         height={20}
         className="h-5 w-auto shrink-0 object-contain"
       />
-      <motion.span
-        animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
-        className="whitespace-pre text-sm font-semibold tracking-wide text-sidebar-accent-foreground"
-      >
+      <Reveal className="text-sm font-semibold tracking-wide text-sidebar-accent-foreground">
         {product}
-      </motion.span>
+      </Reveal>
     </Link>
   );
 }
 
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/' || pathname.startsWith('/flottes');
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function SidebarLink({ link }: { link: NavLinkItem }) {
+  const pathname = usePathname();
   const { open } = useSidebar();
+  const active = isActive(pathname, link.href);
   return (
     <Link
       href={link.href as LinkProps['href']}
-      aria-current={link.active ? 'page' : undefined}
+      aria-current={active ? 'page' : undefined}
+      title={open ? undefined : link.label}
       className={cn(
-        'group/sidebar flex items-center gap-3 rounded-md px-2.5 py-2 text-sm text-sidebar-muted transition-colors',
+        'flex h-9 items-center gap-3 rounded-md px-2.5 text-sm text-sidebar-muted transition-colors',
         'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-        link.active && 'bg-sidebar-accent text-sidebar-accent-foreground'
+        active && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
       )}
     >
-      <span className="shrink-0 [&>svg]:size-5">{link.icon}</span>
-      <motion.span
-        animate={{ display: open ? 'inline-block' : 'none', opacity: open ? 1 : 0 }}
-        className="whitespace-pre transition duration-150 group-hover/sidebar:translate-x-0.5"
-      >
-        {link.label}
-      </motion.span>
+      <span className="shrink-0 [&>svg]:size-[18px]">{link.icon}</span>
+      <Reveal className="flex-1">{link.label}</Reveal>
     </Link>
+  );
+}
+
+/** Rendu seulement sidebar ouverte (ex. sélecteur de thème, trop large replié). */
+export function SidebarWhenOpen({ children }: { children: ReactNode }) {
+  const { open } = useSidebar();
+  return open ? <>{children}</> : null;
+}
+
+export function SidebarSectionTitle({ children }: { children: ReactNode }) {
+  const { open } = useSidebar();
+  if (!open) return <div className="mx-2.5 my-2 border-t border-sidebar-border" />;
+  return (
+    <p className="px-2.5 pb-1 pt-4 text-[11px] font-medium uppercase tracking-wider text-sidebar-muted/70">
+      {children}
+    </p>
+  );
+}
+
+export function SidebarToggle({ collapseLabel, expandLabel }: { collapseLabel: string; expandLabel: string }) {
+  const { open, setOpen } = useSidebar();
+  const label = open ? collapseLabel : expandLabel;
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(!open)}
+      aria-label={label}
+      title={label}
+      className="flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-sm text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+    >
+      {open ? <PanelLeftClose className="size-[18px] shrink-0" /> : <PanelLeftOpen className="size-[18px] shrink-0" />}
+      <Reveal>{label}</Reveal>
+    </button>
+  );
+}
+
+/** Action en pied de sidebar (icône seule une fois repliée), ex. déconnexion. */
+export function SidebarButton({
+  icon,
+  label,
+  detail,
+  onClick,
+  disabled,
+}: {
+  icon: ReactNode;
+  label: string;
+  detail?: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  const { open } = useSidebar();
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={open ? undefined : label}
+      className="flex h-9 w-full items-center gap-3 rounded-md px-2.5 text-sm text-sidebar-muted transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground disabled:opacity-50"
+    >
+      <span className="shrink-0 [&>svg]:size-[18px]">{icon}</span>
+      <Reveal className="flex-1 text-left">{label}</Reveal>
+      {detail && <Reveal className="max-w-24 text-xs text-sidebar-muted/70">{detail}</Reveal>}
+    </button>
   );
 }

@@ -4,7 +4,7 @@ import { Providers } from '@/shared/providers';
 import { themeInitScript } from '@/shared/theme';
 import './globals.css';
 
-export const metadata = { title: 'Stramatel Starter 2026' };
+export const metadata = { title: 'Stramscale' };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const locale = await getLocale();

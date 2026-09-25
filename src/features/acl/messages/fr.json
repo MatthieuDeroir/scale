@@ -1,26 +1,27 @@
 {
   "acl": {
-    "title": "Flottes et politique d'accès",
-    "description": "Cloisonnement strict entre flottes, accès total pour l'interne.",
-    "loading": "Lecture de la politique…",
-    "empty": "Aucune flotte définie pour l'instant.",
-    "machineCount": "{count, plural, =0 {aucune machine} =1 {1 machine} other {# machines}}",
-    "delete": "Supprimer",
-    "confirmDelete": "Confirmer ?",
+    "delete": "Supprimer la flotte",
+    "confirmDelete": "Confirmer la suppression ?",
+    "deleteBlocked": "Retirez d'abord les machines de cette flotte.",
     "deleted": "Flotte supprimée.",
-    "newFleetPlaceholder": "Nom de la nouvelle flotte",
-    "create": "Créer",
+    "create": "Nouvelle flotte",
+    "createTitle": "Nouvelle flotte client",
+    "createDescription": "Crée un réseau cloisonné : les machines de cette flotte ne verront qu'elles-mêmes (et le support Stramatel).",
+    "clientName": "Nom du client",
+    "clientNamePlaceholder": "ex. Keolis Lyon",
+    "tagPreview": "Tag créé : {tag}",
     "creating": "Création…",
+    "createConfirm": "Créer la flotte",
     "created": "Flotte créée.",
-    "openRaw": "Éditeur avancé (HuJSON brut)",
-    "rawTitle": "Politique brute",
-    "rawDescription": "Secours pour ce que l'éditeur guidé ne couvre pas — toujours validée avant application, jamais écrite en direct.",
+    "rawTitle": "Politique brute (HuJSON)",
+    "rawDescription": "Secours pour ce que les écrans guidés ne couvrent pas. Toujours validée par Headscale avant application, jamais écrite en direct.",
     "applyRaw": "Valider et appliquer",
     "applying": "Application…",
     "applied": "Politique appliquée.",
-    "reset": "Recharger depuis Headscale"
+    "reset": "Annuler les modifications",
+    "unsaved": "Non appliqué"
   },
   "nav": {
-    "acl": "Flottes & ACL"
+    "policy": "Politique ACL"
   }
 }

@@ -14,7 +14,10 @@ export {
   DialogFooter,
 } from './dialog';
 export { SecretReveal } from './secret-reveal';
-export { Sidebar, SidebarBody, SidebarLink, SidebarLogo, type NavLinkItem } from './sidebar';
+export { SidebarButton, type NavLinkItem, type NavSection } from './sidebar';
+export { PageHeader } from './page-header';
+export { CopyField } from './copy-field';
+export { Pagination, usePagination } from './pagination';
 export { Label } from './label';
 export { Input } from './input';
 export { Select, SelectValue, SelectGroup, SelectTrigger, SelectContent, SelectItem } from './select';

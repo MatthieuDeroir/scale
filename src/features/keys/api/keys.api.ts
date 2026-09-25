@@ -10,12 +10,18 @@ export interface AccessKey {
 export interface NewAccessKey extends AccessKey {
   /** En clair, présente uniquement dans la réponse de création — jamais revue ensuite. */
   key: string;
+  /** Adresse Headscale que la machine à enrôler doit joindre. */
+  loginServer: string;
 }
 
 export interface CreateKeyInput {
   tags: string[];
-  reusable: boolean;
   expiration: string;
+}
+
+/** Clé encore utilisable : pas consommée, pas expirée (ni révoquée — révoquer = expirer). */
+export function isPending(key: AccessKey, now = new Date()): boolean {
+  return !key.used && new Date(key.expiration) > now;
 }
 
 async function parseError(response: Response): Promise<never> {
@@ -33,7 +39,8 @@ export async function createKey(input: CreateKeyInput): Promise<NewAccessKey> {
   const response = await fetch('/api/keys', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
+    // Jamais réutilisable : une clé = une machine (CDC F2).
+    body: JSON.stringify({ ...input, reusable: false }),
   });
   if (!response.ok) return parseError(response);
   return response.json();

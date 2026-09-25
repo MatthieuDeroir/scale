@@ -1,18 +1,12 @@
 {
   "fleets": {
-    "title": "Fleet overview",
-    "description": "Enrolled machines, grouped by fleet, with their connection status.",
-    "loading": "Loading fleet…",
-    "empty": "No machine enrolled yet.",
     "online": "online",
     "offline": "offline",
     "never": "never",
-    "search": "Search a machine or fleet…",
-    "noMatch": "No machine matches the search.",
-    "stats": {
-      "total": "Machines",
-      "online": "Online",
-      "fleets": "Fleets"
+    "pagination": "{from}–{to} of {total}",
+    "kind": {
+      "hypervision": "Client hypervision station",
+      "equipment": "Stramatel equipment"
     },
     "columns": {
       "machine": "Machine",
@@ -25,7 +19,7 @@
       "tags": "Tags",
       "rename": "Rename",
       "changeFleet": "Change fleet",
-      "otherTag": "Other (type a tag)",
+      "chooseFleet": "Choose a fleet",
       "apply": "Apply",
       "expire": "Expire",
       "confirmExpire": "Confirm expiry?",
@@ -36,9 +30,5 @@
       "expired": "Machine expired.",
       "deleted": "Machine deleted."
     }
-  },
-  "nav": {
-    "overview": "Overview",
-    "keys": "Access keys"
   }
 }

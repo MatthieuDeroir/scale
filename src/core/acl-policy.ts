@@ -3,6 +3,17 @@ import { hujsonToJson } from './hujson';
 const INTERNAL_TAG = 'tag:interne';
 const FLEET_TAG_PATTERN = /^tag:flotte-(.+)$/;
 
+/**
+ * Tags qui ne sont pas des flottes mais que Headscale doit connaître
+ * (`tagOwners`), sinon une machine qui les porte est refusée à
+ * l'enregistrement :
+ * - `tag:a-assigner` : machine auto-enrôlée pas encore rangée. Aucune règle
+ *   ACL ne l'a en source → aucun accès sortant ; l'interne (`*:*`) la joint.
+ * - `tag:hypervision` : poste d'hypervision client, toujours porté en plus d'un
+ *   tag de flotte — c'est ce dernier qui décide du cloisonnement.
+ */
+export const SYSTEM_TAGS = ['tag:a-assigner', 'tag:hypervision'] as const;
+
 export interface FleetPolicy {
   tag: string;
   /** Nom de flotte extrait du tag, ou « Interne » — miroir de `parseFleetLabel` côté fleets. */
@@ -58,8 +69,26 @@ export function addFleetToPolicy(raw: string, tag: string): string {
 
   policy.tagOwners[tag] = ['stramatel@'];
   policy.acls.push({ action: 'accept', src: [tag], dst: [`${tag}:*`] });
+  addSystemTags(policy);
 
   return JSON.stringify(policy, null, 2);
+}
+
+function addSystemTags(policy: PolicyDocument): boolean {
+  let changed = false;
+  for (const tag of SYSTEM_TAGS) {
+    if (!policy.tagOwners[tag]) {
+      policy.tagOwners[tag] = ['stramatel@'];
+      changed = true;
+    }
+  }
+  return changed;
+}
+
+/** Politique avec les tags système déclarés, ou `null` si déjà le cas. */
+export function ensureSystemTags(raw: string): string | null {
+  const policy = parsePolicy(raw);
+  return addSystemTags(policy) ? JSON.stringify(policy, null, 2) : null;
 }
 
 /** Retire la flotte et toute règle ACL qui la cite en source. `tag:interne` est protégé. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addFleetToPolicy,
+  ensureSystemTags,
   fleetTagFromName,
   parsePolicyFleets,
   removeFleetFromPolicy,
@@ -66,5 +67,27 @@ describe('removeFleetFromPolicy', () => {
 
   it("refuse de supprimer l'interne — c'est la règle d'accès total", () => {
     expect(() => removeFleetFromPolicy(BASE_POLICY, 'tag:interne')).toThrow();
+  });
+});
+
+describe('ensureSystemTags', () => {
+  it('déclare a-assigner et hypervision sans leur donner de règle ACL', () => {
+    const result = JSON.parse(ensureSystemTags(BASE_POLICY)!);
+    expect(result.tagOwners['tag:a-assigner']).toEqual(['stramatel@']);
+    expect(result.tagOwners['tag:hypervision']).toEqual(['stramatel@']);
+    // Aucune règle ne les prend en source : une machine « à assigner » n'a aucun accès sortant.
+    const sources = result.acls.flatMap((rule: { src: string[] }) => rule.src);
+    expect(sources).not.toContain('tag:a-assigner');
+    expect(sources).not.toContain('tag:hypervision');
+  });
+
+  it("ne réécrit rien quand tout est déjà là", () => {
+    const once = ensureSystemTags(BASE_POLICY)!;
+    expect(ensureSystemTags(once)).toBeNull();
+  });
+
+  it("n'expose jamais les tags système comme des flottes", () => {
+    const fleets = parsePolicyFleets(ensureSystemTags(BASE_POLICY)!).map((fleet) => fleet.tag);
+    expect(fleets).toEqual(['tag:interne', 'tag:flotte-clienta']);
   });
 });

@@ -23,32 +23,32 @@ import {
   Separator,
 } from '@/shared/ui';
 import { deleteNode, expireNode, renameNode, retagNode, type FleetNode } from '../api';
-import { parseFleetLabel } from '../lib';
+import { fleetTagOf, isHypervision, parseFleetLabel, withFleet } from '../lib';
+import { formatLastSeen } from './MachinesTable';
 
-const OTHER_TAG = '__other__';
-
-function formatLastSeen(lastSeen: string | null): string | null {
-  if (!lastSeen) return null;
-  return new Date(lastSeen).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
+export interface FleetOption {
+  tag: string;
+  label: string;
 }
 
 export function MachineDetailPanel({
   node,
-  knownTags,
+  fleets,
   open,
   onOpenChange,
 }: {
   node: FleetNode;
-  knownTags: string[];
+  /** Flottes connues de la politique ACL — cibles possibles d'un changement de flotte. */
+  fleets: FleetOption[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const t = useTranslations('fleets');
   const queryClient = useQueryClient();
+  const currentFleet = fleetTagOf(node.tags);
 
   const [name, setName] = useState(node.givenName || node.name);
-  const [tagChoice, setTagChoice] = useState(node.tags[0] ?? OTHER_TAG);
-  const [customTag, setCustomTag] = useState('');
+  const [targetFleet, setTargetFleet] = useState(currentFleet ?? '');
   const [confirmExpire, setConfirmExpire] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -66,7 +66,9 @@ export function MachineDetailPanel({
   });
 
   const retagMutation = useMutation({
-    mutationFn: () => retagNode(node.id, [tagChoice === OTHER_TAG ? customTag.trim() : tagChoice]),
+    // `withFleet` garde les tags de type (ex. tag:hypervision) : changer une
+    // machine de flotte ne doit pas lui faire perdre sa nature.
+    mutationFn: () => retagNode(node.id, withFleet(node.tags, targetFleet)),
     onSuccess: async () => {
       await invalidate();
       toast.success(t('detail.retagged'));
@@ -94,8 +96,6 @@ export function MachineDetailPanel({
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const otherFleetTags = knownTags.filter((tag) => tag !== node.tags[0]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -106,18 +106,21 @@ export function MachineDetailPanel({
               {node.online ? t('online') : t('offline')}
             </Badge>
           </div>
-          <DialogDescription>{parseFleetLabel(node.tags)}</DialogDescription>
+          <DialogDescription>
+            {isHypervision(node.tags) ? t('kind.hypervision') : t('kind.equipment')} ·{' '}
+            {parseFleetLabel(node.tags)}
+          </DialogDescription>
         </DialogHeader>
 
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{t('columns.address')}</dt>
-          <dd className="tabular-nums">{node.ipAddresses.join(', ')}</dd>
+          <dd className="font-mono text-xs leading-5">{node.ipAddresses.join(', ')}</dd>
           <dt className="text-muted-foreground">{t('columns.lastSeen')}</dt>
           <dd className="tabular-nums">{formatLastSeen(node.lastSeen) ?? t('never')}</dd>
           <dt className="text-muted-foreground">{t('detail.tags')}</dt>
           <dd className="flex flex-wrap gap-1">
             {node.tags.map((tag) => (
-              <Badge key={tag} variant="outline">
+              <Badge key={tag} variant="outline" className="font-mono">
                 {tag}
               </Badge>
             ))}
@@ -143,38 +146,26 @@ export function MachineDetailPanel({
         <div className="flex flex-col gap-2">
           <Label htmlFor="machine-fleet">{t('detail.changeFleet')}</Label>
           <div className="flex gap-2">
-            <Select value={tagChoice} onValueChange={setTagChoice}>
+            <Select value={targetFleet} onValueChange={setTargetFleet}>
               <SelectTrigger id="machine-fleet" className="flex-1">
-                <SelectValue />
+                <SelectValue placeholder={t('detail.chooseFleet')} />
               </SelectTrigger>
               <SelectContent>
-                {node.tags[0] && <SelectItem value={node.tags[0]}>{node.tags[0]}</SelectItem>}
-                {otherFleetTags.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
+                {fleets.map((fleet) => (
+                  <SelectItem key={fleet.tag} value={fleet.tag}>
+                    {fleet.label}
                   </SelectItem>
                 ))}
-                <SelectItem value={OTHER_TAG}>{t('detail.otherTag')}</SelectItem>
               </SelectContent>
             </Select>
             <Button
               variant="outline"
-              disabled={
-                retagMutation.isPending ||
-                (tagChoice === OTHER_TAG ? !customTag.trim() : tagChoice === node.tags[0])
-              }
+              disabled={!targetFleet || targetFleet === currentFleet || retagMutation.isPending}
               onClick={() => retagMutation.mutate()}
             >
               {t('detail.apply')}
             </Button>
           </div>
-          {tagChoice === OTHER_TAG && (
-            <Input
-              placeholder="tag:flotte-nouveauclient"
-              value={customTag}
-              onChange={(event) => setCustomTag(event.target.value)}
-            />
-          )}
         </div>
 
         <DialogFooter className="flex-col items-stretch gap-2 sm:flex-row sm:justify-between">

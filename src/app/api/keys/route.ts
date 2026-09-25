@@ -1,9 +1,11 @@
 import {
   createPreAuthKey,
+  ensureSystemTagsInPolicy,
   listPreAuthKeys,
   logActivity,
   mapNewPreAuthKey,
   mapPreAuthKey,
+  SYSTEM_TAGS,
   type RawHeadscalePreAuthKey,
 } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
@@ -54,6 +56,9 @@ export async function POST(request: Request) {
 
   let response: Response;
   try {
+    if (tags.some((tag) => (SYSTEM_TAGS as readonly string[]).includes(tag))) {
+      await ensureSystemTagsInPolicy();
+    }
     response = await createPreAuthKey({
       tags,
       reusable: body?.reusable ?? false,
@@ -73,5 +78,10 @@ export async function POST(request: Request) {
     action: 'keys-create',
     target: tags.join(','),
   });
-  return NextResponse.json(mapNewPreAuthKey(preAuthKey));
+  return NextResponse.json({
+    ...mapNewPreAuthKey(preAuthKey),
+    // Adresse que la machine cliente doit joindre (≠ HEADSCALE_API_URL, vue
+    // depuis ce serveur) — sert à afficher la commande d'installation.
+    loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,
+  });
 }

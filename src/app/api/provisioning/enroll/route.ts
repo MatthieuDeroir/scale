@@ -1,5 +1,10 @@
 import { timingSafeEqual } from 'node:crypto';
-import { createPreAuthKey, logActivity, mapNewPreAuthKey } from '@/core';
+import {
+  createPreAuthKey,
+  ensureSystemTagsInPolicy,
+  logActivity,
+  mapNewPreAuthKey,
+} from '@/core';
 import { prisma } from '@/core';
 import { NextResponse } from 'next/server';
 
@@ -45,8 +50,14 @@ export async function POST(request: Request) {
 
   let response: Response;
   try {
+    await ensureSystemTagsInPolicy();
+    // `tag:a-assigner` et pas `tag:interne` : une machine qui vient de
+    // démarrer n'a encore aucune raison de voir le parc. Avec `tag:interne`,
+    // un secret de fabrication fuité donnait un accès total à toutes les
+    // flottes. Ici, aucune règle ACL sortante tant qu'un opérateur ne l'a pas
+    // rangée dans une flotte (écran « À assigner »).
     response = await createPreAuthKey({
-      tags: ['tag:interne'],
+      tags: ['tag:a-assigner'],
       reusable: false,
       expiration: new Date(Date.now() + KEY_LIFETIME_MS).toISOString(),
     });
@@ -64,6 +75,6 @@ export async function POST(request: Request) {
   const { preAuthKey } = (await response.json()) as { preAuthKey: Parameters<typeof mapNewPreAuthKey>[0] };
   return NextResponse.json({
     authKey: mapNewPreAuthKey(preAuthKey).key,
-    loginServer: process.env.HEADSCALE_API_URL,
+    loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,
   });
 }

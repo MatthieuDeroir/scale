@@ -1,24 +1,21 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Code2 } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui';
+import { Badge, Button, Card, CardContent, Skeleton } from '@/shared/ui';
 import { applyRawPolicy, fetchPolicy, type AclPolicy } from '../api';
 
-export function RawPolicyEditor({ policy }: { policy: AclPolicy }) {
+function Editor({ policy }: { policy: AclPolicy }) {
   const t = useTranslations('acl');
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
   const [raw, setRaw] = useState(policy.raw);
 
   // Resynchronisé pendant le rendu, pas dans un effet (pattern React :
-  // « Adjusting state when a prop changes ») — l'éditeur guidé écrit dans le
-  // même cache React Query, sans ça ce champ resterait figé sur l'ancienne
-  // politique et une application ultérieure écraserait un changement fait
-  // ailleurs.
+  // « Adjusting state when a prop changes ») — une autre action (création de
+  // flotte…) écrit dans le même cache React Query ; sans ça, ce champ resterait
+  // figé et une application ultérieure écraserait ce changement.
   const [syncedAt, setSyncedAt] = useState(policy.updatedAt);
   if (policy.updatedAt !== syncedAt) {
     setSyncedAt(policy.updatedAt);
@@ -29,54 +26,51 @@ export function RawPolicyEditor({ policy }: { policy: AclPolicy }) {
     mutationFn: () => applyRawPolicy(raw),
     onSuccess: (updated) => {
       queryClient.setQueryData(['acl', 'policy'], updated);
-      setRaw(updated.raw);
       toast.success(t('applied'));
     },
     onError: (error: Error) => toast.error(error.message),
   });
 
-  if (!open) {
-    return (
-      <Button variant="ghost" onClick={() => setOpen(true)}>
-        <Code2 className="size-4" aria-hidden />
-        {t('openRaw')}
-      </Button>
-    );
-  }
+  const dirty = raw !== policy.raw;
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('rawTitle')}</CardTitle>
-        <CardDescription>{t('rawDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+      <CardContent className="flex flex-col gap-3 pt-6">
         <textarea
-          className="h-80 w-full rounded-md border border-input bg-background p-3 font-mono text-xs focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-label={t('rawTitle')}
+          className="h-[28rem] w-full resize-y rounded-md border border-input bg-background p-3 font-mono text-xs leading-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={raw}
           onChange={(event) => setRaw(event.target.value)}
           spellCheck={false}
         />
-        <div className="flex gap-2">
-          <Button
-            variant="brand"
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate()}
-          >
+        <div className="flex items-center gap-2">
+          <Button variant="brand" disabled={!dirty || mutation.isPending} onClick={() => mutation.mutate()}>
             {mutation.isPending ? t('applying') : t('applyRaw')}
           </Button>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              const current = await fetchPolicy();
-              queryClient.setQueryData(['acl', 'policy'], current);
-              setRaw(current.raw);
-            }}
-          >
+          <Button variant="outline" disabled={!dirty} onClick={() => setRaw(policy.raw)}>
             {t('reset')}
           </Button>
+          {dirty && <Badge variant="warning">{t('unsaved')}</Badge>}
         </div>
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Secours pour ce que les écrans guidés ne couvrent pas : la politique HuJSON
+ * brute. Toujours validée par Headscale avant application, jamais écrite en
+ * direct (CDC §7).
+ */
+export function RawPolicyEditor() {
+  const { data: policy, error } = useQuery({ queryKey: ['acl', 'policy'], queryFn: fetchPolicy });
+  if (error) {
+    return (
+      <Badge variant="critical" role="alert">
+        {error.message}
+      </Badge>
+    );
+  }
+  if (!policy) return <Skeleton className="h-[28rem] w-full" />;
+  return <Editor policy={policy} />;
 }

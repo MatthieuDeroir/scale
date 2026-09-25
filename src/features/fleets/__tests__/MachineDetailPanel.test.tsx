@@ -13,7 +13,7 @@ const node: FleetNode = {
   ipAddresses: ['100.64.0.2'],
   online: true,
   lastSeen: '2026-09-24T08:00:00.000Z',
-  tags: ['tag:flotte-clienta'],
+  tags: ['tag:flotte-clienta', 'tag:hypervision'],
 };
 
 function afficher(props: Partial<Parameters<typeof MachineDetailPanel>[0]> = {}) {
@@ -23,7 +23,10 @@ function afficher(props: Partial<Parameters<typeof MachineDetailPanel>[0]> = {})
       <QueryClientProvider client={client}>
         <MachineDetailPanel
           node={node}
-          knownTags={['tag:flotte-clienta', 'tag:interne']}
+          fleets={[
+            { tag: 'tag:flotte-clienta', label: 'clienta' },
+            { tag: 'tag:interne', label: 'Interne' },
+          ]}
           open
           onOpenChange={vi.fn()}
           {...props}

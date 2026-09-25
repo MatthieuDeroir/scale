@@ -9,9 +9,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Input,
   SecretReveal,
   Select,
@@ -170,11 +167,7 @@ export function AccountsScreen() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>{t('title')}</CardTitle>
-          <CardDescription>{t('description')}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="flex flex-col gap-4 pt-6">
           {error ? (
             <Badge variant="critical" role="alert">
               {error.message}

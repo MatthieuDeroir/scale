@@ -7,9 +7,6 @@ import {
   Badge,
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   EmptyState,
   Skeleton,
   Table,
@@ -35,11 +32,7 @@ export function ActivityLog() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{t('title')}</CardTitle>
-        <CardDescription>{t('description')}</CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         {error ? (
           <Badge variant="critical" role="alert">
             {error.message}

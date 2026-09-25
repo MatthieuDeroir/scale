@@ -25,5 +25,8 @@ export {
   fleetTagFromName,
   addFleetToPolicy,
   removeFleetFromPolicy,
+  ensureSystemTags,
+  SYSTEM_TAGS,
   type FleetPolicy,
 } from './acl-policy';
+export { ensureSystemTagsInPolicy } from './system-tags';

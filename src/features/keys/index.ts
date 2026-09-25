@@ -1,4 +1,4 @@
 export { config, default as keysConfig } from './feature.config';
-export { KeysScreen } from './components';
-export { fetchKeys, createKey, revokeKey } from './api';
+export { IssueKeyDialog, PendingKeys } from './components';
+export { fetchKeys, createKey, revokeKey, isPending } from './api';
 export type { AccessKey, NewAccessKey, CreateKeyInput } from './api';
