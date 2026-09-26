@@ -31,12 +31,15 @@ export async function GET() {
   // déclarés par la machine au premier démarrage.
   const devices = await prisma.provisioningDevice.findMany({ where: { keyId: { not: null } } });
   const byKey = new Map(devices.map((device) => [device.keyId, device]));
+  const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
   return NextResponse.json(
     nodes.map((raw) => {
       const node = mapNode(raw);
       const device = node.keyId ? byKey.get(node.keyId) : undefined;
       return {
         ...node,
+        // Nom MagicDNS : résolu seulement par les machines qui voient celle-ci (ACL).
+        dnsName: baseDomain ? `${node.givenName || node.name}.${baseDomain}` : null,
         enrollment: device
           ? {
               deviceId: device.deviceId,

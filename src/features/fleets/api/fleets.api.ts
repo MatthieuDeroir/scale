@@ -8,6 +8,8 @@ export interface FleetNode {
   tags: string[];
   /** Date d'enregistrement dans Headscale. */
   createdAt?: string | null;
+  /** Nom dans le DNS du VPN (MagicDNS), si le domaine est configuré. */
+  dnsName?: string | null;
   /** Clé qui a enregistré la machine. */
   keyId?: string | null;
   /** Renseigné si la machine s'est auto-enrôlée en déclarant ces informations. */

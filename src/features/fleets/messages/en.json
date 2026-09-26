@@ -21,17 +21,18 @@
       "changeFleet": "Change fleet",
       "chooseFleet": "Choose a fleet",
       "apply": "Apply",
-      "expire": "Expire",
-      "confirmExpire": "Confirm expiry?",
       "delete": "Delete",
       "confirmDelete": "Confirm deletion?",
       "renamed": "Machine renamed.",
       "retagged": "Fleet updated.",
-      "expired": "Machine expired.",
       "deleted": "Machine deleted.",
       "joinedAt": "Joined on",
       "serial": "Serial number",
-      "model": "Model"
+      "model": "Model",
+      "deleteWarning": "The machine will be removed from the VPN. At a customer site, it can only come back with an on-site intervention (new key or reflash).",
+      "dnsName": "VPN name",
+      "copy": "Copy",
+      "copied": "Copied"
     }
   }
 }

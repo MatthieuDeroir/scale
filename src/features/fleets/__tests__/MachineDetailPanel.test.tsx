@@ -14,6 +14,7 @@ const node: FleetNode = {
   online: true,
   lastSeen: '2026-09-24T08:00:00.000Z',
   tags: ['tag:flotte-clienta', 'tag:hypervision'],
+  dnsName: 'node-clienta.stramscale.internal',
 };
 
 function afficher(props: Partial<Parameters<typeof MachineDetailPanel>[0]> = {}) {
@@ -82,5 +83,17 @@ describe('MachineDetailPanel', () => {
       )
     );
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it('affiche le nom DNS du VPN et ne propose plus « Expirer »', () => {
+    afficher();
+    expect(screen.getByText('node-clienta.stramscale.internal')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Expirer/ })).not.toBeInTheDocument();
+  });
+
+  it('prévient que la suppression est définitive chez un client', () => {
+    afficher();
+    fireEvent.click(screen.getByRole('button', { name: 'Supprimer' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('intervention sur place');
   });
 });

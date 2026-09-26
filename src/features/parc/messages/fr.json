@@ -93,12 +93,12 @@
       "staleHint": "{count, plural, =1 {1 machine est hors ligne} other {# machines sont hors ligne}} depuis plus de {days} jours : anciens enregistrements ou machines démontées ? Cliquez pour les afficher.",
       "selected": "{count, plural, =1 {1 machine sélectionnée} other {# machines sélectionnées}}",
       "bulkRetag": "Changer de flotte",
-      "bulkExpire": "Expirer",
       "bulkDelete": "Supprimer",
       "confirm": "Confirmer ?",
       "clearSelection": "Désélectionner",
       "bulkDone": "{count, plural, =1 {1 machine traitée.} other {# machines traitées.}}",
-      "bulkFailed": "{count, plural, =1 {1 machine en échec.} other {# machines en échec.}}"
+      "bulkFailed": "{count, plural, =1 {1 machine en échec.} other {# machines en échec.}}",
+      "bulkDeleteWarning": "La machine sera retirée du VPN. Chez un client, elle ne pourra revenir qu'avec une intervention sur place (nouvelle clé ou reflashage)."
     },
     "add": {
       "hypervisionTitle": "Ajouter un poste d'hypervision",

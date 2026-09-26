@@ -8,7 +8,6 @@ export {
   getNode,
   renameNode,
   setNodeTags,
-  expireNode,
   deleteNode,
   mapPreAuthKey,
   mapNewPreAuthKey,

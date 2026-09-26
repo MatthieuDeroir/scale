@@ -93,11 +93,6 @@ export function setNodeTags(id: string, tags: string[]): Promise<Response> {
   });
 }
 
-/** Corps vide = expiration immédiate (comportement Headscale par défaut). */
-export function expireNode(id: string): Promise<Response> {
-  return headscaleFetch(`/api/v1/node/${id}/expire`, { method: 'POST' });
-}
-
 export function deleteNode(id: string): Promise<Response> {
   return headscaleFetch(`/api/v1/node/${id}`, { method: 'DELETE' });
 }

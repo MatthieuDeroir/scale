@@ -6,7 +6,6 @@ import {
   MachinesTable,
   UNASSIGNED_TAG,
   deleteNode,
-  expireNode,
   fleetTagOf,
   formatLastSeen,
   isHypervision,
@@ -54,7 +53,7 @@ export function isStale(node: FleetNode, now = Date.now()): boolean {
   return now - seen > STALE_DAYS * 24 * 60 * 60 * 1000;
 }
 
-type BulkAction = 'retag' | 'expire' | 'delete';
+type BulkAction = 'retag' | 'delete';
 
 /** Tout le parc à plat : retrouver une machine sans savoir dans quelle flotte elle vit. */
 export function MachinesDirectory() {
@@ -104,9 +103,7 @@ export function MachinesDirectory() {
         chosen.map((node) =>
           action === 'retag'
             ? retagNode(node.id, withFleet(node.tags, target))
-            : action === 'expire'
-              ? expireNode(node.id)
-              : deleteNode(node.id)
+            : deleteNode(node.id)
         )
       );
       return { total: chosen.length, failed: results.filter((r) => r.status === 'rejected').length };
@@ -269,14 +266,6 @@ export function MachinesDirectory() {
           </Button>
           <Button
             size="sm"
-            variant={confirming === 'expire' ? 'destructive' : 'outline'}
-            disabled={bulk.isPending}
-            onClick={() => run('expire')}
-          >
-            {confirming === 'expire' ? t('machines.confirm') : t('machines.bulkExpire')}
-          </Button>
-          <Button
-            size="sm"
             variant={confirming === 'delete' ? 'destructive' : 'outline'}
             disabled={bulk.isPending}
             onClick={() => run('delete')}
@@ -287,6 +276,12 @@ export function MachinesDirectory() {
             {t('machines.clearSelection')}
           </Button>
         </div>
+      )}
+
+      {operate && confirming === 'delete' && (
+        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2.5 text-sm">
+          {t('machines.bulkDeleteWarning')}
+        </p>
       )}
 
       {nodes.length === 0 ? (

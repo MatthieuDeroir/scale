@@ -21,17 +21,18 @@
       "changeFleet": "Changer de flotte",
       "chooseFleet": "Choisir une flotte",
       "apply": "Appliquer",
-      "expire": "Expirer",
-      "confirmExpire": "Confirmer l'expiration ?",
       "delete": "Supprimer",
       "confirmDelete": "Confirmer la suppression ?",
       "renamed": "Machine renommée.",
       "retagged": "Flotte mise à jour.",
-      "expired": "Machine expirée.",
       "deleted": "Machine supprimée.",
       "joinedAt": "Raccordée le",
       "serial": "N° de série",
-      "model": "Modèle"
+      "model": "Modèle",
+      "deleteWarning": "La machine sera retirée du VPN. Chez un client, elle ne pourra revenir qu'avec une intervention sur place (nouvelle clé ou reflashage).",
+      "dnsName": "Nom dans le VPN",
+      "copy": "Copier",
+      "copied": "Copié"
     }
   }
 }

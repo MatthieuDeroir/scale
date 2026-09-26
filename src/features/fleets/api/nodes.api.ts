@@ -27,10 +27,6 @@ export function retagNode(id: string, tags: string[]): Promise<FleetNode> {
   return postNode(`/api/fleets/nodes/${id}/tags`, { tags });
 }
 
-export function expireNode(id: string): Promise<FleetNode> {
-  return postNode(`/api/fleets/nodes/${id}/expire`);
-}
-
 export async function deleteNode(id: string): Promise<void> {
   const response = await fetch(`/api/fleets/nodes/${id}`, { method: 'DELETE' });
   if (!response.ok) {

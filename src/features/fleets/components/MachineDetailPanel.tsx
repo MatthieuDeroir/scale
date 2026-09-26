@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import {
   Badge,
+  CopyField,
   Button,
   Dialog,
   DialogContent,
@@ -23,7 +24,7 @@ import {
   Separator,
   usePermissions,
 } from '@/shared/ui';
-import { deleteNode, expireNode, renameNode, retagNode, type FleetNode } from '../api';
+import { deleteNode, renameNode, retagNode, type FleetNode } from '../api';
 import { fleetTagOf, isHypervision, parseFleetLabel, withFleet } from '../lib';
 import { formatLastSeen } from './MachinesTable';
 
@@ -51,7 +52,6 @@ export function MachineDetailPanel({
 
   const [name, setName] = useState(node.givenName || node.name);
   const [targetFleet, setTargetFleet] = useState(currentFleet ?? '');
-  const [confirmExpire, setConfirmExpire] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   function invalidate() {
@@ -74,16 +74,6 @@ export function MachineDetailPanel({
     onSuccess: async () => {
       await invalidate();
       toast.success(t('detail.retagged'));
-    },
-    onError: (error: Error) => toast.error(error.message),
-  });
-
-  const expireMutation = useMutation({
-    mutationFn: () => expireNode(node.id),
-    onSuccess: async () => {
-      await invalidate();
-      setConfirmExpire(false);
-      toast.success(t('detail.expired'));
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -113,6 +103,15 @@ export function MachineDetailPanel({
             {parseFleetLabel(node.tags)}
           </DialogDescription>
         </DialogHeader>
+
+        {node.dnsName && (
+          <CopyField
+            label={t('detail.dnsName')}
+            value={node.dnsName}
+            copyLabel={t('detail.copy')}
+            copiedLabel={t('detail.copied')}
+          />
+        )}
 
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
           <dt className="text-muted-foreground">{t('columns.address')}</dt>
@@ -194,14 +193,12 @@ export function MachineDetailPanel({
               </div>
             </div>
 
-            <DialogFooter className="flex-col items-stretch gap-2 sm:flex-row sm:justify-between">
-              <Button
-                variant={confirmExpire ? 'destructive' : 'outline'}
-                disabled={expireMutation.isPending}
-                onClick={() => (confirmExpire ? expireMutation.mutate() : setConfirmExpire(true))}
-              >
-                {confirmExpire ? t('detail.confirmExpire') : t('detail.expire')}
-              </Button>
+            <DialogFooter className="flex-col items-stretch gap-2">
+              {confirmDelete && (
+                <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">
+                  {t('detail.deleteWarning')}
+                </p>
+              )}
               <Button
                 variant={confirmDelete ? 'destructive' : 'outline'}
                 disabled={deleteMutation.isPending}

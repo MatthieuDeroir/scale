@@ -93,12 +93,12 @@
       "staleHint": "{count, plural, =1 {1 machine has been offline} other {# machines have been offline}} for more than {days} days: old records or removed machines? Click to show them.",
       "selected": "{count, plural, =1 {1 machine selected} other {# machines selected}}",
       "bulkRetag": "Change fleet",
-      "bulkExpire": "Expire",
       "bulkDelete": "Delete",
       "confirm": "Confirm?",
       "clearSelection": "Clear selection",
       "bulkDone": "{count, plural, =1 {1 machine processed.} other {# machines processed.}}",
-      "bulkFailed": "{count, plural, =1 {1 machine failed.} other {# machines failed.}}"
+      "bulkFailed": "{count, plural, =1 {1 machine failed.} other {# machines failed.}}",
+      "bulkDeleteWarning": "The machine will be removed from the VPN. At a customer site, it can only come back with an on-site intervention (new key or reflash)."
     },
     "add": {
       "hypervisionTitle": "Add a hypervision station",

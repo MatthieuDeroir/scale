@@ -1,3 +1,3 @@
 export { fetchNodes } from './fleets.api';
 export type { FleetNode } from './fleets.api';
-export { fetchNode, renameNode, retagNode, expireNode, deleteNode } from './nodes.api';
+export { fetchNode, renameNode, retagNode, deleteNode } from './nodes.api';
