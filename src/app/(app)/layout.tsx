@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import type { ReactNode } from 'react';
 import { SignOutButton, covers, type Role } from '@/features/auth';
+import { GlobalSearch } from '@/features/parc';
 import { AppShell, PermissionsProvider } from '@/shared/ui';
 import { guard } from './_components/guard';
 import { navSections } from './_components/nav-links';
@@ -19,6 +20,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       sections={sections}
       toggleLabels={{ collapse: t('collapse'), expand: t('expand') }}
       footer={<SignOutButton username={session.username} />}
+      search={<GlobalSearch />}
     >
       <PermissionsProvider
         value={{

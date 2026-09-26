@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
 import Link, { type LinkProps } from 'next/link';
 import { usePathname } from 'next/navigation';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { cn } from '../lib';
 import { StramscaleMark, StramscaleWordmark } from './brand';
 
@@ -39,8 +39,32 @@ function useSidebar() {
   return context;
 }
 
+const STORAGE_KEY = 'stramscale.sidebar-open';
+
+function readStoredOpen(): boolean {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY) !== 'false';
+  } catch {
+    return true;
+  }
+}
+
+const noSubscription = () => () => {};
+
 export function Sidebar({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(true);
+  // Préférence par navigateur : le serveur rend ouvert, le client relit le
+  // stockage ; sans effet si le stockage est bloqué (navigation privée…).
+  const storedOpen = useSyncExternalStore(noSubscription, readStoredOpen, () => true);
+  const [override, setOverride] = useState<boolean | null>(null);
+  const open = override ?? storedOpen;
+
+  const setOpen = (next: boolean) => {
+    setOverride(next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, String(next));
+    } catch {}
+  };
+
   return <SidebarContext.Provider value={{ open, setOpen }}>{children}</SidebarContext.Provider>;
 }
 

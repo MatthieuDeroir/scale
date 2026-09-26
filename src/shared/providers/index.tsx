@@ -12,10 +12,12 @@ import { Toaster } from 'sonner';
 export function Providers({
   children,
   locale,
+  timeZone,
   messages,
 }: {
   children: ReactNode;
   locale: string;
+  timeZone: string;
   messages: Record<string, unknown>;
 }) {
   const [queryClient] = useState(
@@ -34,7 +36,7 @@ export function Providers({
   );
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} timeZone={timeZone} messages={messages}>
       <QueryClientProvider client={queryClient}>
         {children}
         <Toaster position="bottom-right" richColors closeButton />

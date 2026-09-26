@@ -141,6 +141,14 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Sheet saved."
+    },
+    "search": {
+      "open": "Search",
+      "placeholder": "Fleet, machine, IP address, serial…",
+      "hint": "Type a fleet or machine name, an IP address, a serial or job number.",
+      "none": "No result.",
+      "fleet": "Fleet",
+      "machine": "Machine"
     }
   },
   "nav": {

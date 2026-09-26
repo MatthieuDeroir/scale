@@ -1,6 +1,7 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FleetNode } from '@/features/fleets';
+import { PermissionsProvider } from '@/shared/ui';
 import { FleetsHome } from '../components/FleetsHome';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
@@ -32,7 +33,7 @@ function node(id: number, tags: string[], online = true): FleetNode {
   return { id: String(id), name: `n${id}`, givenName: `machine-${id}`, ipAddresses: [`100.64.0.${id}`], online, lastSeen: null, tags };
 }
 
-function stubApi(nodes: FleetNode[], fleetCount = 2) {
+function stubApi(nodes: FleetNode[], fleetCount = 2, profiles: unknown[] = []) {
   const fleets = [
     { tag: 'tag:interne', label: 'Interne', deletable: false },
     ...Array.from({ length: fleetCount - 1 }, (_, index) => ({
@@ -42,7 +43,11 @@ function stubApi(nodes: FleetNode[], fleetCount = 2) {
     })),
   ];
   vi.mocked(fetch).mockImplementation(async (url) =>
-    jsonResponse(String(url).includes('/api/acl/policy') ? { fleets, raw: '{}', updatedAt: 'x' } : nodes) as never
+    jsonResponse(String(url).includes('/api/acl/policy')
+        ? { fleets, raw: '{}', updatedAt: 'x' }
+        : String(url).includes('/profiles')
+          ? profiles
+          : nodes) as never
   );
 }
 
@@ -87,5 +92,31 @@ describe('FleetsHome', () => {
     stubApi([node(1, ['tag:a-assigner']), node(2, ['tag:a-assigner'])]);
     renderWithProviders(<FleetsHome />);
     expect(await screen.findByText('2 machines attendent une flotte.')).toBeInTheDocument();
+  });
+
+  it('affiche le nom lisible de la fiche et cherche dans la fiche', async () => {
+    stubApi([node(1, ['tag:flotte-client000'])], 3, [
+      { tag: 'tag:flotte-client000', displayName: 'Keolis Lyon', sector: 'Transport', reference: 'AFF-042' },
+    ]);
+    renderWithProviders(<FleetsHome />);
+
+    expect(await screen.findByRole('link', { name: 'Keolis Lyon' })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Rechercher une flotte ou une machine…'), {
+      target: { value: 'aff-042' },
+    });
+    expect(screen.getByRole('link', { name: 'Keolis Lyon' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'client001' })).not.toBeInTheDocument();
+  });
+
+  it('un Lecteur ne voit ni création de flotte ni ajout de machine', async () => {
+    stubApi([node(1, ['tag:flotte-client000'])]);
+    renderWithProviders(
+      <PermissionsProvider value={{ operate: false, admin: false }}>
+        <FleetsHome />
+      </PermissionsProvider>
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Déplier client000' }));
+    expect(screen.queryByRole('button', { name: 'Nouvelle flotte' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Ajouter un équipement/ })).not.toBeInTheDocument();
   });
 });

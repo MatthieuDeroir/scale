@@ -141,6 +141,14 @@
       "save": "Enregistrer",
       "saving": "Enregistrement…",
       "saved": "Fiche enregistrée."
+    },
+    "search": {
+      "open": "Rechercher",
+      "placeholder": "Flotte, machine, adresse IP, n° de série…",
+      "hint": "Tapez un nom de flotte ou de machine, une adresse IP, un n° de série ou d'affaire.",
+      "none": "Aucun résultat.",
+      "fleet": "Flotte",
+      "machine": "Machine"
     }
   },
   "nav": {

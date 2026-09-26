@@ -22,6 +22,7 @@ export function AppShell({
   sections,
   toggleLabels,
   footer,
+  search,
   children,
 }: {
   tagline: string;
@@ -29,6 +30,8 @@ export function AppShell({
   toggleLabels: { collapse: string; expand: string };
   /** Actions de pied de sidebar (compte, déconnexion) — fournies par l'app, pas par le socle UI. */
   footer?: ReactNode;
+  /** Recherche globale, sous le logo. */
+  search?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -37,6 +40,7 @@ export function AppShell({
         <SidebarBody className="justify-between">
           <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
             <SidebarLogo tagline={tagline} />
+            {search && <div className="mt-4">{search}</div>}
             <nav className="mt-6 flex flex-col gap-0.5">
               {sections.map((section, index) => (
                 <div key={section.title ?? index} className="flex flex-col gap-0.5">

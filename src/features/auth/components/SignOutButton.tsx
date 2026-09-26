@@ -17,7 +17,7 @@ export function SignOutButton({ username }: { username: string }) {
     <>
       <SidebarButton
         icon={<KeyRound />}
-        label={t('password.menu')}
+        label={t('passwordChange.menu')}
         onClick={() => router.push('/mot-de-passe')}
       />
       <SidebarButton

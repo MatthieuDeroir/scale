@@ -37,10 +37,10 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{t('password.title')}</CardTitle>
+        <CardTitle>{t('passwordChange.title')}</CardTitle>
         <CardDescription>
-          {forced ? t('password.forced') : t('password.voluntary')}{' '}
-          {t('password.rule', { min: PASSWORD_MIN_LENGTH })}
+          {forced ? t('passwordChange.forced') : t('passwordChange.voluntary')}{' '}
+          {t('passwordChange.rule', { min: PASSWORD_MIN_LENGTH })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -49,7 +49,7 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
           onSubmit={handleSubmit(async (values) => {
             try {
               await changePassword(values);
-              toast.success(t('password.changed'));
+              toast.success(t('passwordChange.changed'));
               router.replace('/');
               router.refresh();
             } catch (error) {
@@ -73,11 +73,11 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
             </div>
           ))}
           <Button type="submit" variant="brand" disabled={isSubmitting}>
-            {isSubmitting ? t('password.saving') : t('password.save')}
+            {isSubmitting ? t('passwordChange.saving') : t('passwordChange.save')}
           </Button>
           {!forced && (
             <Button type="button" variant="ghost" onClick={() => router.back()}>
-              {t('password.cancel')}
+              {t('passwordChange.cancel')}
             </Button>
           )}
         </form>
