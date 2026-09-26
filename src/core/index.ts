@@ -28,6 +28,14 @@ export {
   removeFleetFromPolicy,
   ensureSystemTags,
   SYSTEM_TAGS,
+  parsePolicyRules,
+  addAccessRule,
+  removeAccessRule,
+  normalizePorts,
   type FleetPolicy,
+  type PolicyRule,
+  type PolicyWarning,
+  type RuleKind,
 } from './acl-policy';
 export { ensureSystemTagsInPolicy } from './system-tags';
+export { updatePolicy } from './policy-update';

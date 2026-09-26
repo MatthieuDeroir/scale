@@ -4,7 +4,7 @@ import { KeyRound, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { SidebarButton } from '@/shared/ui';
+import { SidebarButton, SidebarWhenOpen } from '@/shared/ui';
 import { logout } from '../api';
 
 /** Pied de sidebar : le compte connecté, son mot de passe, la déconnexion. */
@@ -15,6 +15,11 @@ export function SignOutButton({ username }: { username: string }) {
 
   return (
     <>
+      <SidebarWhenOpen>
+        <p className="truncate px-2.5 pt-1 text-xs text-sidebar-muted">
+          {t('signedInAs', { username })}
+        </p>
+      </SidebarWhenOpen>
       <SidebarButton
         icon={<KeyRound />}
         label={t('passwordChange.menu')}
@@ -23,7 +28,6 @@ export function SignOutButton({ username }: { username: string }) {
       <SidebarButton
         icon={<LogOut />}
         label={t('signOut')}
-        detail={username}
         disabled={pending}
         onClick={async () => {
           setPending(true);

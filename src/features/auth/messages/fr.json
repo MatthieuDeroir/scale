@@ -20,7 +20,8 @@
       "changed": "Mot de passe changé.",
       "cancel": "Annuler"
     },
-    "password": "Mot de passe"
+    "password": "Mot de passe",
+    "signedInAs": "Connecté : {username}"
   },
   "accounts": {
     "title": "Comptes Stramatel",

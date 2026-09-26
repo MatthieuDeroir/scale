@@ -5,6 +5,7 @@ import {
   getPolicy,
   logActivity,
   parsePolicyFleets,
+  parsePolicyRules,
   setPolicy,
 } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
@@ -61,5 +62,10 @@ export async function POST(request: Request) {
   await logActivity({ actor: session.session.username, action: 'acl-fleet-create', target: tag });
 
   const { policy, updatedAt } = (await applied.json()) as { policy: string; updatedAt: string };
-  return NextResponse.json({ fleets: parsePolicyFleets(policy), raw: policy, updatedAt });
+  return NextResponse.json({
+    fleets: parsePolicyFleets(policy),
+    ...parsePolicyRules(policy),
+    raw: policy,
+    updatedAt,
+  });
 }

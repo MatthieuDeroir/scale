@@ -29,7 +29,7 @@
     "machineNameHypervision": "ex. poste-supervision-atelier",
     "machineNameEquipment": "ex. quai-2-gare-nord",
     "machineNameHint": "Sinon, la machine gardera son nom d'hôte.",
-    "machineNamePreview": "Elle apparaîtra sous le nom « {hostname} ».",
+    "machineNamePreview": "Elle apparaîtra sous le nom « {hostname} ».",
     "expirationPresets": "Durée de validité",
     "days": "{count, plural, =1 {1 jour} other {# jours}}",
     "usedBy": "Utilisée par {name}",

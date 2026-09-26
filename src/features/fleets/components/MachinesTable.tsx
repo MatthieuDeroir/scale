@@ -121,7 +121,7 @@ export function MachinesTable({
                     <span className="font-medium">{node.givenName || node.name}</span>
                   </span>
                 </TableCell>
-                {showFleet && <TableCell>{parseFleetLabel(node.tags)}</TableCell>}
+                {showFleet && <TableCell>{fleetLabel(node)}</TableCell>}
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {node.ipAddresses[0] ?? '—'}
                 </TableCell>

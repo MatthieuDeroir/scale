@@ -29,7 +29,9 @@
       "users-reset-password": "Password reset",
       "auth-password-change": "Password changed",
       "auth-password-change-failed": "Password change refused",
-      "fleets-profile-update": "Fleet sheet updated"
+      "fleets-profile-update": "Fleet sheet updated",
+      "acl-rule-create": "Inter-fleet access allowed",
+      "acl-rule-delete": "Inter-fleet access removed"
     },
     "search": "Search (author, target…)",
     "category": "Category",

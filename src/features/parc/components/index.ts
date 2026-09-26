@@ -4,3 +4,4 @@ export { UnassignedInbox } from './UnassignedInbox';
 export { MachinesDirectory } from './MachinesDirectory';
 export { AddMachineDialog } from './AddMachineDialog';
 export { GlobalSearch } from './GlobalSearch';
+export { PolicyScreen } from './PolicyScreen';

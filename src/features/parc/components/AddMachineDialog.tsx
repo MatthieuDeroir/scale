@@ -136,7 +136,15 @@ function PendingPicker({
                     online={node.online}
                     label={node.online ? tf('online') : tf('offline')}
                   />
-                  <span className="flex-1 text-sm font-medium">{name}</span>
+                  <span className="flex flex-1 flex-col">
+                    <span className="text-sm font-medium">{name}</span>
+                    {node.enrollment?.serial && (
+                      <span className="text-xs text-muted-foreground">
+                        {t('inbox.serial', { serial: node.enrollment.serial })}
+                        {node.enrollment.model && ` · ${node.enrollment.model}`}
+                      </span>
+                    )}
+                  </span>
                   <span className="text-xs text-muted-foreground tabular-nums">
                     {node.online ? tf('online') : (formatLastSeen(node.lastSeen) ?? tf('never'))}
                   </span>

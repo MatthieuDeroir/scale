@@ -22,9 +22,23 @@ export interface FleetPolicy {
   deletable: boolean;
 }
 
+interface AclRule {
+  action: string;
+  src: string[];
+  dst: string[];
+}
+
+interface SshRule {
+  action: string;
+  src: string[];
+  dst: string[];
+  users: string[];
+}
+
 interface PolicyDocument {
   tagOwners: Record<string, string[]>;
-  acls: Array<{ action: string; src: string[]; dst: string[] }>;
+  acls: AclRule[];
+  ssh?: SshRule[];
   [key: string]: unknown;
 }
 
@@ -91,7 +105,14 @@ export function ensureSystemTags(raw: string): string | null {
   return addSystemTags(policy) ? JSON.stringify(policy, null, 2) : null;
 }
 
-/** Retire la flotte et toute règle ACL qui la cite en source. `tag:interne` est protégé. */
+const targetsTag = (entry: string, tag: string) => entry === tag || entry.startsWith(`${tag}:`);
+
+/**
+ * Retire la flotte : sa déclaration, les règles qui l'ont en source, et les
+ * destinations qui la visent dans les autres règles (accès inter-flottes,
+ * SSH). Sans ce dernier point, la politique citerait un tag inexistant et
+ * Headscale refuserait de l'appliquer. `tag:interne` est protégé.
+ */
 export function removeFleetFromPolicy(raw: string, tag: string): string {
   if (tag === INTERNAL_TAG) {
     throw new Error("La flotte interne ne peut pas être supprimée depuis cet écran.");
@@ -99,7 +120,129 @@ export function removeFleetFromPolicy(raw: string, tag: string): string {
 
   const policy = parsePolicy(raw);
   delete policy.tagOwners[tag];
-  policy.acls = policy.acls.filter((rule) => !rule.src.includes(tag));
+  policy.acls = policy.acls
+    .filter((rule) => !rule.src.includes(tag))
+    .map((rule) => ({ ...rule, dst: rule.dst.filter((entry) => !targetsTag(entry, tag)) }))
+    .filter((rule) => rule.dst.length > 0);
+  if (policy.ssh) {
+    policy.ssh = policy.ssh
+      .filter((rule) => !rule.src.includes(tag))
+      .map((rule) => ({ ...rule, dst: rule.dst.filter((entry) => entry !== tag) }))
+      .filter((rule) => rule.dst.length > 0);
+  }
 
+  return JSON.stringify(policy, null, 2);
+}
+
+// --- Lecture guidée des règles ------------------------------------------
+
+export type RuleKind = 'support' | 'isolation' | 'custom' | 'other';
+
+export interface PolicyRule {
+  /** Empreinte stable de la règle (sources > destinations), sert à la retirer. */
+  id: string;
+  kind: RuleKind;
+  src: string[];
+  dst: string[];
+  /** Pour `custom` : flotte source, flotte cible, ports (« * » = tous). */
+  from?: string;
+  to?: string;
+  ports?: string;
+}
+
+export interface PolicyWarning {
+  code: 'no-support' | 'no-isolation';
+  tag?: string;
+}
+
+const isFleet = (tag: string) => tag === INTERNAL_TAG || FLEET_TAG_PATTERN.test(tag);
+
+function ruleId(rule: { src: string[]; dst: string[] }): string {
+  return `${rule.src.join(',')}>${rule.dst.join(',')}`;
+}
+
+function classify(rule: AclRule): PolicyRule {
+  const base = { id: ruleId(rule), src: rule.src, dst: rule.dst };
+  if (rule.src.length === 1 && rule.src[0] === INTERNAL_TAG && rule.dst.length === 1 && rule.dst[0] === '*:*') {
+    return { ...base, kind: 'support' };
+  }
+  if (rule.src.length === 1 && rule.dst.length === 1 && rule.dst[0] === `${rule.src[0]}:*`) {
+    return { ...base, kind: 'isolation' };
+  }
+  const target = /^(tag:[^:]+):(.+)$/.exec(rule.dst[0] ?? '');
+  const sameTarget =
+    target && rule.dst.every((entry) => entry.startsWith(`${target[1]}:`)) && isFleet(target[1]);
+  if (rule.src.length === 1 && isFleet(rule.src[0]) && sameTarget) {
+    const ports = rule.dst.map((entry) => entry.slice(target![1].length + 1)).join(',');
+    return { ...base, kind: 'custom', from: rule.src[0], to: target![1], ports };
+  }
+  return { ...base, kind: 'other' };
+}
+
+/** Règles de la politique, classées, et ce qui manque au cloisonnement. */
+export function parsePolicyRules(raw: string): {
+  rules: PolicyRule[];
+  ssh: Array<{ src: string[]; dst: string[]; users: string[] }>;
+  warnings: PolicyWarning[];
+} {
+  const policy = parsePolicy(raw);
+  const rules = policy.acls.filter((rule) => rule.action === 'accept').map(classify);
+  const warnings: PolicyWarning[] = [];
+  if (!rules.some((rule) => rule.kind === 'support')) warnings.push({ code: 'no-support' });
+  for (const tag of Object.keys(policy.tagOwners).filter((item) => FLEET_TAG_PATTERN.test(item))) {
+    if (!rules.some((rule) => rule.kind === 'isolation' && rule.src[0] === tag)) {
+      warnings.push({ code: 'no-isolation', tag });
+    }
+  }
+  const ssh = (policy.ssh ?? []).map((rule) => ({ src: rule.src, dst: rule.dst, users: rule.users ?? [] }));
+  return { rules, ssh, warnings };
+}
+
+const PORTS_PATTERN = /^(\*|\d{1,5}(-\d{1,5})?(,\d{1,5}(-\d{1,5})?)*)$/;
+
+/** « 22, 443,5900-5910 » → « 22,443,5900-5910 » ; « » ou « * » → « * ». */
+export function normalizePorts(input: string): string {
+  const compact = input.replace(/\s+/g, '') || '*';
+  if (!PORTS_PATTERN.test(compact)) {
+    throw new Error('Ports invalides : « * », ou une liste comme 22,443,5900-5910.');
+  }
+  for (const part of compact === '*' ? [] : compact.split(',')) {
+    const [low, high = low] = part.split('-').map(Number);
+    if (low < 1 || high > 65535 || low > high) throw new Error(`Port hors limites : ${part}.`);
+  }
+  return compact;
+}
+
+/**
+ * Autorise la flotte `from` à joindre la flotte `to` (entorse volontaire au
+ * cloisonnement, à sens unique). Les deux flottes doivent exister ; l'interne
+ * voit déjà tout et n'a pas besoin d'accès supplémentaire.
+ */
+export function addAccessRule(raw: string, input: { from: string; to: string; ports: string }): string {
+  const policy = parsePolicy(raw);
+  const { from, to } = input;
+  if (from === to) throw new Error('La source et la destination sont la même flotte.');
+  if (from === INTERNAL_TAG) throw new Error('Le support Stramatel joint déjà tout le parc.');
+  for (const tag of [from, to]) {
+    if (!isFleet(tag) || !policy.tagOwners[tag]) throw new Error(`Flotte inconnue : ${tag}.`);
+  }
+  const ports = normalizePorts(input.ports);
+  const rule: AclRule = { action: 'accept', src: [from], dst: ports.split(',').map((port) => `${to}:${port}`) };
+  if (policy.acls.some((existing) => ruleId(existing) === ruleId(rule))) {
+    throw new Error('Cet accès existe déjà.');
+  }
+  policy.acls.push(rule);
+  return JSON.stringify(policy, null, 2);
+}
+
+/** Retire un accès ajouté ; les règles de base (support, cloisonnement) restent. */
+export function removeAccessRule(raw: string, id: string): string {
+  const policy = parsePolicy(raw);
+  const index = policy.acls.findIndex((rule) => ruleId(rule) === id);
+  if (index < 0) throw new Error('Règle introuvable (déjà retirée ?).');
+  if (classify(policy.acls[index]).kind !== 'custom') {
+    throw new Error("Cette règle fait partie du cloisonnement de base : elle ne se retire pas d'ici.");
+  }
+  policy.acls.splice(index, 1);
   return JSON.stringify(policy, null, 2);
 }

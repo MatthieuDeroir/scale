@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addAccessRule,
   addFleetToPolicy,
   ensureSystemTags,
+  normalizePorts,
+  parsePolicyRules,
+  removeAccessRule,
   fleetTagFromName,
   parsePolicyFleets,
   removeFleetFromPolicy,
@@ -89,5 +93,57 @@ describe('ensureSystemTags', () => {
   it("n'expose jamais les tags système comme des flottes", () => {
     const fleets = parsePolicyFleets(ensureSystemTags(BASE_POLICY)!).map((fleet) => fleet.tag);
     expect(fleets).toEqual(['tag:interne', 'tag:flotte-clienta']);
+  });
+});
+
+describe('règles guidées', () => {
+  const withB = addFleetToPolicy(BASE_POLICY, 'tag:flotte-clientb');
+
+  it('classe support, cloisonnement et accès ajouté', () => {
+    const raw = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '22, 443' });
+    const kinds = parsePolicyRules(raw).rules.map((rule) => rule.kind);
+    expect(kinds).toEqual(['support', 'isolation', 'isolation', 'custom']);
+    const custom = parsePolicyRules(raw).rules[3];
+    expect([custom.from, custom.to, custom.ports]).toEqual(['tag:flotte-clienta', 'tag:flotte-clientb', '22,443']);
+  });
+
+  it("refuse un accès vers soi, depuis l'interne, vers une flotte inconnue ou en double", () => {
+    expect(() => addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clienta', ports: '*' })).toThrow();
+    expect(() => addAccessRule(withB, { from: 'tag:interne', to: 'tag:flotte-clienta', ports: '*' })).toThrow();
+    expect(() => addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-zzz', ports: '*' })).toThrow();
+    const once = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '*' });
+    expect(() => addAccessRule(once, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '' })).toThrow();
+  });
+
+  it('ne retire que les accès ajoutés, jamais le cloisonnement de base', () => {
+    const raw = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '*' });
+    const { rules } = parsePolicyRules(raw);
+    const custom = rules.find((rule) => rule.kind === 'custom')!;
+    expect(parsePolicyRules(removeAccessRule(raw, custom.id)).rules.some((rule) => rule.kind === 'custom')).toBe(false);
+    const isolation = rules.find((rule) => rule.kind === 'isolation')!;
+    expect(() => removeAccessRule(raw, isolation.id)).toThrow();
+  });
+
+  it('supprimer une flotte retire aussi les accès qui la visent', () => {
+    const raw = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '*' });
+    const after = JSON.parse(removeFleetFromPolicy(raw, 'tag:flotte-clientb'));
+    const targets = after.acls.flatMap((rule: { dst: string[] }) => rule.dst);
+    expect(targets.some((entry: string) => entry.startsWith('tag:flotte-clientb'))).toBe(false);
+  });
+
+  it('signale une flotte sans règle de cloisonnement', () => {
+    const policy = JSON.parse(withB);
+    policy.acls = policy.acls.filter((rule: { src: string[] }) => rule.src[0] !== 'tag:flotte-clientb');
+    expect(parsePolicyRules(JSON.stringify(policy)).warnings).toEqual([
+      { code: 'no-isolation', tag: 'tag:flotte-clientb' },
+    ]);
+  });
+
+  it('valide les ports', () => {
+    expect(normalizePorts(' 22, 443 ,5900-5910')).toBe('22,443,5900-5910');
+    expect(normalizePorts('')).toBe('*');
+    expect(() => normalizePorts('22;rm')).toThrow();
+    expect(() => normalizePorts('70000')).toThrow();
+    expect(() => normalizePorts('10-2')).toThrow();
   });
 });

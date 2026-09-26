@@ -29,7 +29,9 @@
       "users-reset-password": "Réinitialisation d'un mot de passe",
       "auth-password-change": "Mot de passe changé",
       "auth-password-change-failed": "Changement de mot de passe refusé",
-      "fleets-profile-update": "Fiche flotte modifiée"
+      "fleets-profile-update": "Fiche flotte modifiée",
+      "acl-rule-create": "Accès entre flottes autorisé",
+      "acl-rule-delete": "Accès entre flottes retiré"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",

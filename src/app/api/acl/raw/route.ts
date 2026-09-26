@@ -1,4 +1,4 @@
-import { checkPolicy, logActivity, parsePolicyFleets, setPolicy } from '@/core';
+import { checkPolicy, logActivity, parsePolicyFleets, parsePolicyRules, setPolicy } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -45,6 +45,7 @@ export async function PUT(request: Request) {
   };
   return NextResponse.json({
     fleets: parsePolicyFleets(appliedPolicy),
+    ...parsePolicyRules(appliedPolicy),
     raw: appliedPolicy,
     updatedAt,
   });

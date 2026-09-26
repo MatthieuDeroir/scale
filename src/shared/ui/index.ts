@@ -14,7 +14,7 @@ export {
   DialogFooter,
 } from './dialog';
 export { SecretReveal } from './secret-reveal';
-export { SidebarButton, type NavLinkItem, type NavSection } from './sidebar';
+export { SidebarButton, SidebarWhenOpen, type NavLinkItem, type NavSection } from './sidebar';
 export { PageHeader } from './page-header';
 export { CopyField } from './copy-field';
 export { Pagination, usePagination } from './pagination';

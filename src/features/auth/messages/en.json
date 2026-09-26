@@ -20,7 +20,8 @@
       "changed": "Password changed.",
       "cancel": "Cancel"
     },
-    "password": "Password"
+    "password": "Password",
+    "signedInAs": "Signed in as {username}"
   },
   "accounts": {
     "title": "Stramatel accounts",

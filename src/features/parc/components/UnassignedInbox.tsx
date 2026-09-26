@@ -178,7 +178,19 @@ export function UnassignedInbox() {
                         online={node.online}
                         label={node.online ? tf('online') : tf('offline')}
                       />
-                      <span className="font-medium">{name}</span>
+                      <span className="flex flex-col">
+                        <span className="font-medium">{name}</span>
+                        {(node.enrollment?.serial || node.enrollment?.model) && (
+                          <span className="text-xs text-muted-foreground">
+                            {[
+                              node.enrollment.serial && t('inbox.serial', { serial: node.enrollment.serial }),
+                              node.enrollment.model,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        )}
+                      </span>
                     </span>
                   </TableCell>
                   <TableCell className="font-mono text-xs text-muted-foreground">

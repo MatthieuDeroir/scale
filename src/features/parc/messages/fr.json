@@ -68,7 +68,8 @@
       "assigned": "{count, plural, =1 {1 machine assignée.} other {# machines assignées.}}",
       "failed": "{count, plural, =1 {1 machine n'a pas pu être assignée.} other {# machines n'ont pas pu être assignées.}}",
       "selectAll": "Tout sélectionner",
-      "select": "Sélectionner {name}"
+      "select": "Sélectionner {name}",
+      "serial": "N° {serial}"
     },
     "machines": {
       "title": "Machines",
@@ -149,6 +150,12 @@
       "none": "Aucun résultat.",
       "fleet": "Flotte",
       "machine": "Machine"
+    },
+    "policy": {
+      "title": "Politique d'accès",
+      "description": "Cloisonnement des flottes et exceptions autorisées.",
+      "advanced": "Éditeur avancé (HuJSON brut)",
+      "advancedHint": "pour les cas non couverts ci-dessus"
     }
   },
   "nav": {
