@@ -1,0 +1,14 @@
+[Unit]
+Description=Stramscale : enrôlement au premier démarrage
+Wants=network-online.target tailscaled.service
+After=network-online.target tailscaled.service
+ConditionPathExists=!/var/lib/stramscale/agent-token
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/stramscale-agent enroll
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

@@ -57,7 +57,8 @@ import {
   usePermissions,
 } from '@/shared/ui';
 import { cn } from '@/shared/lib';
-import { fetchMachine, requestUpdate, type AgentJob, type MachineDetail } from '../api';
+import { agentInstallCommand } from '@/features/keys';
+import { fetchMachine, installAgent, requestUpdate, type AgentJob, type MachineDetail } from '../api';
 import { useFleetOptions } from '../lib';
 
 function formatDuration(seconds: number): string {
@@ -294,6 +295,38 @@ function SystemUpdateDialog({ machine, open, onOpenChange }: { machine: MachineD
   );
 }
 
+function InstallAgent({ machine, waiting = false }: { machine: MachineDetail; waiting?: boolean }) {
+  const t = useTranslations('parc');
+  const tk = useTranslations('keys');
+  const { operate } = usePermissions();
+  const [command, setCommand] = useState<string | null>(null);
+  const mutation = useMutation({
+    mutationFn: () => installAgent(machine.id),
+    onSuccess: ({ token, installUrl }) => setCommand(agentInstallCommand({ installUrl, token })),
+    onError: (error: Error) => toast.error(error.message),
+  });
+  return (
+    <Block icon={Package} title={waiting ? t('machine.waitingInventory') : t('machine.noAgent')}>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {waiting ? t('machine.waitingInventoryHint') : t('machine.noAgentHint')}
+      </p>
+      {command ? (
+        <div className="flex flex-col gap-2">
+          <CopyField label={tk('command')} value={command} copyLabel={tk('copy')} copiedLabel={tk('copied')} />
+          <p className="text-xs text-muted-foreground">{t('machine.installAgentHint')}</p>
+        </div>
+      ) : (
+        operate && (
+          <Button variant="brand" disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+            <Terminal aria-hidden />
+            {waiting ? t('machine.regenerateAgent') : t('machine.installAgent')}
+          </Button>
+        )
+      )}
+    </Block>
+  );
+}
+
 /**
  * Page d'une machine : identité, réseau, matériel et système tels que
  * l'agent les a déclarés, paquets installés, mises à jour demandées et leur
@@ -332,7 +365,8 @@ export function MachinePage({ id }: { id: string }) {
   const back = fleetTag && fleet ? { href: `/flottes/${fleetSlug(fleetTag)}`, label: fleet.label } : { href: '/machines', label: t('machines.title') };
   const inv = machine.inventory;
   const pendingSystem = machine.jobs.some((job) => job.kind === 'upgrade-system' && (job.status === 'pending' || job.status === 'running'));
-  const kind = isHypervision(machine.tags) ? tf('kind.hypervision') : tf('kind.equipment');
+  const hypervision = isHypervision(machine.tags);
+  const kind = hypervision ? tf('kind.hypervision') : tf('kind.equipment');
 
   return (
     <>
@@ -348,7 +382,7 @@ export function MachinePage({ id }: { id: string }) {
         description={`${kind} · ${fleet?.label ?? tf('detail.chooseFleet')}`}
         actions={
           <>
-            {operate && machine.agent && inv && (
+            {operate && machine.agent && inv && !hypervision && (
               <Button variant="brand" disabled={inv.upgradable.length === 0 || pendingSystem} onClick={() => setUpdatingSystem(true)}>
                 <ArrowUpCircle aria-hidden />
                 {pendingSystem ? t('machine.status.pending') : t('machine.updateSystem', { count: inv.upgradable.length })}
@@ -423,15 +457,17 @@ export function MachinePage({ id }: { id: string }) {
         )}
       </div>
 
-      {inv ? (
+      {hypervision ? (
+        <EmptyState icon={ShieldCheck} title={t('machine.clientStation')} description={t('machine.clientStationHint')} />
+      ) : inv ? (
         <Block icon={Package} title={t('machine.packages', { count: inv.packages.length })}>
           <Packages machine={machine} />
         </Block>
       ) : (
-        <EmptyState icon={Package} title={t('machine.noAgent')} description={t('machine.noAgentHint')} />
+        <InstallAgent machine={machine} waiting={machine.agent} />
       )}
 
-      {machine.agent && (
+      {inv && !hypervision && (
         <Block icon={History} title={t('machine.jobs')}>
           <Jobs jobs={machine.jobs} />
         </Block>

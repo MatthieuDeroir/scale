@@ -6,6 +6,9 @@ import {
   logActivity,
   mapNewPreAuthKey,
   mapPreAuthKey,
+  prisma,
+  generateAgentToken,
+  publicStramscaleUrl,
   SYSTEM_TAGS,
   type RawHeadscaleNode,
   type RawHeadscalePreAuthKey,
@@ -89,6 +92,14 @@ export async function POST(request: Request) {
   }
 
   const { preAuthKey } = (await response.json()) as { preAuthKey: RawHeadscalePreAuthKey };
+  // Équipement Stramatel : un agent, lié à cette clé, remontera ses specs et
+  // appliquera les mises à jour. Jamais pour un poste d'hypervision client.
+  const agent = tags.includes('tag:hypervision') ? null : generateAgentToken();
+  if (agent) {
+    await prisma.provisioningDevice.create({
+      data: { deviceId: `key-${preAuthKey.id}`, keyId: preAuthKey.id, agentTokenHash: agent.hash },
+    });
+  }
   await logActivity({
     actor: session.session.username,
     action: 'keys-create',
@@ -99,5 +110,7 @@ export async function POST(request: Request) {
     // Adresse que la machine cliente doit joindre (≠ HEADSCALE_API_URL, vue
     // depuis ce serveur) — sert à afficher la commande d'installation.
     loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,
+    agentToken: agent?.token ?? null,
+    installUrl: agent ? `${publicStramscaleUrl(request)}/api/agent/install` : null,
   });
 }

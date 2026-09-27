@@ -29,6 +29,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const response = await getNode(id);
   if (!response.ok) return NextResponse.json({ message: 'Machine introuvable' }, { status: 404 });
   const { node } = (await response.json()) as { node: RawHeadscaleNode };
+  if (node.tags.includes('tag:hypervision')) {
+    return NextResponse.json({ message: "Poste client : Stramscale ne le met pas à jour" }, { status: 409 });
+  }
   const keyId = node.preAuthKey?.id;
   const device = keyId
     ? await prisma.provisioningDevice.findFirst({ where: { keyId }, include: { inventory: true } })

@@ -23,7 +23,8 @@
     "commandHint": {
       "windows": "In PowerShell run as administrator. Installs Tailscale, then enrolls the station.",
       "linux": "Installs Tailscale with the official script, then enrolls the machine (sudo required).",
-      "installed": "Tailscale must already be installed; the command enrolls the machine with this key."
+      "installed": "Tailscale must already be installed; the command enrolls the machine with this key.",
+      "agent": "On the machine (Debian, Ubuntu, Raspberry Pi OS), with sudo: installs Tailscale, joins the fleet and installs the Stramscale agent, which immediately sends its specs and packages."
     },
     "machineName": "Machine name (optional)",
     "machineNameHypervision": "e.g. supervision-station-workshop",

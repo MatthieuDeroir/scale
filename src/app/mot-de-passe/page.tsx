@@ -21,7 +21,7 @@ export default async function MotDePassePage() {
       />
       <div className="relative flex flex-col items-center gap-3 text-center">
         <StramscaleMark className="size-12 rounded-2xl" />
-        <StramscaleWordmark className="text-2xl text-sidebar-accent-foreground" />
+        <StramscaleWordmark height={24} />
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-sidebar-muted">
           {t('tagline')}
         </p>

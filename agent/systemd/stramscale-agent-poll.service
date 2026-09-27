@@ -1,0 +1,8 @@
+[Unit]
+Description=Stramscale : exécuter la mise à jour demandée
+After=network-online.target
+ConditionPathExists=/var/lib/stramscale/agent-token
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/stramscale-agent poll

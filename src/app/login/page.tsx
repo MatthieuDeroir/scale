@@ -17,7 +17,7 @@ export default async function LoginPage() {
       <div className="relative flex flex-col items-center gap-3 text-center">
         <StramscaleMark className="size-14 shadow-lg shadow-brand/30 rounded-2xl" />
         <h1>
-          <StramscaleWordmark className="text-3xl text-sidebar-accent-foreground" />
+          <StramscaleWordmark height={30} />
         </h1>
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-sidebar-muted">
           {t('tagline')}

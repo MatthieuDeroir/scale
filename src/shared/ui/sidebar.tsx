@@ -140,11 +140,12 @@ function Reveal({ children, className }: { children: ReactNode; className?: stri
 
 export function SidebarLogo({ tagline }: { tagline: string }) {
   return (
-    <Link href="/" aria-label="Stramscale" className="flex h-10 items-center gap-2.5 px-1.5">
-      <StramscaleMark className="size-7" />
-      <Reveal className="flex flex-col leading-tight">
-        <StramscaleWordmark className="text-[15px] text-sidebar-accent-foreground" />
-        <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-sidebar-muted">{tagline}</span>
+    <Link href="/" aria-label="Stramscale" className="flex h-12 items-center gap-3 px-0.5">
+      {/* 36 px : la plus grande taille qui tient dans la barre repliée (64 px moins les marges). */}
+      <StramscaleMark className="size-9 rounded-[9px] shadow-md shadow-brand/25" />
+      <Reveal className="flex flex-col gap-0.5 leading-none">
+        <StramscaleWordmark height={16} />
+        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-sidebar-muted">{tagline}</span>
       </Reveal>
     </Link>
   );

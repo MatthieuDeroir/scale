@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { cn } from '../lib';
 
 /**
@@ -23,11 +24,33 @@ export function StramscaleMark({ className }: { className?: string }) {
   );
 }
 
-/** Mot-symbole « Stram·scale » : la racine Stramatel, et « scale » à l'accent de marque. */
-export function StramscaleWordmark({ className }: { className?: string }) {
+/** Proportions de `stram-light.png` (lettres « STRAM » découpées dans le logo Stramatel). */
+const STRAM_RATIO = 835 / 161;
+
+/**
+ * Mot-symbole : « STRAM » tiré du logo Stramatel (le S rouge et les lettres
+ * obliques de la marque), puis « SCALE » dans le rouge de la charte, penché
+ * et espacé pour rester dans le même dessin. Prévu pour fond sombre.
+ */
+export function StramscaleWordmark({ height = 18, className }: { height?: number; className?: string }) {
   return (
-    <span className={cn('font-semibold tracking-tight', className)}>
-      Stram<span className="text-brand">scale</span>
+    <span className={cn('inline-flex items-end gap-[0.18em]', className)} style={{ fontSize: height }} aria-label="Stramscale" role="img">
+      <Image
+        src="/images/stram-light.png"
+        alt=""
+        width={Math.round(height * STRAM_RATIO)}
+        height={height}
+        className="block shrink-0"
+        style={{ height, width: 'auto' }}
+        priority
+      />
+      <span
+        aria-hidden
+        className="font-medium uppercase leading-none tracking-[0.14em] text-brand"
+        style={{ fontSize: height * 1.12, transform: 'skewX(-12deg)', marginBottom: -height * 0.06 }}
+      >
+        scale
+      </span>
     </span>
   );
 }

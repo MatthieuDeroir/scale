@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // L'agent et ses unités systemd sont servis par /api/agent/* : à embarquer dans le build.
+  outputFileTracingIncludes: { '/api/agent/**': ['./agent/**'] },
   reactStrictMode: true,
   // Le lecteur série n'est jamais bundlé côté client : il vit dans server/.
   serverExternalPackages: ['serialport', '@prisma/client'],

@@ -1,0 +1,10 @@
+[Unit]
+Description=Stramscale : inventaire quotidien
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1d
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target

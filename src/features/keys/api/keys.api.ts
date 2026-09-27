@@ -14,6 +14,9 @@ export interface NewAccessKey extends AccessKey {
   key: string;
   /** Adresse Headscale que la machine à enrôler doit joindre. */
   loginServer: string;
+  /** Équipement Stramatel : jeton de l'agent et installateur (jamais pour un poste client). */
+  agentToken?: string | null;
+  installUrl?: string | null;
 }
 
 export interface CreateKeyInput {

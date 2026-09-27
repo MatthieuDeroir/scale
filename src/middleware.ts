@@ -51,5 +51,5 @@ export async function middleware(request: NextRequest) {
 // interne sans cookie de session, qu'un middleware qui l'exigerait ferait
 // systématiquement échouer (307 → « ceci n'est pas une image valide »).
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|images/).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|images/).*)'],
 };

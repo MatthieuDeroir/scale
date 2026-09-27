@@ -234,8 +234,15 @@
         "done": "Terminée",
         "failed": "Échec"
       },
-      "noAgent": "Pas d'agent Stramscale sur cette machine",
-      "noAgentHint": "Matériel, système, paquets et mises à jour sont fournis par l'agent, installé dans l'image dorée. Les machines raccordées par clé manuelle n'en ont pas."
+      "noAgent": "Agent Stramscale non installé",
+      "noAgentHint": "Cet équipement a été raccordé sans agent : ses specs, ses paquets et ses mises à jour ne sont pas encore connus.",
+      "installAgent": "Installer l'agent",
+      "installAgentHint": "À lancer sur la machine, avec les droits sudo. Le jeton ne sert qu'à cette machine ; générer une nouvelle commande invalide la précédente.",
+      "clientStation": "Poste du client",
+      "clientStationHint": "Ce poste appartient au client : Stramscale ne collecte pas son inventaire et ne le met pas à jour.",
+      "waitingInventory": "En attente du premier inventaire",
+      "waitingInventoryHint": "Une commande d'installation a été générée, mais l'agent ne s'est pas encore manifesté. Si elle n'a pas été lancée sur la machine, générez-en une nouvelle : l'ancienne cessera de fonctionner.",
+      "regenerateAgent": "Générer une nouvelle commande"
     }
   },
   "nav": {

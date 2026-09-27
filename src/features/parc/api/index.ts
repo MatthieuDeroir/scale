@@ -2,6 +2,7 @@ export { fetchProfiles, saveProfile, type FleetProfile, type FleetProfileInput }
 export {
   fetchMachine,
   requestUpdate,
+  installAgent,
   type MachineDetail,
   type MachineInventory,
   type AgentJob,

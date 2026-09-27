@@ -35,7 +35,8 @@
       "agent-job-package": "Mise à jour d'un paquet demandée",
       "agent-job-system": "Mise à jour du système demandée",
       "agent-job-done": "Mise à jour terminée (agent)",
-      "agent-job-failed": "Mise à jour en échec (agent)"
+      "agent-job-failed": "Mise à jour en échec (agent)",
+      "agent-install": "Agent installé sur une machine"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",

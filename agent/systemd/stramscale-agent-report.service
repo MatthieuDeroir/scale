@@ -1,0 +1,8 @@
+[Unit]
+Description=Stramscale : envoyer l'inventaire
+After=network-online.target
+ConditionPathExists=/var/lib/stramscale/agent-token
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/stramscale-agent report

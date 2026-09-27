@@ -234,8 +234,15 @@
         "done": "Done",
         "failed": "Failed"
       },
-      "noAgent": "No Stramscale agent on this machine",
-      "noAgentHint": "Hardware, system, packages and updates come from the agent installed in the golden image. Machines joined with a manual key don't have one."
+      "noAgent": "Stramscale agent not installed",
+      "noAgentHint": "This device was joined without the agent: its specs, packages and updates are not known yet.",
+      "installAgent": "Install agent",
+      "installAgentHint": "Run on the machine with sudo. The token only works for this machine; generating a new command invalidates the previous one.",
+      "clientStation": "Customer station",
+      "clientStationHint": "This station belongs to the customer: Stramscale neither collects its inventory nor updates it.",
+      "waitingInventory": "Waiting for the first inventory",
+      "waitingInventoryHint": "An install command was generated, but the agent has not reported yet. If it was not run on the machine, generate a new one: the old one will stop working.",
+      "regenerateAgent": "Generate a new command"
     }
   },
   "nav": {

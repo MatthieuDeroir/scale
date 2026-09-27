@@ -36,3 +36,27 @@ export function installCommand(
   }
   return `tailscale up ${up}`;
 }
+
+/**
+ * Équipement Stramatel : une seule commande qui installe Tailscale, raccorde
+ * la machine et installe l'agent (specs, paquets, mises à jour).
+ */
+export function agentInstallCommand({
+  installUrl,
+  token,
+  loginServer,
+  key,
+  hostname,
+}: {
+  installUrl: string;
+  token: string;
+  loginServer?: string;
+  key?: string;
+  hostname?: string;
+}): string {
+  const args = [];
+  if (key && loginServer) args.push(`--authkey=${key}`, `--login-server=${loginServer}`);
+  if (hostname) args.push(`--hostname=${hostname}`);
+  args.push(`--token=${token}`);
+  return `curl -fsSL ${installUrl} | sudo sh -s -- ${args.join(' ')}`;
+}

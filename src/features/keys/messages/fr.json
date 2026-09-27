@@ -23,7 +23,8 @@
     "commandHint": {
       "windows": "Dans PowerShell ouvert en administrateur. Installe Tailscale puis inscrit le poste.",
       "linux": "Installe Tailscale par le script officiel puis inscrit la machine (droits sudo requis).",
-      "installed": "Tailscale doit déjà être installé ; la commande inscrit la machine avec cette clé."
+      "installed": "Tailscale doit déjà être installé ; la commande inscrit la machine avec cette clé.",
+      "agent": "Sur la machine (Debian, Ubuntu, Raspberry Pi OS), avec les droits sudo : installe Tailscale, raccorde la machine à la flotte et installe l'agent Stramscale, qui envoie aussitôt ses specs et ses paquets."
     },
     "machineName": "Nom de la machine (facultatif)",
     "machineNameHypervision": "ex. poste-supervision-atelier",

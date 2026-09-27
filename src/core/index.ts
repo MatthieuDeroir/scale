@@ -49,3 +49,4 @@ export {
   type Inventory,
   type JobKind,
 } from './agent';
+export { agentScript, installerScript, publicStramscaleUrl } from './agent-install';

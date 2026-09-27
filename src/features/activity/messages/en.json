@@ -35,7 +35,8 @@
       "agent-job-package": "Package update requested",
       "agent-job-system": "System update requested",
       "agent-job-done": "Update done (agent)",
-      "agent-job-failed": "Update failed (agent)"
+      "agent-job-failed": "Update failed (agent)",
+      "agent-install": "Agent installed on a machine"
     },
     "search": "Search (author, target…)",
     "category": "Category",

@@ -59,3 +59,13 @@ export async function requestUpdate(
   }
   return response.json();
 }
+
+/** Commande d'installation de l'agent pour un équipement déjà raccordé (nouveau jeton). */
+export async function installAgent(id: string): Promise<{ token: string; installUrl: string }> {
+  const response = await fetch(`/api/machines/${encodeURIComponent(id)}/agent`, { method: 'POST' });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(payload.message ?? `Refusé (${response.status})`);
+  }
+  return response.json();
+}

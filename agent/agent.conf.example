@@ -1,0 +1,7 @@
+# /etc/stramscale/agent.conf (droits 600, root)
+STRAMSCALE_URL=https://stramscale.example.fr
+# Secret de fabrication : ne sert qu'au premier démarrage.
+PROVISIONING_SECRET=
+# Nom d'hôte unique tiré du n° de série (stra-xxxxxxxx). 0 pour garder le nom de l'image.
+SET_HOSTNAME=1
+HOSTNAME_PREFIX=stra

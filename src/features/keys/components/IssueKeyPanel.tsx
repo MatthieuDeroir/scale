@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button, CopyField, DialogFooter, Input, Label } from '@/shared/ui';
 import { cn } from '@/shared/lib';
 import { createKey, type NewAccessKey } from '../api';
-import { installCommand, toHostname, type Platform } from '../lib/install-commands';
+import { agentInstallCommand, installCommand, toHostname, type Platform } from '../lib/install-commands';
 
 export type MachineKind = 'hypervision' | 'equipment';
 
@@ -99,11 +99,20 @@ export function IssueKeyPanel({
   });
 
   if (issued) {
-    const command = installCommand(platform, {
-      loginServer: issued.loginServer,
-      key: issued.key,
-      hostname: hostname || undefined,
-    });
+    const withAgent = Boolean(issued.agentToken && issued.installUrl);
+    const command = withAgent
+      ? agentInstallCommand({
+          installUrl: issued.installUrl!,
+          token: issued.agentToken!,
+          loginServer: issued.loginServer,
+          key: issued.key,
+          hostname: hostname || undefined,
+        })
+      : installCommand(platform, {
+          loginServer: issued.loginServer,
+          key: issued.key,
+          hostname: hostname || undefined,
+        });
     return (
       <>
         <div className="flex flex-col gap-4">
@@ -116,23 +125,27 @@ export function IssueKeyPanel({
           </div>
           <CopyField label={t('key')} value={issued.key} copyLabel={t('copy')} copiedLabel={t('copied')} />
           <div className="flex flex-col gap-2">
-            <Segmented
-              label={t('platform')}
-              value={platform}
-              onChange={setPlatform}
-              options={[
-                { value: 'windows', label: 'Windows' },
-                { value: 'linux', label: 'Linux' },
-                { value: 'installed', label: t('platformInstalled') },
-              ]}
-            />
+            {!withAgent && (
+              <Segmented
+                label={t('platform')}
+                value={platform}
+                onChange={setPlatform}
+                options={[
+                  { value: 'windows', label: 'Windows' },
+                  { value: 'linux', label: 'Linux' },
+                  { value: 'installed', label: t('platformInstalled') },
+                ]}
+              />
+            )}
             <CopyField
               label={t('command')}
               value={command}
               copyLabel={t('copy')}
               copiedLabel={t('copied')}
             />
-            <p className="text-xs text-muted-foreground">{t(`commandHint.${platform}`)}</p>
+            <p className="text-xs text-muted-foreground">
+              {withAgent ? t('commandHint.agent') : t(`commandHint.${platform}`)}
+            </p>
           </div>
         </div>
         <DialogFooter>
