@@ -15,7 +15,7 @@ import type { Product, TemplateItem } from '../api';
 
 const HYPERVISION = 'hypervision';
 
-/** Une ligne de composition : un produit (ou un poste d'hypervision), et ses SLAVE pour un SL MEDIA. */
+/** Une ligne de composition : un produit (ou un poste d'hypervision), et ses REPLICA pour un SL MEDIA. */
 export interface SlotLine {
   target: string;
   count: number;
@@ -25,7 +25,7 @@ export interface SlotLine {
 
 export const emptyLine = (): SlotLine => ({ target: '', count: 1, label: '', slaves: 0 });
 
-/** Produit choisi sur la ligne, s'il accepte des SLAVE. */
+/** Produit choisi sur la ligne, s'il accepte des REPLICA. */
 function productOf(line: SlotLine, products: Product[]) {
   return products.find((item) => String(item.id) === line.target);
 }
@@ -51,8 +51,8 @@ export function linesToItems(lines: SlotLine[], products: Product[], hypervision
 }
 
 /**
- * Composition d'une flotte, ligne par ligne. Un SL MEDIA (produit à SLAVE)
- * est une ligne à lui seul, avec la liste de ses SLAVE en dessous : « + »
+ * Composition d'une flotte, ligne par ligne. Un SL MEDIA (produit à REPLICA)
+ * est une ligne à lui seul, avec la liste de ses REPLICA en dessous : « + »
  * pour en ajouter, « × » pour en retirer.
  */
 export function SlotLinesEditor({
@@ -128,7 +128,7 @@ export function SlotLinesEditor({
                     <li key={slave} className="flex items-center gap-2 text-sm">
                       <CornerDownRight className="size-3.5 text-muted-foreground" aria-hidden />
                       <span className="flex-1">
-                        {label} SLAVE {slave + 1}
+                        {label} REPLICA {slave + 1}
                       </span>
                       <Button
                         size="icon"
@@ -172,8 +172,8 @@ export function slotIcon(kind: string) {
   return kind === 'hypervision' ? Monitor : Server;
 }
 
-/** Résumé d'un élément de modèle : « 1 × SL TEMPO », « SL MEDIA + 3 SLAVE ». */
+/** Résumé d'un élément de modèle : « 1 × SL TEMPO », « SL MEDIA + 3 REPLICA ». */
 export function describeItem(item: TemplateItem): string {
   const head = item.count > 1 ? `${item.count} × ${item.label}` : item.label;
-  return item.slaves ? `${head} + ${item.slaves} SLAVE` : head;
+  return item.slaves ? `${head} + ${item.slaves} REPLICA` : head;
 }

@@ -39,6 +39,7 @@ import {
   type PlanSlot,
 } from '../api';
 import { unassignedNodes, useNodes } from '../lib';
+import { slotHostname } from '@/core/hostname';
 import { cn } from '@/shared/lib';
 import { SlotLinesEditor, describeItem, emptyLine, linesToItems, type SlotLine } from './SlotLinesEditor';
 
@@ -52,7 +53,7 @@ type Open =
 
 export const planKey = (tag: string) => ['plan', tag] as const;
 
-/** Chaque serveur suivi de ses SLAVE, dans l'ordre du plan. */
+/** Chaque serveur suivi de ses REPLICA, dans l'ordre du plan. */
 export function orderedSlots(slots: PlanSlot[]): PlanSlot[] {
   const ids = new Set(slots.map((slot) => slot.id));
   const out: PlanSlot[] = [];
@@ -331,7 +332,7 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
             <IssueKeyPanel
               fleetTag={fleetTag}
               kind={open.slot.kind}
-              fixedName={open.slot.label}
+              fixedName={slotHostname(fleetTag, open.slot.label)}
               issue={(expiration) => issueSlotKey(open.slot.id, expiration)}
               onIssued={() => queryClient.invalidateQueries({ queryKey: planKey(fleetTag) })}
               onDone={close}
@@ -373,7 +374,8 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
           <ul className="-mx-2 flex flex-col divide-y">
             {slots.map((slot) => {
               const Icon = slot.kind === 'hypervision' ? Monitor : Server;
-              const server = Boolean(slot.product?.slaves) && !slot.parentSlotId;
+              const server = Boolean(slot.product?.master) && !slot.parentSlotId;
+              const withSlaves = server && Boolean(slot.product?.slaves);
               const slaveCount = slots.filter((item) => item.parentSlotId === slot.id).length;
               return (
                 <li
@@ -393,7 +395,7 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
                     <span className="text-xs text-muted-foreground">
                       {[
                         slot.kind === 'hypervision' ? t('hypervision') : slot.product?.name,
-                        server ? t('slaveCount', { count: slaveCount }) : slot.parentSlotId ? 'SLAVE' : null,
+                        withSlaves ? t('slaveCount', { count: slaveCount }) : slot.parentSlotId ? 'REPLICA' : null,
                         slot.reference,
                       ]
                         .filter((part) => part && part !== slot.label)
@@ -401,7 +403,7 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
                     </span>
                   </span>
                   <SlotStatus slot={slot} />
-                  {operate && server && (
+                  {operate && withSlaves && (
                     <Button
                       variant="ghost"
                       size="sm"

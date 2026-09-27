@@ -76,6 +76,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           id: product.productId,
           name: product.product.name,
           reference: product.reference,
+          master: product.product.master,
           slaves: product.product.slaves,
           masterNodeId: product.masterNodeId,
         }

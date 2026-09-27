@@ -7,6 +7,7 @@ import {
   prisma,
   setMachineProduct,
   setNodeTags,
+  SERVER_TAG,
   type RawHeadscaleNode,
 } from '@/core';
 import { guardApi } from '@/features/auth/lib/require-session';
@@ -17,9 +18,9 @@ export const dynamic = 'force-dynamic';
 const FLEET_TAG = /^tag:(interne|flotte-.+)$/;
 
 /**
- * Produit d'une machine (gamme ou produit spécifique) et n° d'affaire. Pour
- * un produit à SLAVE (SL MEDIA), le rôle : serveur (tag MASTER) ou SLAVE
- * rattaché à un serveur de la même flotte.
+ * Produit d'une machine (gamme ou produit spécifique) et n° d'affaire. Un
+ * produit maître pose le tag SERVEUR ; pour un produit à REPLICA (SL MEDIA), le
+ * rôle : maître, ou REPLICA rattaché à un maître de la même flotte.
  */
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { session, denied } = await guardApi('OPERATOR');
@@ -42,7 +43,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const product = await prisma.product.findUnique({ where: { id: Number(body?.productId) || 0 } });
   if (!product) return NextResponse.json({ message: 'Choisissez un produit' }, { status: 400 });
   const reference = body?.reference?.trim().slice(0, 60) || null;
-  const master = product.slaves && body?.role !== 'slave';
+  const master = product.master && !(product.slaves && body?.role === 'slave');
 
   let masterNodeId: string | null = null;
   if (product.slaves && !master && body?.masterNodeId) {
@@ -52,26 +53,26 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const nodes = listed.ok ? ((await listed.json()) as { nodes: RawHeadscaleNode[] }).nodes : [];
     const server = nodes.find((item) => item.id === body.masterNodeId);
     const serverProduct = server ? await prisma.machineProduct.findUnique({ where: { nodeId: server.id } }) : null;
-    if (!server || server.id === id || !fleet || !server.tags.includes(fleet) || !server.tags.includes('tag:master') || serverProduct?.productId !== product.id) {
+    if (!server || server.id === id || !fleet || !server.tags.includes(fleet) || !server.tags.includes(SERVER_TAG) || serverProduct?.productId !== product.id) {
       return NextResponse.json({ message: `Serveur ${product.name} introuvable dans cette flotte` }, { status: 400 });
     }
     masterNodeId = server.id;
   }
 
-  if (master !== node.tags.includes('tag:master')) {
+  if (master !== node.tags.includes(SERVER_TAG)) {
     if (master) await ensureSystemTagsInPolicy();
-    const tags = master ? [...node.tags, 'tag:master'] : node.tags.filter((tag) => tag !== 'tag:master');
+    const tags = master ? [...node.tags, SERVER_TAG] : node.tags.filter((tag) => tag !== SERVER_TAG);
     const tagged = await setNodeTags(id, tags);
     if (!tagged.ok) return NextResponse.json({ message: 'Rôle refusé par Headscale' }, { status: 502 });
   }
   await setMachineProduct(id, product.id, reference, masterNodeId);
-  // Une machine qui cesse d'être serveur libère ses SLAVE.
+  // Une machine qui cesse d'être serveur libère ses REPLICA.
   if (!master) await prisma.machineProduct.updateMany({ where: { masterNodeId: id }, data: { masterNodeId: null } });
 
   await logActivity({
     actor: session!.username,
     action: 'machine-product',
-    target: `${await describeNode(id)} → ${product.name}${product.slaves ? (master ? ' serveur' : ' SLAVE') : ''}${reference ? ` (${reference})` : ''}`,
+    target: `${await describeNode(id)} → ${product.name}${product.slaves ? (master ? ' maître' : ' REPLICA') : ''}${reference ? ` (${reference})` : ''}`,
   });
   return NextResponse.json({ ok: true });
 }

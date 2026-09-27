@@ -8,15 +8,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   const { session, denied } = await guardApi('OPERATOR');
   if (denied) return denied;
   const id = Number((await params).id);
-  const body = (await request.json().catch(() => null)) as { name?: string; category?: string; slaves?: boolean } | null;
-  const data: { name?: string; category?: string; slaves?: boolean } = {};
+  const body = (await request.json().catch(() => null)) as { name?: string; category?: string; master?: boolean; slaves?: boolean } | null;
+  const data: { name?: string; category?: string; master?: boolean; slaves?: boolean } = {};
   if (body?.name !== undefined) {
     const name = body.name.trim();
     if (!name || name.length > 60) return NextResponse.json({ message: 'Nom invalide' }, { status: 400 });
     data.name = name;
   }
   if (body?.category !== undefined) data.category = body.category === 'sur-mesure' ? 'sur-mesure' : 'gamme';
+  if (body?.master !== undefined) data.master = body.master === true;
   if (body?.slaves !== undefined) data.slaves = body.slaves === true;
+  // Un produit à REPLICA est forcément maître.
+  if (data.slaves) data.master = true;
   const product = await prisma.product.update({ where: { id }, data }).catch(() => null);
   if (!product) return NextResponse.json({ message: 'Produit introuvable ou nom déjà pris' }, { status: 400 });
   await logActivity({ actor: session!.username, action: 'product-update', target: product.name });

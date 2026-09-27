@@ -22,7 +22,9 @@ model Product {
   category  String           @default("gamme")
   /// Obsolète (remplacé par `slaves`), conservé pour ne pas perdre de colonne.
   role      String?
-  /// Accepte des SLAVE rattachés (SL MEDIA) : la machine est alors serveur ou SLAVE.
+  /// Machine maîtresse (tag MASTER) : SL TEMPO, serveur SL MEDIA.
+  master    Boolean          @default(false)
+  /// Accepte des SLAVE rattachés (SL MEDIA) : la machine est alors maîtresse ou SLAVE.
   slaves    Boolean          @default(false)
   createdAt DateTime         @default(now())
   machines  MachineProduct[]

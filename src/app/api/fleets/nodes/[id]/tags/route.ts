@@ -29,7 +29,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   const label = await describeNode(id);
-  // Un tag système (ex. tag:master) doit être déclaré, sinon Headscale refuse.
+  // Un tag système (ex. tag:serveur) doit être déclaré, sinon Headscale refuse.
   if (tags.some((tag) => (SYSTEM_TAGS as readonly string[]).includes(tag))) {
     await ensureSystemTagsInPolicy();
   }

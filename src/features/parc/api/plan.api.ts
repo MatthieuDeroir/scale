@@ -4,12 +4,14 @@ export interface Product {
   id: number;
   name: string;
   category: 'gamme' | 'sur-mesure';
-  /** Accepte des SLAVE (SL MEDIA) : ses machines sont serveur ou SLAVE. */
+  /** Machines maîtresses (tag SERVEUR). */
+  master: boolean;
+  /** Accepte des REPLICA (SL MEDIA) : ses machines sont maîtresses ou REPLICA. */
   slaves: boolean;
   machines: number;
 }
 
-/** Flux d'un produit vers un autre ; vers lui-même : les SLAVE vers leur serveur. */
+/** Flux d'un produit vers un autre ; vers lui-même : les REPLICA vers leur serveur. */
 export interface ProductLink {
   id: number;
   fromId: number;
@@ -25,9 +27,9 @@ export interface PlanSlot {
   kind: SlotKind;
   label: string;
   reference: string | null;
-  /** SLAVE : emplacement de son serveur. */
+  /** REPLICA : emplacement de son serveur. */
   parentSlotId: number | null;
-  product: { id: number; name: string; slaves: boolean } | null;
+  product: { id: number; name: string; master: boolean; slaves: boolean } | null;
   keyIssuedAt: string | null;
   machine: { id: string; name: string; online: boolean; ip: string | null } | null;
 }
@@ -37,7 +39,7 @@ export interface TemplateItem {
   productId: number | null;
   count: number;
   label: string;
-  /** SLAVE par serveur, pour un produit qui en accepte. */
+  /** REPLICA par serveur, pour un produit qui en accepte. */
   slaves?: number;
 }
 
@@ -65,9 +67,9 @@ async function call<T>(url: string, init?: RequestInit & { json?: unknown }): Pr
 const planUrl = (tag: string) => `/api/plan/${encodeURIComponent(tag)}`;
 
 export const fetchProducts = () => call<Product[]>('/api/products');
-export const createProduct = (input: { name: string; category: string; slaves: boolean }) =>
+export const createProduct = (input: { name: string; category: string; master: boolean; slaves: boolean }) =>
   call<Product>('/api/products', { method: 'POST', json: input });
-export const updateProduct = (id: number, input: Partial<{ name: string; category: string; slaves: boolean }>) =>
+export const updateProduct = (id: number, input: Partial<{ name: string; category: string; master: boolean; slaves: boolean }>) =>
   call<Product>(`/api/products/${id}`, { method: 'PATCH', json: input });
 export const deleteProduct = (id: number) => call<{ ok: true }>(`/api/products/${id}`, { method: 'DELETE' });
 

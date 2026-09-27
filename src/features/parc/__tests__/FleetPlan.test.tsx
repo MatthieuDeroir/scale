@@ -9,9 +9,9 @@ import { FleetPlan } from '../components/FleetPlan';
 
 const slots = [
   { id: 3, kind: 'hypervision', label: "Poste d'hypervision", reference: null, parentSlotId: null, product: null, keyIssuedAt: null, machine: null },
-  { id: 2, kind: 'equipment', label: 'SL MEDIA SLAVE 1', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', slaves: true },
+  { id: 2, kind: 'equipment', label: 'SL MEDIA REPLICA 1', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', master: true, slaves: true },
     keyIssuedAt: new Date().toISOString(), machine: null },
-  { id: 1, kind: 'equipment', label: 'SL MEDIA', reference: 'AFF-12', parentSlotId: null, product: { id: 1, name: 'SL MEDIA', slaves: true },
+  { id: 1, kind: 'equipment', label: 'SL MEDIA', reference: 'AFF-12', parentSlotId: null, product: { id: 1, name: 'SL MEDIA', master: true, slaves: true },
     keyIssuedAt: null, machine: { id: '7', name: 'sl-media', online: true, ip: '100.64.0.7' } },
 ];
 const pending = { id: '9', name: 'x', givenName: 'nuc-neuf', ipAddresses: ['100.64.0.9'], online: true, lastSeen: null, tags: ['tag:a-assigner'] };
@@ -43,13 +43,13 @@ describe('FleetPlan', () => {
     expect(screen.getByText('À pourvoir')).toBeInTheDocument();
   });
 
-  it('range chaque SLAVE sous son serveur, qui peut en recevoir d’autres', async () => {
+  it('range chaque REPLICA sous son serveur, qui peut en recevoir d’autres', async () => {
     await screen.findByText('1/3 pourvus');
     const labels = screen.getAllByRole('listitem').map((item) => item.textContent ?? '');
-    expect(labels.findIndex((text) => text.startsWith('SL MEDIA SLAVE 1'))).toBe(
+    expect(labels.findIndex((text) => text.startsWith('SL MEDIA REPLICA 1'))).toBe(
       labels.findIndex((text) => text.startsWith('SL MEDIASERVEUR')) + 1
     );
-    expect(screen.getByRole('button', { name: 'SLAVE' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'REPLICA' })).toBeInTheDocument();
   });
 
   it('propose d’émettre une clé pour chaque emplacement libre, et d’assigner seulement un équipement', async () => {

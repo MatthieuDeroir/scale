@@ -18,11 +18,11 @@ function node(id: number, tags: string[], online = true, product?: FleetNode['pr
 }
 
 const products = [
-  { id: 1, name: 'SL MEDIA', category: 'gamme' as const, slaves: true, machines: 0 },
-  { id: 2, name: 'SL TEMPO', category: 'gamme' as const, slaves: false, machines: 0 },
+  { id: 1, name: 'SL MEDIA', category: 'gamme' as const, master: true, slaves: true, machines: 0 },
+  { id: 2, name: 'SL TEMPO', category: 'gamme' as const, master: true, slaves: false, machines: 0 },
 ];
-const media = (masterNodeId: string | null = null) => ({ id: 1, name: 'SL MEDIA', reference: null, slaves: true, masterNodeId });
-const tempo = { id: 2, name: 'SL TEMPO', reference: null, slaves: false, masterNodeId: null };
+const media = (masterNodeId: string | null = null) => ({ id: 1, name: 'SL MEDIA', reference: null, master: true, slaves: true, masterNodeId });
+const tempo = { id: 2, name: 'SL TEMPO', reference: null, master: true, slaves: false, masterNodeId: null };
 
 function wrap(ui: React.ReactNode) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -49,18 +49,18 @@ function fleetOf(nodes: FleetNode[]): FleetSummary {
 
 describe('FleetFlowDiagram', () => {
   const nodes = [
-    node(1, ['tag:flotte-b', 'tag:master'], true, media()),
+    node(1, ['tag:flotte-b', 'tag:serveur'], true, media()),
     node(2, ['tag:flotte-b'], true, media('1')),
     node(3, ['tag:flotte-b'], false, media('1')),
     node(4, ['tag:flotte-b', 'tag:hypervision']),
-    node(5, ['tag:flotte-b'], true, tempo),
+    node(5, ['tag:flotte-b', 'tag:serveur'], true, tempo),
   ];
   const links = [
     { id: 1, fromId: 1, toId: 1, ports: '5000', note: null },
     { id: 2, fromId: 2, toId: 1, ports: '123', note: null },
   ];
 
-  it('place serveur, SLAVE, SL TEMPO, poste, support et exception, avec les ports des flux', () => {
+  it('place serveur, REPLICA, SL TEMPO, poste, support et exception, avec les ports des flux', () => {
     wrap(
       <FleetFlowDiagram
         fleet={fleetOf(nodes)}
@@ -75,10 +75,11 @@ describe('FleetFlowDiagram', () => {
     );
     expect(screen.getByText('♛ machine-1')).toBeInTheDocument();
     expect(screen.getByText('machine-2')).toBeInTheDocument();
-    expect(screen.getByText('machine-5')).toBeInTheDocument();
+    // SL TEMPO est une machine maîtresse : dans la colonne SERVEUR, comme le SL MEDIA.
+    expect(screen.getByText('♛ machine-5')).toBeInTheDocument();
     expect(screen.getByText('Support Stramatel')).toBeInTheDocument();
     expect(screen.getByText('Keolis Lyon')).toBeInTheDocument();
-    // Deux SLAVE vers leur serveur sur 5000, SL TEMPO vers le serveur sur 123.
+    // Deux REPLICA vers leur serveur sur 5000, SL TEMPO vers le serveur sur 123.
     expect(screen.getAllByText('5000')).toHaveLength(2);
     expect(screen.getByText('123')).toBeInTheDocument();
   });
@@ -92,14 +93,14 @@ describe('FleetFlowDiagram', () => {
         products={products}
         links={links}
         slots={[
-          { id: 7, kind: 'equipment', label: 'SL MEDIA SLAVE 1', reference: null, parentSlotId: 6,
-            product: { id: 1, name: 'SL MEDIA', slaves: true }, keyIssuedAt: null, machine: null },
+          { id: 7, kind: 'equipment', label: 'SL MEDIA REPLICA 1', reference: null, parentSlotId: 6,
+            product: { id: 1, name: 'SL MEDIA', master: true, slaves: true }, keyIssuedAt: null, machine: null },
           { id: 6, kind: 'equipment', label: 'SL MEDIA', reference: null, parentSlotId: null,
-            product: { id: 1, name: 'SL MEDIA', slaves: true }, keyIssuedAt: null, machine: { id: '1', name: 'machine-1', online: true, ip: null } },
+            product: { id: 1, name: 'SL MEDIA', master: true, slaves: true }, keyIssuedAt: null, machine: { id: '1', name: 'machine-1', online: true, ip: null } },
         ]}
       />
     );
-    expect(screen.getByText('SL MEDIA SLAVE 1')).toBeInTheDocument();
+    expect(screen.getByText('SL MEDIA REPLICA 1')).toBeInTheDocument();
     expect(screen.getByText('à pourvoir')).toBeInTheDocument();
     expect(screen.getByText('5000')).toBeInTheDocument();
   });
@@ -108,7 +109,7 @@ describe('FleetFlowDiagram', () => {
     push.mockReset();
     wrap(
       <FleetFlowDiagram
-        fleet={fleetOf([node(7, ['tag:flotte-b', 'tag:master'], true, media())])}
+        fleet={fleetOf([node(7, ['tag:flotte-b', 'tag:serveur'], true, media())])}
         rules={[{ id: 'x', kind: 'custom', src: ['tag:flotte-a'], dst: ['tag:flotte-b:*'], from: 'tag:flotte-a', to: 'tag:flotte-b', ports: '*' }]}
         labelOf={() => 'Keolis Lyon'}
         products={products}
@@ -124,7 +125,7 @@ describe('FleetFlowDiagram', () => {
     push.mockReset();
     wrap(<FleetFlowDiagram fleet={fleetOf(nodes)} rules={[]} labelOf={(tag) => tag} products={products} links={links} editable />);
     fireEvent.click(screen.getByRole('button', { name: 'Définir un flux' }));
-    fireEvent.click(screen.getByRole('button', { name: 'machine-5' }));
+    fireEvent.click(screen.getByRole('button', { name: 'SERVEUR : machine-5' }));
     fireEvent.click(screen.getByRole('button', { name: 'SERVEUR : machine-1' }));
     const dialog = screen.getByRole('dialog', { name: 'Flux SL TEMPO → SL MEDIA' });
     expect(within(dialog).getByLabelText('Ports')).toHaveValue('123');
@@ -137,7 +138,7 @@ describe('FleetFlowDiagram', () => {
   });
 
   it('regroupe au-delà de quatorze machines par colonne', () => {
-    const many = Array.from({ length: 20 }, (_, index) => node(index + 10, ['tag:flotte-b'], index % 2 === 0, tempo));
+    const many = Array.from({ length: 20 }, (_, index) => node(index + 10, ['tag:flotte-b', 'tag:serveur'], index % 2 === 0, tempo));
     wrap(<FleetFlowDiagram fleet={fleetOf(many)} rules={[]} labelOf={(tag) => tag} products={products} />);
     expect(screen.getByText('+ 7 autres')).toBeInTheDocument();
   });

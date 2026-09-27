@@ -1,30 +1,31 @@
 import { prisma } from './db';
 import { getNode, listNodes, renameNode, setNodeTags, type RawHeadscaleNode } from './headscale';
-import { toHostname } from './hostname';
+import { slotHostname } from './hostname';
+import { SERVER_TAG } from './acl-policy';
 import { ensureSystemTagsInPolicy } from './system-tags';
 
 /**
  * Plan d'une flotte : les emplacements prévus (« ici un SL TEMPO, là un
- * SL MEDIA et ses 4 SLAVE, un poste d'hypervision »), pourvus par une clé
+ * SL MEDIA et ses 4 REPLICA, un poste d'hypervision »), pourvus par une clé
  * émise pour eux ou par une machine en attente qu'on y affecte.
  *
- * Un produit qui accepte des SLAVE (SL MEDIA) donne deux rôles : l'emplacement
- * sans parent est le serveur (tag MASTER), ceux qui y sont rattachés sont ses
- * SLAVE.
+ * Un produit maître (SL TEMPO, SL MEDIA) donne des machines maîtresses (tag
+ * SERVEUR). S'il accepte des REPLICA (SL MEDIA), l'emplacement sans parent est le
+ * maître, ceux qui y sont rattachés sont ses REPLICA.
  */
 
-const MASTER_TAG = 'tag:master';
+const MASTER_TAG = SERVER_TAG;
 const HYPERVISION_TAG = 'tag:hypervision';
 const FLEET_TAG = /^tag:(interne|a-assigner|flotte-.+)$/;
 export const MAX_SLOTS = 50;
 
 /** Proposés au premier lancement ; le catalogue se modifie ensuite depuis l'interface. */
 const DEFAULT_PRODUCTS = [
-  { name: 'SL MEDIA', category: 'gamme', slaves: true },
-  { name: 'SL TEMPO', category: 'gamme', slaves: false },
-  { name: 'SL VIDEO SCOREBOARD', category: 'gamme', slaves: false },
+  { name: 'SL MEDIA', category: 'gamme', master: true, slaves: true },
+  { name: 'SL TEMPO', category: 'gamme', master: true, slaves: false },
+  { name: 'SL VIDEO SCOREBOARD', category: 'gamme', master: false, slaves: false },
 ];
-/** Flux connus : les SLAVE joignent leur serveur, SL TEMPO joint le serveur SL MEDIA. Ports à préciser. */
+/** Flux connus : les REPLICA joignent leur serveur, SL TEMPO joint le serveur SL MEDIA. Ports à préciser. */
 const DEFAULT_LINKS = [
   ['SL MEDIA', 'SL MEDIA'],
   ['SL TEMPO', 'SL MEDIA'],
@@ -39,7 +40,7 @@ export async function ensureDefaultProducts(): Promise<void> {
   });
 }
 
-/** Tags d'une machine pour une flotte et un rôle : flotte, puis MASTER si serveur. */
+/** Tags d'une machine pour une flotte et un rôle : flotte, puis SERVEUR si serveur. */
 export function tagsFor(
   current: string[],
   fleetTag: string,
@@ -91,13 +92,13 @@ export interface NewSlots {
   count: number;
   label: string;
   reference?: string | null;
-  /** SLAVE par serveur, pour un produit qui en accepte. */
+  /** REPLICA par serveur, pour un produit qui en accepte. */
   slaves?: number;
 }
 
 /**
- * Crée `count` emplacements numérotés ; pour un produit à SLAVE, chaque
- * serveur reçoit ses `slaves` SLAVE (« SL MEDIA 1 SLAVE 1 »…), placés juste
+ * Crée `count` emplacements numérotés ; pour un produit à REPLICA, chaque
+ * serveur reçoit ses `slaves` REPLICA (« SL MEDIA 1 REPLICA 1 »…), placés juste
  * après lui dans le plan.
  */
 export async function createSlots(fleetTag: string, input: NewSlots): Promise<number> {
@@ -122,7 +123,7 @@ export async function createSlots(fleetTag: string, input: NewSlots): Promise<nu
     });
     created++;
     if (slaves > 0) {
-      const labels = numberedLabels(`${label} SLAVE`, slaves, taken);
+      const labels = numberedLabels(`${label} REPLICA`, slaves, taken);
       taken = [...taken, ...labels];
       await prisma.fleetSlot.createMany({
         data: labels.map((slaveLabel) => ({
@@ -141,13 +142,13 @@ export async function createSlots(fleetTag: string, input: NewSlots): Promise<nu
   return created;
 }
 
-/** Ajoute des SLAVE à un serveur déjà prévu. */
+/** Ajoute des REPLICA à un serveur déjà prévu. */
 export async function addSlaves(parentSlotId: number, count: number): Promise<number> {
   const parent = await prisma.fleetSlot.findUnique({ where: { id: parentSlotId }, include: { product: true } });
-  if (!parent || parent.parentSlotId || !parent.product?.slaves) throw new Error("Cet emplacement n'accepte pas de SLAVE");
+  if (!parent || parent.parentSlotId || !parent.product?.slaves) throw new Error("Cet emplacement n'accepte pas de REPLICA");
   const { taken, position } = await takenLabels(parent.fleetTag);
-  const labels = numberedLabels(`${parent.label} SLAVE`, Math.min(Math.max(count, 1), MAX_SLOTS), taken);
-  // Placés après les SLAVE existants du serveur : on décale la suite du plan.
+  const labels = numberedLabels(`${parent.label} REPLICA`, Math.min(Math.max(count, 1), MAX_SLOTS), taken);
+  // Placés après les REPLICA existants du serveur : on décale la suite du plan.
   const last = await prisma.fleetSlot.findFirst({
     where: { OR: [{ id: parent.id }, { parentSlotId: parent.id }] },
     orderBy: { position: 'desc' },
@@ -171,15 +172,15 @@ export async function addSlaves(parentSlotId: number, count: number): Promise<nu
   return labels.length;
 }
 
-/** Rôle MASTER d'un emplacement : serveur d'un produit à SLAVE. */
-export function isServerSlot(slot: { parentSlotId: number | null; product: { slaves: boolean } | null }): boolean {
-  return Boolean(slot.product?.slaves) && slot.parentSlotId === null;
+/** Rôle SERVEUR d'un emplacement : produit maître, hors REPLICA. */
+export function isServerSlot(slot: { parentSlotId: number | null; product: { master: boolean } | null }): boolean {
+  return Boolean(slot.product?.master) && slot.parentSlotId === null;
 }
 
 /**
  * Rattache les emplacements à leur machine : celle qui s'est raccordée avec
  * la clé émise pour l'emplacement. Un emplacement dont la machine a été
- * supprimée ou a changé de flotte redevient à pourvoir. Les SLAVE suivent
+ * supprimée ou a changé de flotte redevient à pourvoir. Les REPLICA suivent
  * leur serveur dès qu'il est raccordé.
  */
 export async function resolveSlots(fleetTag: string, nodes?: RawHeadscaleNode[]) {
@@ -232,7 +233,9 @@ export async function resolveSlots(fleetTag: string, nodes?: RawHeadscaleNode[])
       label: slot.label,
       reference: slot.reference,
       parentSlotId: slot.parentSlotId,
-      product: slot.product ? { id: slot.product.id, name: slot.product.name, slaves: slot.product.slaves } : null,
+      product: slot.product
+        ? { id: slot.product.id, name: slot.product.name, master: slot.product.master, slaves: slot.product.slaves }
+        : null,
       keyIssuedAt: slot.keyIssuedAt?.toISOString() ?? null,
       machine: node
         ? { id: node.id, name: node.givenName || node.name, online: node.online, ip: node.ipAddresses[0] ?? null }
@@ -243,7 +246,7 @@ export async function resolveSlots(fleetTag: string, nodes?: RawHeadscaleNode[])
 
 /**
  * Affecte une machine en attente (« À assigner ») à un emplacement : flotte,
- * rôle MASTER pour un serveur, nom de l'emplacement, produit.
+ * rôle SERVEUR pour un serveur, nom de l'emplacement, produit.
  */
 export async function assignNodeToSlot(slotId: number, nodeId: string) {
   const slot = await prisma.fleetSlot.findUnique({ where: { id: slotId }, include: { product: true, parent: true } });
@@ -261,12 +264,12 @@ export async function assignNodeToSlot(slotId: number, nodeId: string) {
   if (master) await ensureSystemTagsInPolicy();
   const tagged = await setNodeTags(nodeId, tagsFor(node.tags, slot.fleetTag, { hypervision: false, master }));
   if (!tagged.ok) throw new Error('Changement de flotte refusé par Headscale');
-  const name = toHostname(slot.label);
-  if (name) await renameNode(nodeId, name);
+  const renamed = await renameNode(nodeId, slotHostname(slot.fleetTag, slot.label));
+  if (!renamed.ok) throw new Error('Renommage refusé par Headscale (nom déjà pris ?)');
 
   await prisma.fleetSlot.update({ where: { id: slotId }, data: { nodeId } });
   if (slot.productId) await setMachineProduct(nodeId, slot.productId, slot.reference, slot.parent?.nodeId ?? null);
-  // Les SLAVE déjà raccordés de ce serveur s'y rattachent.
+  // Les REPLICA déjà raccordés de ce serveur s'y rattachent.
   if (master) {
     const slaves = await prisma.fleetSlot.findMany({ where: { parentSlotId: slot.id, nodeId: { not: null } } });
     await prisma.machineProduct.updateMany({
@@ -282,13 +285,13 @@ export interface TemplateItem {
   productId: number | null;
   count: number;
   label: string;
-  /** SLAVE par serveur (produit à SLAVE). */
+  /** REPLICA par serveur (produit à REPLICA). */
   slaves?: number;
 }
 
 /**
  * Plan d'une flotte → éléments de modèle : serveurs regroupés avec leur
- * nombre de SLAVE, emplacements identiques regroupés, numéros retirés.
+ * nombre de REPLICA, emplacements identiques regroupés, numéros retirés.
  */
 export function planToTemplateItems(
   slots: Array<{ id: number; kind: string; productId: number | null; label: string; parentSlotId: number | null }>

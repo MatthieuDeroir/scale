@@ -32,7 +32,7 @@ const NO_SERVER = 'none';
 
 /**
  * Produit d'une machine (gamme ou produit spécifique) et n° d'affaire. Pour
- * un SL MEDIA : serveur, ou SLAVE rattaché à un serveur de la flotte.
+ * un SL MEDIA : serveur, ou REPLICA rattaché à un serveur de la flotte.
  */
 export function ProductField({ machine }: { machine: MachineDetail }) {
   const t = useTranslations('parc.product');
@@ -94,6 +94,7 @@ export function ProductField({ machine }: { machine: MachineDetail }) {
       {machine.product ? (
         <span>
           {machine.product.name}
+          {machine.product.master && !machine.product.slaves && <span className="text-muted-foreground"> · SERVEUR</span>}
           {machine.product.slaves && (
             <span className="text-muted-foreground">
               {' '}
@@ -153,7 +154,7 @@ export function ProductField({ machine }: { machine: MachineDetail }) {
                         role === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
-                      {value === 'server' ? t('server') : 'SLAVE'}
+                      {value === 'server' ? t('server') : 'REPLICA'}
                     </button>
                   ))}
                 </div>

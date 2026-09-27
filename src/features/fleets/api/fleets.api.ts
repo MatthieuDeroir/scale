@@ -21,9 +21,11 @@ export interface FleetNode {
     id: number;
     name: string;
     reference: string | null;
-    /** Produit à SLAVE (SL MEDIA) : la machine est serveur (tag MASTER) ou SLAVE. */
+    /** Produit maître (tag SERVEUR) : SL TEMPO, SL MEDIA. */
+    master: boolean;
+    /** Produit à REPLICA (SL MEDIA) : la machine est maîtresse ou REPLICA. */
     slaves: boolean;
-    /** SLAVE : nœud du serveur auquel elle est rattachée. */
+    /** REPLICA : nœud du serveur auquel elle est rattachée. */
     masterNodeId: string | null;
   } | null;
   /** Résumé de l'inventaire envoyé par l'agent (OS, mises à jour en attente). */

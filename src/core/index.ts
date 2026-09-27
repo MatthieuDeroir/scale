@@ -27,6 +27,7 @@ export {
   removeFleetFromPolicy,
   ensureSystemTags,
   SYSTEM_TAGS,
+  SERVER_TAG,
   parsePolicyRules,
   addAccessRule,
   removeAccessRule,
@@ -65,7 +66,7 @@ export {
   type SourcePackage,
 } from './vulns';
 export { cvss3BaseScore } from './cvss';
-export { toHostname } from './hostname';
+export { toHostname, slotHostname } from './hostname';
 export { issueMachineKey, KeyIssueError } from './machine-key';
 export {
   ensureDefaultProducts,

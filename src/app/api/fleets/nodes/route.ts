@@ -71,6 +71,7 @@ export async function GET() {
               id: products.get(node.id)!.productId,
               name: products.get(node.id)!.product.name,
               reference: products.get(node.id)!.reference,
+              master: products.get(node.id)!.product.master,
               slaves: products.get(node.id)!.product.slaves,
               masterNodeId: products.get(node.id)!.masterNodeId,
             }

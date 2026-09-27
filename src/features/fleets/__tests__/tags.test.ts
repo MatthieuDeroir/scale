@@ -25,13 +25,13 @@ describe('tags de flotte', () => {
     }
   });
 
-  it('MASTER : un rôle qui se pose et se retire sans toucher à la flotte', () => {
+  it('SERVEUR : un rôle qui se pose et se retire sans toucher à la flotte', () => {
     const master = withMaster(['tag:flotte-a'], true);
-    expect(master).toEqual(['tag:flotte-a', 'tag:master']);
+    expect(master).toEqual(['tag:flotte-a', 'tag:serveur']);
     expect(isMaster(master)).toBe(true);
     expect(withMaster(master, false)).toEqual(['tag:flotte-a']);
-    expect(withMaster(master, true)).toEqual(['tag:flotte-a', 'tag:master']);
+    expect(withMaster(master, true)).toEqual(['tag:flotte-a', 'tag:serveur']);
     // Changer de flotte garde le rôle, comme le type.
-    expect(withFleet(master, 'tag:flotte-b')).toEqual(['tag:flotte-b', 'tag:master']);
+    expect(withFleet(master, 'tag:flotte-b')).toEqual(['tag:flotte-b', 'tag:serveur']);
   });
 });

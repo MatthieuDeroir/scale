@@ -108,9 +108,14 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
   const t = useTranslations('parc.catalog');
   const [name, setName] = useState(product.name);
   const [category, setCategory] = useState<string>(product.category);
+  const [master, setMaster] = useState(product.master);
   const [slaves, setSlaves] = useState(product.slaves);
-  const dirty = name.trim() !== product.name || category !== product.category || slaves !== product.slaves;
-  const save = useCatalogMutation(() => updateProduct(product.id, { name: name.trim(), category, slaves }), t('productSaved'));
+  const dirty =
+    name.trim() !== product.name || category !== product.category || master !== product.master || slaves !== product.slaves;
+  const save = useCatalogMutation(
+    () => updateProduct(product.id, { name: name.trim(), category, master, slaves }),
+    t('productSaved')
+  );
   const remove = useCatalogMutation(() => deleteProduct(product.id), t('productDeleted'));
 
   if (!editable) {
@@ -118,6 +123,7 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
       <TableRow>
         <TableCell className="font-medium">{product.name}</TableCell>
         <TableCell>{product.category === 'gamme' ? t('gamme') : t('surMesure')}</TableCell>
+        <TableCell>{product.master ? t('yes') : '—'}</TableCell>
         <TableCell>{product.slaves ? t('yes') : '—'}</TableCell>
         <TableCell className="text-right tabular-nums">{product.machines}</TableCell>
         <TableCell />
@@ -131,6 +137,9 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
       </TableCell>
       <TableCell>
         <CategorySelect value={category} onChange={setCategory} />
+      </TableCell>
+      <TableCell>
+        <Switch aria-label={t('master')} checked={master || slaves} disabled={slaves} onCheckedChange={setMaster} />
       </TableCell>
       <TableCell>
         <Switch aria-label={t('slaves')} checked={slaves} onCheckedChange={setSlaves} />
@@ -164,11 +173,17 @@ function Products({ products, editable }: { products: Product[]; editable: boole
   const t = useTranslations('parc.catalog');
   const [name, setName] = useState('');
   const [category, setCategory] = useState('sur-mesure');
+  const [master, setMaster] = useState(false);
   const [slaves, setSlaves] = useState(false);
-  const add = useCatalogMutation(() => createProduct({ name: name.trim(), category, slaves }), t('productAdded'), () => {
-    setName('');
-    setSlaves(false);
-  });
+  const add = useCatalogMutation(
+    () => createProduct({ name: name.trim(), category, master: master || slaves, slaves }),
+    t('productAdded'),
+    () => {
+      setName('');
+      setMaster(false);
+      setSlaves(false);
+    }
+  );
 
   return (
     <Table>
@@ -176,6 +191,7 @@ function Products({ products, editable }: { products: Product[]; editable: boole
         <TableRow className="hover:bg-transparent">
           <TableHead>{t('name')}</TableHead>
           <TableHead>{t('category')}</TableHead>
+          <TableHead title={t('masterHint')}>{t('master')}</TableHead>
           <TableHead title={t('slavesHint')}>{t('slaves')}</TableHead>
           <TableHead className="text-right">{t('machines')}</TableHead>
           <TableHead />
@@ -184,7 +200,7 @@ function Products({ products, editable }: { products: Product[]; editable: boole
       <TableBody>
         {products.map((product) => (
           <ProductRow
-            key={`${product.id}-${product.name}-${product.category}-${product.slaves}`}
+            key={`${product.id}-${product.name}-${product.category}-${product.master}-${product.slaves}`}
             product={product}
             editable={editable}
           />
@@ -203,6 +219,9 @@ function Products({ products, editable }: { products: Product[]; editable: boole
               <CategorySelect value={category} onChange={setCategory} />
             </TableCell>
             <TableCell>
+              <Switch aria-label={t('master')} checked={master || slaves} disabled={slaves} onCheckedChange={setMaster} />
+            </TableCell>
+            <TableCell>
               <Switch aria-label={t('slaves')} checked={slaves} onCheckedChange={setSlaves} />
             </TableCell>
             <TableCell />
@@ -219,10 +238,10 @@ function Products({ products, editable }: { products: Product[]; editable: boole
   );
 }
 
-/** Libellé d'un flux : « SL TEMPO → SL MEDIA », ou « SLAVE → serveur SL MEDIA ». */
+/** Libellé d'un flux : « SL TEMPO → SL MEDIA », ou « REPLICA → serveur SL MEDIA ». */
 export function linkLabel(link: Pick<ProductLink, 'fromId' | 'toId'>, products: Product[], serverLabel: string) {
   const name = (id: number) => products.find((item) => item.id === id)?.name ?? '?';
-  if (link.fromId === link.toId) return { from: `${name(link.fromId)} SLAVE`, to: `${name(link.toId)} ${serverLabel}` };
+  if (link.fromId === link.toId) return { from: `${name(link.fromId)} REPLICA`, to: `${name(link.toId)} ${serverLabel}` };
   return { from: name(link.fromId), to: name(link.toId) };
 }
 

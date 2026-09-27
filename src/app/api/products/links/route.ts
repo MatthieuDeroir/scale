@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   ]);
   if (!from || !to) return NextResponse.json({ message: 'Produit inconnu' }, { status: 400 });
   if (from.id === to.id && !from.slaves) {
-    return NextResponse.json({ message: 'Un produit ne se joint lui-même que pour relier ses SLAVE à leur serveur' }, { status: 400 });
+    return NextResponse.json({ message: 'Un produit ne se joint lui-même que pour relier ses REPLICA à leur serveur' }, { status: 400 });
   }
   let ports: string;
   try {

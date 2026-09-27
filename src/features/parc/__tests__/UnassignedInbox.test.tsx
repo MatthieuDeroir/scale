@@ -63,14 +63,14 @@ const nodes = [
   { id: '6', name: 'nuc-6', givenName: 'nuc-6', ipAddresses: ['100.64.0.6'], online: true, lastSeen: null, tags: ['tag:a-assigner'] },
   { id: '7', name: 'rpi-7', givenName: 'rpi-7', ipAddresses: ['100.64.0.7'], online: true, lastSeen: null, tags: ['tag:interne'] },
 ];
-// Plan de la flotte : un SL MEDIA pourvu, puis ses deux SLAVE libres.
+// Plan de la flotte : un SL MEDIA pourvu, puis ses deux REPLICA libres.
 let plan: Array<Record<string, unknown>> = [];
 const fullPlan = [
-  { id: 1, kind: 'equipment', label: 'SL MEDIA', reference: null, parentSlotId: null, product: { id: 1, name: 'SL MEDIA', slaves: true },
+  { id: 1, kind: 'equipment', label: 'SL MEDIA', reference: null, parentSlotId: null, product: { id: 1, name: 'SL MEDIA', master: true, slaves: true },
     keyIssuedAt: null, machine: { id: '9', name: 'sl-media', online: true, ip: null } },
-  { id: 2, kind: 'equipment', label: 'SL MEDIA SLAVE 1', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', slaves: true },
+  { id: 2, kind: 'equipment', label: 'SL MEDIA REPLICA 1', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', master: true, slaves: true },
     keyIssuedAt: null, machine: null },
-  { id: 3, kind: 'equipment', label: 'SL MEDIA SLAVE 2', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', slaves: true },
+  { id: 3, kind: 'equipment', label: 'SL MEDIA REPLICA 2', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', master: true, slaves: true },
     keyIssuedAt: null, machine: null },
 ];
 const policy = { fleets: [{ tag: 'tag:flotte-keolis', label: 'keolis', deletable: true }], raw: '{}', updatedAt: 'x' };
@@ -104,7 +104,7 @@ describe('UnassignedInbox', () => {
     fireEvent.click(await screen.findByLabelText('Tout sélectionner'));
     fireEvent.change(screen.getByLabelText('Flotte de destination'), { target: { value: 'tag:flotte-keolis' } });
 
-    expect(await screen.findByText(/SL MEDIA SLAVE 1, SL MEDIA SLAVE 2/)).toBeInTheDocument();
+    expect(await screen.findByText(/SL MEDIA REPLICA 1, SL MEDIA REPLICA 2/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Assigner (2)' }));
 
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/plan/slots/3/assign', expect.anything()));

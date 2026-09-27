@@ -21,15 +21,15 @@ interface Body {
   count?: number;
   label?: string;
   reference?: string;
-  /** SLAVE par serveur, pour un produit qui en accepte. */
+  /** REPLICA par serveur, pour un produit qui en accepte. */
   slaves?: number;
-  /** Ajout de SLAVE à un serveur déjà prévu. */
+  /** Ajout de REPLICA à un serveur déjà prévu. */
   parentSlotId?: number;
 }
 
 /**
  * Ajoute des emplacements : `count` emplacements identiques numérotés (avec
- * leurs SLAVE pour un SL MEDIA), ou `count` SLAVE sous `parentSlotId`.
+ * leurs REPLICA pour un SL MEDIA), ou `count` REPLICA sous `parentSlotId`.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ tag: string }> }) {
   const { session, denied } = await guardApi('OPERATOR');

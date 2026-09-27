@@ -24,7 +24,7 @@ export function useAssignNodes(onDone?: () => void) {
   return useMutation({
     mutationFn: async ({ nodes, slots }: { nodes: FleetNode[]; slots: PlanSlot[]; fleetTag: string }) => {
       let failed = 0;
-      // Une à une : un serveur doit être rangé avant ses SLAVE pour qu'ils s'y rattachent.
+      // Une à une : un serveur doit être rangé avant ses REPLICA pour qu'ils s'y rattachent.
       for (const [index, node] of nodes.entries()) {
         const slot = slots[index];
         if (!slot) {

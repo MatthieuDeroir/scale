@@ -40,7 +40,7 @@ interface Entry {
   planned: boolean;
   productId: number | null;
   tone: Tone;
-  /** SLAVE : entrée de son serveur. */
+  /** REPLICA : entrée de son serveur. */
   serverId?: string | null;
   href?: string;
 }
@@ -116,13 +116,15 @@ function labelPosition(from: Box, to: Box): [number, number] {
 function entriesOf(fleet: FleetSummary, slots: PlanSlot[], products: Product[], t: (key: string) => string) {
   const productById = new Map(products.map((item) => [item.id, item]));
   const entries: Entry[] = [];
+  // Dans le schéma d'une flotte, son préfixe (« piscine-sl-media ») n'apprend rien.
+  const short = (name: string) => (name.startsWith(`${fleet.slug}-`) ? name.slice(fleet.slug.length + 1) : name);
   for (const node of fleet.nodes) {
     const product = node.product ? productById.get(node.product.id) : undefined;
     const hypervision = isHypervision(node.tags);
-    const server = Boolean(product?.slaves) && isMaster(node.tags);
+    const server = Boolean(product?.master) && isMaster(node.tags);
     entries.push({
       id: `n-${node.id}`,
-      title: truncate(node.givenName || node.name),
+      title: truncate(short(node.givenName || node.name)),
       subtitle: hypervision
         ? node.ipAddresses[0]
         : [product?.name ?? t('flow.noProduct'), node.ipAddresses[0]].filter(Boolean).join(' · '),
@@ -137,7 +139,7 @@ function entriesOf(fleet: FleetSummary, slots: PlanSlot[], products: Product[], 
   const slotById = new Map(slots.map((slot) => [slot.id, slot]));
   for (const slot of slots) {
     if (slot.machine) continue;
-    const server = Boolean(slot.product?.slaves) && !slot.parentSlotId;
+    const server = Boolean(slot.product?.master) && !slot.parentSlotId;
     const parent = slot.parentSlotId ? slotById.get(slot.parentSlotId) : undefined;
     entries.push({
       id: `s-${slot.id}`,
@@ -155,7 +157,7 @@ function entriesOf(fleet: FleetSummary, slots: PlanSlot[], products: Product[], 
 
 /**
  * Schéma des flux d'une flotte, en direct : les serveurs SL MEDIA au centre,
- * leurs SLAVE à droite, les autres équipements (SL TEMPO…) reliés selon les
+ * leurs REPLICA à droite, les autres équipements (SL TEMPO…) reliés selon les
  * flux définis entre produits, avec leurs ports ; support et postes
  * d'hypervision à gauche. Les emplacements du plan encore à pourvoir
  * apparaissent en pointillés. En mode « Définir un flux », on clique la
@@ -194,7 +196,7 @@ export function FleetFlowDiagram({
 
   const servers = entries.filter((entry) => entry.tone === 'server');
   const slavesRaw = entries.filter((entry) => entry.tone === 'slave');
-  // SLAVE groupés sous leur serveur, pour que les liens ne se croisent pas.
+  // REPLICA groupés sous leur serveur, pour que les liens ne se croisent pas.
   const slaves = [
     ...servers.flatMap((server) => slavesRaw.filter((entry) => entry.serverId === server.id)),
     ...slavesRaw.filter((entry) => !servers.some((server) => server.id === entry.serverId)),
@@ -217,7 +219,7 @@ export function FleetFlowDiagram({
   const columns = [
     { key: 'left', items: capped(left, more), title: t('flow.colLeft') },
     { key: 'center', items: capped(center, more), title: servers.length > 0 ? t('flow.colServers') : t('flow.colHub') },
-    { key: 'slaves', items: capped(slaves, more), title: 'SLAVE' },
+    { key: 'slaves', items: capped(slaves, more), title: 'REPLICA' },
   ].filter((column) => column.key === 'center' || column.items.length > 0);
   const xOf = (index: number) =>
     columns.length === 1 ? W / 2 : 100 + (index * (W - 200)) / (columns.length - 1);
@@ -261,12 +263,12 @@ export function FleetFlowDiagram({
     if (box.tone !== 'support' && box.tone !== 'hypervision') continue;
     for (const target of centerBoxes) edge(box, target, { tone: box.tone === 'support' ? 'support' : 'data' });
   }
-  // SLAVE → leur serveur, avec les ports du flux « produit → lui-même ».
+  // REPLICA → leur serveur, avec les ports du flux « produit → lui-même ».
   for (const box of placed.find((column) => column.key === 'slaves')?.boxes ?? []) {
     const link = links.find((item) => item.fromId === box.productId && item.toId === box.productId);
     edge(box, box.serverId ? byId.get(box.serverId) : undefined, { link, label: link && link.ports !== '*' ? link.ports : undefined });
   }
-  // Flux entre produits : un produit à SLAVE est représenté par ses serveurs.
+  // Flux entre produits : un produit à REPLICA est représenté par ses serveurs.
   const endpoints = (productId: number) => {
     const product = productById.get(productId);
     const boxes = [...byId.values()].filter(
