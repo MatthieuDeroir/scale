@@ -1,4 +1,13 @@
-import { getNode, mapNode, prisma, severityOf, type RawHeadscaleNode } from '@/core';
+import {
+  assessmentFor,
+  vulnKeyOf,
+  type Assessment,
+  getNode,
+  mapNode,
+  prisma,
+  severityOf,
+  type RawHeadscaleNode,
+} from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -31,9 +40,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   let vulns = null;
   if (device?.vulnScan) {
     const scan = device.vulnScan;
-    const parsed = JSON.parse(scan.results || '{}') as { summary?: unknown; packages?: Array<{ fixed: string[]; remaining: string[] }> };
+    const parsed = JSON.parse(scan.results || '{}') as {
+      summary?: unknown;
+      packages?: Array<{ fixed: string[]; remaining: string[] }>;
+    };
     const ids = [...new Set((parsed.packages ?? []).flatMap((item) => [...item.fixed, ...item.remaining]))];
     const records = await prisma.osvVuln.findMany({ where: { id: { in: ids } } });
+    // Tri (VEX) applicable à cette machine : décision de son produit, sinon du parc.
+    const keys = records.map((record) => vulnKeyOf(record.id, record.cve));
+    const decisions = await prisma.vulnAssessment.findMany({ where: { vulnKey: { in: keys } } });
+    const productId = product?.productId ?? null;
+    const triageOf = (key: string) =>
+      assessmentFor(decisions.filter((item) => item.vulnKey === key) as unknown as Assessment[], productId)?.status ??
+      null;
     vulns = {
       scannedAt: scan.scannedAt.toISOString(),
       ecosystem: scan.ecosystem,
@@ -48,13 +67,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
             aliases: JSON.parse(record.aliases),
             severity: severityOf(
               (JSON.parse(record.urgency) as Record<string, string>)[scan.ecosystem ?? ''],
-              record.cvssScore
+              record.cvssScore,
             ),
             cve: record.cve,
             cvss: record.cvssScore,
+            triage: triageOf(vulnKeyOf(record.id, record.cve)),
             published: record.published?.toISOString() ?? null,
           },
-        ])
+        ]),
       ),
     };
   }

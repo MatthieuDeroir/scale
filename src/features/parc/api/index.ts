@@ -39,3 +39,22 @@ export {
   type TemplateItem,
   type FleetTemplate,
 } from './plan.api';
+export {
+  fetchSecurity,
+  fetchSecuritySummary,
+  fetchVulnDetail,
+  type ParkVulnItem,
+  fetchPlansProgress,
+  saveAssessment,
+  deleteAssessment,
+  vulnLinks,
+  VEX_JUSTIFICATIONS,
+  type ParkVuln,
+  type Occurrence,
+  type Assessment,
+  type SecuritySummary,
+  type FleetPlanProgress,
+  type VexStatus,
+  type VexJustification,
+  type VulnState,
+} from './security.api';

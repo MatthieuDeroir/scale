@@ -56,7 +56,7 @@ export interface MachineVulns {
   error: string | null;
   summary: VulnSummary | null;
   packages: VulnPackage[];
-  details: Record<string, { summary: string | null; aliases: string[]; severity: Severity; cve: string | null; cvss: number | null; published: string | null }>;
+  details: Record<string, { summary: string | null; aliases: string[]; severity: Severity; cve: string | null; cvss: number | null; published: string | null; triage?: 'not_affected' | 'under_investigation' | 'affected' | null }>;
 }
 
 export interface MachineDetail extends Omit<FleetNode, 'inventory' | 'vulns'> {

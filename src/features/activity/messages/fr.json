@@ -49,7 +49,9 @@
       "template-delete": "Suppression d'un modèle",
       "product-link": "Définition d'un flux",
       "product-unlink": "Suppression d'un flux",
-      "parc-reset": "Remise à zéro du parc"
+      "parc-reset": "Remise à zéro du parc",
+      "vuln-assess": "Tri d'une faille",
+      "vuln-unassess": "Retrait d'une décision de tri"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",

@@ -275,26 +275,50 @@
       "fixedBy": "corrigée en {version}",
       "noFixYet": "pas encore de correctif",
       "expand": "Voir les failles",
-      "collapse": "Masquer les failles"
+      "collapse": "Masquer les failles",
+      "triageHint": "Décision de tri (onglet Cybersécurité). Les chiffres de cette page sont ceux de la dernière analyse, avant tri."
     },
     "dashboard": {
       "title": "Tableau de bord",
-      "description": "Ce qui demande de l'attention sur le parc.",
+      "description": "L'état du parc d'un coup d'œil, et ce qui demande de l'attention.",
       "online": "Machines en ligne",
-      "exposed": "Machines exposées (faille élevée ou critique corrigeable)",
       "updates": "{machines, plural, =0 {Mises à jour en attente} =1 {Mises à jour en attente sur 1 machine} other {Mises à jour en attente sur # machines}}",
-      "agents": "Équipements avec agent",
-      "faultsTitle": "Failles corrigeables sur le parc",
+      "agents": "{silent, plural, =0 {Équipements avec agent} =1 {Équipements avec agent · 1 muet} other {Équipements avec agent · # muets}}",
+      "faultsTitle": "Failles à traiter",
       "noFault": "Aucune faille corrigeable : le parc est à jour.",
-      "faultsHint": "{machines, plural, =1 {Sur 1 machine.} other {Sur # machines.}} Une même faille présente sur plusieurs machines compte pour chacune.",
+      "faultsHint": "Failles distinctes (une CVE présente sur plusieurs machines compte une fois) ; entre parenthèses, celles qu'une mise à jour corrige. {excluded, plural, =0 {Aucune écartée} =1 {1 écartée (non concernée)} other {# écartées (non concernées)}}, {investigating} en analyse.",
       "priority": "Machines à traiter en priorité",
       "offlineTitle": "{count, plural, =0 {Hors ligne} other {Hors ligne ({count})}}",
       "allOnline": "Toutes les machines sont en ligne.",
       "jobsTitle": "Dernières mises à jour",
-      "noAgentTitle": "{count, plural, =1 {1 équipement sans agent} other {# équipements sans agent}}",
-      "noAgentHint": "Sans agent, ni specs, ni failles, ni mises à jour : ouvrez la machine pour générer la commande d'installation.",
-      "noProductTitle": "{count, plural, =1 {1 équipement sans produit} other {# équipements sans produit}}",
-      "noProductHint": "Toute machine Stramatel doit porter un produit : ouvrez-la pour le renseigner."
+      "noAgentHint": "Ni specs, ni failles, ni mises à jour : ouvrez la machine pour installer l'agent.",
+      "noProductHint": "Toute machine Stramatel porte un produit : ouvrez-la pour le renseigner.",
+      "seriousOpen": "Failles critiques ou élevées à traiter",
+      "fleetsTitle": "Flottes",
+      "allFleets": "Toutes les flottes",
+      "noFleet": "Aucune flotte pour l'instant.",
+      "planProgress": "{filled}/{total} pourvus",
+      "noPlan": "pas de plan",
+      "fleetOnline": "{online} en ligne sur {total}",
+      "openSecurity": "Cybersécurité",
+      "faultsBar": "{total} failles à traiter, dont {fixable} corrigeables par une mise à jour",
+      "topPackages": "Paquets à mettre à jour en priorité",
+      "packageFixes": "{fixes, plural, =1 {corrige 1 faille} other {corrige # failles}} · {machines, plural, =1 {1 machine} other {# machines}}",
+      "composition": "Composition du parc",
+      "catalog": "Catalogue",
+      "compositionNone": "Sans produit",
+      "compositionStations": "Postes d'hypervision",
+      "compositionPending": "En attente d'affectation",
+      "checksTitle": "{count, plural, =1 {1 point à vérifier} other {# points à vérifier}}",
+      "check": {
+        "silent": "{count, plural, =1 {1 agent muet} other {# agents muets}}",
+        "noAgent": "{count, plural, =1 {1 équipement sans agent} other {# équipements sans agent}}",
+        "noProduct": "{count, plural, =1 {1 équipement sans produit} other {# équipements sans produit}}",
+        "pendingKeys": "{count, plural, =1 {1 clé en attente} other {# clés en attente}}"
+      },
+      "silentHint": "En ligne, mais pas d'inventaire depuis plus de deux heures : l'agent ne tourne plus.",
+      "pendingKeysHint": "Émises, pas encore utilisées : une installation en cours, ou une clé à révoquer.",
+      "expires": "expire le {date}"
     },
     "plan": {
       "title": "Plan de la flotte",
@@ -408,6 +432,92 @@
       "server": "SERVEUR",
       "master": "Serveur",
       "masterHint": "Ses machines sont des SERVEUR (tag SERVEUR) : SL TEMPO, SERVEUR d'un SL MEDIA."
+    },
+    "security": {
+      "title": "Cybersécurité",
+      "description": "Toutes les failles du parc, par CVE : machines touchées, mise à jour qui corrige, et tri. Une faille jugée non concernée (même critique) sort des décomptes, avec sa justification.",
+      "state": {
+        "open": "À traiter",
+        "investigating": "En analyse",
+        "affected": "Concernée",
+        "excluded": "Non concernée"
+      },
+      "vex": {
+        "not_affected": "Non concerné",
+        "under_investigation": "En analyse",
+        "affected": "Concerné"
+      },
+      "justifications": {
+        "component_not_present": "Composant absent",
+        "vulnerable_code_not_present": "Code vulnérable absent",
+        "vulnerable_code_not_in_execute_path": "Code vulnérable jamais exécuté",
+        "vulnerable_code_cannot_be_controlled_by_adversary": "Non exploitable dans notre contexte",
+        "inline_mitigations_already_exist": "Protection déjà en place"
+      },
+      "justificationHints": {
+        "component_not_present": "Le paquet est signalé mais le composant visé n'est pas installé ou pas livré dans nos produits.",
+        "vulnerable_code_not_present": "La version ou la compilation livrée ne contient pas la partie fautive (option désactivée, correctif rétroporté).",
+        "vulnerable_code_not_in_execute_path": "Le code est présent mais nos produits ne l'appellent jamais (fonction, protocole ou format non utilisé).",
+        "vulnerable_code_cannot_be_controlled_by_adversary": "Le code est exécuté, mais un attaquant ne peut pas atteindre ou contrôler l'entrée vulnérable : pas exposé au réseau, accès local seulement, machine derrière le VPN…",
+        "inline_mitigations_already_exist": "Une protection empêche l'exploitation : configuration durcie, pare-feu, filtrage, droits restreints."
+      },
+      "decide": "Trier cette faille",
+      "scope": "Portée",
+      "wholePark": "Tout le parc",
+      "status": "Décision",
+      "justification": "Justification",
+      "chooseJustification": "Pourquoi ne sommes-nous pas concernés ?",
+      "note": "Note",
+      "notePlaceholder": "Contexte, preuve, référence du ticket…",
+      "save": "Enregistrer la décision",
+      "saved": "Décision enregistrée",
+      "removed": "Décision retirée",
+      "removeDecision": "Retirer la décision",
+      "noDecision": "Aucune décision : faille à traiter.",
+      "decisions": "Décisions",
+      "by": "par {author}, le {date}",
+      "noSummary": "Pas de résumé dans la base OSV.",
+      "published": "Publiée le {date}",
+      "packagesLabel": "Paquets : {packages}",
+      "machinesTitle": "{active, plural, =1 {1 machine touchée} other {# machines touchées}}, dont {fixable, plural, =0 {aucune corrigeable} =1 {1 corrigeable} other {# corrigeables}} par une mise à jour",
+      "machine": "Machine",
+      "fleet": "Flotte",
+      "product": "Produit",
+      "package": "Paquet",
+      "fix": "Correctif",
+      "noFix": "pas de correctif",
+      "decision": "Décision",
+      "close": "Fermer",
+      "kpi": {
+        "todo": "Failles à traiter",
+        "serious": "Critiques ou élevées",
+        "fixable": "Corrigeables par une mise à jour",
+        "triaged": "Écartées (non concernées) · {investigating} en analyse"
+      },
+      "search": "Chercher une CVE, un paquet…",
+      "filterState": "État",
+      "filterSeverity": "Gravité",
+      "filterProduct": "Produit",
+      "filter": {
+        "todo": "Non écartées",
+        "all": "Toutes",
+        "allSeverities": "Toutes gravités",
+        "allProducts": "Tous les produits"
+      },
+      "fixableOnly": "Corrigeables seulement",
+      "emptyPark": "Aucune faille connue sur le parc.",
+      "emptyFilter": "Aucune faille ne correspond.",
+      "vuln": "Faille",
+      "severity": "Gravité",
+      "machines": "Machines",
+      "stateLabel": "État",
+      "fixableOn": "{count} corrigeable(s)",
+      "pagination": "{from}–{to} sur {total} failles",
+      "exportCsv": "Exporter (CSV)",
+      "exportVex": "Exporter (VEX)",
+      "exportVexHint": "Déclaration OpenVEX des décisions de tri, pour les clients et le suivi CRA.",
+      "loading": "Chargement du détail…",
+      "allExcluded": "Écartée sur toutes les machines touchées."
     }
   },
   "nav": {
@@ -419,6 +529,7 @@
     "expand": "Déplier le menu",
     "tagline": "Réseau des flottes",
     "dashboard": "Tableau de bord",
-    "catalog": "Produits et modèles"
+    "catalog": "Produits et modèles",
+    "security": "Cybersécurité"
   }
 }

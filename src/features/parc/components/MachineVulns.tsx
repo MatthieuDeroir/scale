@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatLastSeen } from '@/features/fleets';
 import { ChevronRight, ExternalLink, RefreshCw, ShieldAlert } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Fragment, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -274,6 +275,13 @@ export function MachineVulns({ machine }: { machine: MachineDetail }) {
                                       {detail?.cve ?? id}
                                       <ExternalLink className="size-3" aria-hidden />
                                     </a>
+                                    {detail?.triage && (
+                                      <Link href="/cybersecurite" title={t('vulns.triageHint')}>
+                                        <Badge variant={detail.triage === 'not_affected' ? 'ok' : detail.triage === 'affected' ? 'critical' : 'warning'}>
+                                          {t(`security.vex.${detail.triage}`)}
+                                        </Badge>
+                                      </Link>
+                                    )}
                                     {typeof detail?.cvss === 'number' && (
                                       <span className="text-muted-foreground tabular-nums">CVSS {detail.cvss.toFixed(1)}</span>
                                     )}

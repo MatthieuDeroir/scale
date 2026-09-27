@@ -83,3 +83,19 @@ export {
   type NewSlots,
   type TemplateItem,
 } from './plan';
+export {
+  parkVulns,
+  summarizePark,
+  vulnKeyOf,
+  assessmentFor,
+  stateOf,
+  VEX_STATUSES,
+  VEX_JUSTIFICATIONS,
+  type ParkVuln,
+  type Occurrence,
+  type Assessment,
+  type SecuritySummary,
+  type VexStatus,
+  type VexJustification,
+  type VulnState,
+} from './security';

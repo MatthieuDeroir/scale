@@ -275,26 +275,50 @@
       "fixedBy": "fixed in {version}",
       "noFixYet": "no fix yet",
       "expand": "Show faults",
-      "collapse": "Hide faults"
+      "collapse": "Hide faults",
+      "triageHint": "Triage decision (Cybersecurity tab). Counts on this page come from the last scan, before triage."
     },
     "dashboard": {
       "title": "Dashboard",
-      "description": "What needs attention across the park.",
+      "description": "The park at a glance, and what needs attention.",
       "online": "Machines online",
-      "exposed": "Exposed machines (fixable high or critical fault)",
       "updates": "{machines, plural, =0 {Pending updates} =1 {Pending updates on 1 machine} other {Pending updates on # machines}}",
-      "agents": "Devices with agent",
-      "faultsTitle": "Fixable faults across the park",
+      "agents": "{silent, plural, =0 {Equipment with agent} =1 {Equipment with agent · 1 silent} other {Equipment with agent · # silent}}",
+      "faultsTitle": "Vulnerabilities to handle",
       "noFault": "No fixable fault: the park is up to date.",
-      "faultsHint": "{machines, plural, =1 {On 1 machine.} other {On # machines.}} A fault present on several machines counts for each.",
+      "faultsHint": "Distinct vulnerabilities (a CVE on several machines counts once); in brackets, those an update fixes. {excluded, plural, =0 {None dismissed} =1 {1 dismissed (not affected)} other {# dismissed (not affected)}}, {investigating} investigating.",
       "priority": "Machines to handle first",
       "offlineTitle": "{count, plural, =0 {Offline} other {Offline ({count})}}",
       "allOnline": "All machines are online.",
       "jobsTitle": "Latest updates",
-      "noAgentTitle": "{count, plural, =1 {1 device without agent} other {# devices without agent}}",
-      "noAgentHint": "Without an agent: no specs, faults or updates. Open the machine to generate the install command.",
-      "noProductTitle": "{count, plural, =1 {1 equipment without product} other {# equipment without product}}",
-      "noProductHint": "Every Stramatel machine must carry a product: open it to set one."
+      "noAgentHint": "No specs, vulnerabilities or updates: open the machine to install the agent.",
+      "noProductHint": "Every Stramatel machine carries a product: open it to set one.",
+      "seriousOpen": "Critical or high vulnerabilities to handle",
+      "fleetsTitle": "Fleets",
+      "allFleets": "All fleets",
+      "noFleet": "No fleet yet.",
+      "planProgress": "{filled}/{total} filled",
+      "noPlan": "no plan",
+      "fleetOnline": "{online} online out of {total}",
+      "openSecurity": "Cybersecurity",
+      "faultsBar": "{total} vulnerabilities to handle, {fixable} fixable by an update",
+      "topPackages": "Packages to update first",
+      "packageFixes": "{fixes, plural, =1 {fixes 1 vulnerability} other {fixes # vulnerabilities}} · {machines, plural, =1 {1 machine} other {# machines}}",
+      "composition": "Park composition",
+      "catalog": "Catalog",
+      "compositionNone": "No product",
+      "compositionStations": "Supervision stations",
+      "compositionPending": "Waiting for assignment",
+      "checksTitle": "{count, plural, =1 {1 thing to check} other {# things to check}}",
+      "check": {
+        "silent": "{count, plural, =1 {1 silent agent} other {# silent agents}}",
+        "noAgent": "{count, plural, =1 {1 equipment without agent} other {# equipment without agent}}",
+        "noProduct": "{count, plural, =1 {1 equipment without product} other {# equipment without product}}",
+        "pendingKeys": "{count, plural, =1 {1 pending key} other {# pending keys}}"
+      },
+      "silentHint": "Online, but no inventory for over two hours: the agent is no longer running.",
+      "pendingKeysHint": "Issued, not used yet: an installation in progress, or a key to revoke.",
+      "expires": "expires {date}"
     },
     "plan": {
       "title": "Fleet plan",
@@ -408,6 +432,92 @@
       "server": "SERVER",
       "master": "Server",
       "masterHint": "Its machines are SERVERs (SERVER tag): SL TEMPO, SL MEDIA SERVER."
+    },
+    "security": {
+      "title": "Cybersecurity",
+      "description": "Every vulnerability on the park, by CVE: affected machines, the update that fixes it, and triage. A vulnerability judged not affecting us (even critical) leaves the counts, with its justification.",
+      "state": {
+        "open": "To handle",
+        "investigating": "Investigating",
+        "affected": "Affected",
+        "excluded": "Not affected"
+      },
+      "vex": {
+        "not_affected": "Not affected",
+        "under_investigation": "Investigating",
+        "affected": "Affected"
+      },
+      "justifications": {
+        "component_not_present": "Component not present",
+        "vulnerable_code_not_present": "Vulnerable code not present",
+        "vulnerable_code_not_in_execute_path": "Vulnerable code never executed",
+        "vulnerable_code_cannot_be_controlled_by_adversary": "Not exploitable in our context",
+        "inline_mitigations_already_exist": "Mitigation already in place"
+      },
+      "justificationHints": {
+        "component_not_present": "The package is flagged but the affected component is not installed or not shipped in our products.",
+        "vulnerable_code_not_present": "The shipped version or build does not contain the faulty part (option disabled, backported fix).",
+        "vulnerable_code_not_in_execute_path": "The code is present but our products never call it (unused function, protocol or format).",
+        "vulnerable_code_cannot_be_controlled_by_adversary": "The code runs, but an attacker cannot reach or control the vulnerable input: not network-exposed, local access only, behind the VPN…",
+        "inline_mitigations_already_exist": "A protection prevents exploitation: hardened configuration, firewall, filtering, restricted rights."
+      },
+      "decide": "Triage this vulnerability",
+      "scope": "Scope",
+      "wholePark": "Whole park",
+      "status": "Decision",
+      "justification": "Justification",
+      "chooseJustification": "Why are we not affected?",
+      "note": "Note",
+      "notePlaceholder": "Context, evidence, ticket reference…",
+      "save": "Save decision",
+      "saved": "Decision saved",
+      "removed": "Decision removed",
+      "removeDecision": "Remove decision",
+      "noDecision": "No decision: to handle.",
+      "decisions": "Decisions",
+      "by": "by {author}, {date}",
+      "noSummary": "No summary in the OSV database.",
+      "published": "Published {date}",
+      "packagesLabel": "Packages: {packages}",
+      "machinesTitle": "{active, plural, =1 {1 affected machine} other {# affected machines}}, {fixable, plural, =0 {none fixable} =1 {1 fixable} other {# fixable}} by an update",
+      "machine": "Machine",
+      "fleet": "Fleet",
+      "product": "Product",
+      "package": "Package",
+      "fix": "Fix",
+      "noFix": "no fix",
+      "decision": "Decision",
+      "close": "Close",
+      "kpi": {
+        "todo": "Vulnerabilities to handle",
+        "serious": "Critical or high",
+        "fixable": "Fixable by an update",
+        "triaged": "Dismissed (not affected) · {investigating} investigating"
+      },
+      "search": "Search a CVE, package…",
+      "filterState": "State",
+      "filterSeverity": "Severity",
+      "filterProduct": "Product",
+      "filter": {
+        "todo": "Not dismissed",
+        "all": "All",
+        "allSeverities": "All severities",
+        "allProducts": "All products"
+      },
+      "fixableOnly": "Fixable only",
+      "emptyPark": "No known vulnerability on the park.",
+      "emptyFilter": "No vulnerability matches.",
+      "vuln": "Vulnerability",
+      "severity": "Severity",
+      "machines": "Machines",
+      "stateLabel": "State",
+      "fixableOn": "{count} fixable",
+      "pagination": "{from}–{to} of {total} vulnerabilities",
+      "exportCsv": "Export (CSV)",
+      "exportVex": "Export (VEX)",
+      "exportVexHint": "OpenVEX statement of triage decisions, for customers and CRA follow-up.",
+      "loading": "Loading details…",
+      "allExcluded": "Dismissed on every affected machine."
     }
   },
   "nav": {
@@ -419,6 +529,7 @@
     "expand": "Expand menu",
     "tagline": "Fleet network",
     "dashboard": "Dashboard",
-    "catalog": "Products and templates"
+    "catalog": "Products and templates",
+    "security": "Cybersecurity"
   }
 }

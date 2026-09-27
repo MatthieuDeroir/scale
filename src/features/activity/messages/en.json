@@ -49,7 +49,9 @@
       "template-delete": "Template deleted",
       "product-link": "Flow defined",
       "product-unlink": "Flow deleted",
-      "parc-reset": "Fleet reset"
+      "parc-reset": "Fleet reset",
+      "vuln-assess": "Vulnerability triaged",
+      "vuln-unassess": "Triage decision removed"
     },
     "search": "Search (author, target…)",
     "category": "Category",

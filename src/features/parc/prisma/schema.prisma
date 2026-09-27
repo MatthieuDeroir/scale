@@ -31,6 +31,31 @@ model Product {
   slots     FleetSlot[]
   linksFrom ProductLink[]    @relation("LinkFrom")
   linksTo   ProductLink[]    @relation("LinkTo")
+  assessments VulnAssessment[]
+}
+
+/// Tri d'une faille (VEX) : « non concerné », « en analyse » ou « concerné »,
+/// pour tout le parc ou pour un produit, avec sa justification. Une faille
+/// « non concernée » sort des décomptes (tableau de bord, cybersécurité).
+model VulnAssessment {
+  id            Int      @id @default(autoincrement())
+  /// CVE, ou identifiant OSV sans CVE : une seule décision pour Debian et Ubuntu.
+  vulnKey       String
+  /// Produit visé ; null = tout le parc.
+  productId     Int?
+  product       Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  /// 'not_affected' | 'under_investigation' | 'affected'
+  status        String
+  /// Justification VEX d'un « non concerné » : component_not_present,
+  /// vulnerable_code_not_present, vulnerable_code_not_in_execute_path,
+  /// vulnerable_code_cannot_be_controlled_by_adversary, inline_mitigations_already_exist.
+  justification String?
+  note          String?
+  author        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vulnKey])
 }
 
 /// Flux entre produits : « SL TEMPO joint SL MEDIA sur tel port ». Un lien

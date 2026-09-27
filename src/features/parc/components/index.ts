@@ -8,4 +8,5 @@ export { PolicyScreen } from './PolicyScreen';
 export { MachinePage } from './MachinePage';
 export { Dashboard } from './Dashboard';
 export { CatalogScreen } from './CatalogScreen';
+export { SecurityScreen } from './SecurityScreen';
 export { FleetPlan } from './FleetPlan';
