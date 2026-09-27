@@ -34,6 +34,9 @@ export const inventorySchema = z.object({
   hostname: text(128),
   osName: text(128),
   osVersion: text(128),
+  /** `ID` et `VERSION_ID` de /etc/os-release : choisissent la base de failles (Debian:12…). */
+  osId: text(32),
+  osVersionId: text(32),
   kernel: text(128),
   arch: text(32),
   cpu: text(200),
@@ -43,7 +46,14 @@ export const inventorySchema = z.object({
   diskFreeGb: z.number().int().min(0).max(1_000_000).optional(),
   uptimeSeconds: z.number().int().min(0).optional(),
   packages: z
-    .array(z.object({ name: z.string().regex(PACKAGE_NAME), version: z.string().max(128) }))
+    .array(
+      z.object({
+        name: z.string().regex(PACKAGE_NAME),
+        version: z.string().max(128),
+        source: z.string().regex(PACKAGE_NAME).optional(),
+        sourceVersion: z.string().max(128).optional(),
+      })
+    )
     .max(20_000)
     .default([]),
   upgradable: z

@@ -90,7 +90,8 @@ adopt() {
 report() {
   [ "${APT_REFRESH:-1}" = 1 ] && apt-get update -qq >/dev/null 2>&1 || true
   {
-    dpkg-query -W -f='P\t${Package}\t${Version}\n' 2>/dev/null || true
+    # Paquet source et sa version : la base de failles Debian raisonne par source (glibc, pas libc6).
+    dpkg-query -W -f='P\t${Package}\t${Version}\t${source:Package}\t${source:Version}\n' 2>/dev/null || true
     apt list --upgradable 2>/dev/null | awk -F'[/ ]' 'NR>1 && NF>=2 {
       current=$0; sub(/.*upgradable from: /, "", current); sub(/\]$/, "", current);
       printf "U\t%s\t%s\t%s\n", $1, current, $3 }' || true
@@ -100,8 +101,12 @@ name = re.compile(r"^[a-z0-9][a-z0-9+.-]{0,127}$")
 packages, upgradable = [], []
 for line in sys.stdin:
     parts = line.rstrip("\n").split("\t")
-    if parts[0] == "P" and len(parts) == 3 and name.match(parts[1]):
-        packages.append({"name": parts[1], "version": parts[2][:128]})
+    if parts[0] == "P" and len(parts) >= 3 and name.match(parts[1]):
+        item = {"name": parts[1], "version": parts[2][:128]}
+        if len(parts) >= 5 and name.match(parts[3]):
+            item["source"] = parts[3]
+            item["sourceVersion"] = parts[4][:128]
+        packages.append(item)
     elif parts[0] == "U" and len(parts) == 4 and name.match(parts[1]):
         upgradable.append({"name": parts[1], "current": parts[2][:128], "candidate": parts[3][:128]})
 osr = {}
@@ -128,6 +133,8 @@ uptime = int(float(open("/proc/uptime").read().split()[0]))
 print(json.dumps({
     "hostname": platform.node()[:128],
     "osName": osr.get("NAME", "")[:128],
+    "osId": osr.get("ID", "")[:32],
+    "osVersionId": osr.get("VERSION_ID", "")[:32],
     "osVersion": osr.get("VERSION", osr.get("VERSION_ID", ""))[:128],
     "kernel": platform.release()[:128],
     "arch": platform.machine()[:32],
@@ -155,9 +162,13 @@ poll() {
   set +e
   case "$kind" in
     upgrade-package)
-      # Revalidé ici : l'agent ne fait pas confiance aveuglément au serveur.
-      if [[ "$package" =~ $PACKAGE_NAME ]]; then
-        output=$(apt-get install --only-upgrade "${APT_OPTS[@]}" -- "$package" 2>&1)
+      # Un ou plusieurs paquets (même paquet source). Chaque nom est revalidé
+      # ici : l'agent ne fait pas confiance aveuglément au serveur.
+      read -r -a names <<<"$package"
+      valid=1
+      for name in "${names[@]}"; do [[ "$name" =~ $PACKAGE_NAME ]] || valid=0; done
+      if [ "$valid" = 1 ] && [ "${#names[@]}" -gt 0 ]; then
+        output=$(apt-get install --only-upgrade "${APT_OPTS[@]}" -- "${names[@]}" 2>&1)
       else
         output="Nom de paquet refusé par l'agent : $package"; false
       fi ;;

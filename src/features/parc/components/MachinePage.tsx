@@ -60,6 +60,7 @@ import { cn } from '@/shared/lib';
 import { agentInstallCommand } from '@/features/keys';
 import { fetchMachine, installAgent, requestUpdate, type AgentJob, type MachineDetail } from '../api';
 import { useFleetOptions } from '../lib';
+import { MachineVulns } from './MachineVulns';
 
 function formatDuration(seconds: number): string {
   const days = Math.floor(seconds / 86400);
@@ -460,9 +461,12 @@ export function MachinePage({ id }: { id: string }) {
       {hypervision ? (
         <EmptyState icon={ShieldCheck} title={t('machine.clientStation')} description={t('machine.clientStationHint')} />
       ) : inv ? (
+        <>
+        {machine.vulns && <MachineVulns machine={machine} />}
         <Block icon={Package} title={t('machine.packages', { count: inv.packages.length })}>
           <Packages machine={machine} />
         </Block>
+        </>
       ) : (
         <InstallAgent machine={machine} waiting={machine.agent} />
       )}

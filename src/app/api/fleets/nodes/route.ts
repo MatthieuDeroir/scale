@@ -31,7 +31,10 @@ export async function GET() {
   // déclarés par la machine au premier démarrage.
   const devices = await prisma.provisioningDevice.findMany({
     where: { keyId: { not: null } },
-    include: { inventory: { select: { osName: true, osVersion: true, upgradable: true, reportedAt: true } } },
+    include: {
+      inventory: { select: { osName: true, osVersion: true, upgradable: true, reportedAt: true } },
+      vulnScan: { select: { results: true, scannedAt: true } },
+    },
   });
   const byKey = new Map(devices.map((device) => [device.keyId, device]));
   const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
@@ -58,6 +61,10 @@ export async function GET() {
               upgradableCount: (JSON.parse(device.inventory.upgradable) as unknown[]).length,
               reportedAt: device.inventory.reportedAt.toISOString(),
             }
+          : null,
+        // Résumé des failles (calculé à l'analyse, pas à chaque liste).
+        vulns: device?.vulnScan
+          ? ((JSON.parse(device.vulnScan.results || '{}') as { summary?: unknown }).summary ?? null)
           : null,
       };
     })

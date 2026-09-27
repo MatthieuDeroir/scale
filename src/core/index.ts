@@ -50,3 +50,18 @@ export {
   type JobKind,
 } from './agent';
 export { agentScript, installerScript, publicStramscaleUrl } from './agent-install';
+export {
+  scanDevice,
+  ecosystemFor,
+  groupBySource,
+  sourceVersionOf,
+  summarize,
+  severityOf,
+  isAdvisory,
+  SEVERITY_RANK,
+  type Severity,
+  type ScanSummary,
+  type PackageVulns,
+  type SourcePackage,
+} from './vulns';
+export { cvss3BaseScore } from './cvss';

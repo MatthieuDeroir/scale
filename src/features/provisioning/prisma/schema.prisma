@@ -11,6 +11,7 @@ model ProvisioningDevice {
   /// Empreinte SHA-256 du jeton de l'agent, jamais le jeton lui-même.
   agentTokenHash String?
   inventory      MachineInventory?
+  vulnScan       VulnScan?
   jobs           AgentJob[]
 
   @@index([agentTokenHash])
@@ -25,6 +26,8 @@ model MachineInventory {
   hostname      String?
   osName        String?
   osVersion     String?
+  osId          String?
+  osVersionId   String?
   kernel        String?
   arch          String?
   cpu           String?
@@ -58,4 +61,31 @@ model AgentJob {
   output     String?
 
   @@index([deviceId, status])
+}
+
+/// Dernière analyse des failles d'une machine (base OSV), recalculée à chaque
+/// inventaire. `results` : un élément par paquet source vulnérable.
+model VulnScan {
+  deviceId  String             @id
+  device    ProvisioningDevice @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  scannedAt DateTime           @default(now())
+  ecosystem String?
+  results   String             @default("[]")
+  error     String?
+}
+
+/// Fiche d'une faille (OSV), mise en cache : les machines d'une même image
+/// partagent les mêmes paquets, donc les mêmes failles.
+model OsvVuln {
+  id        String   @id
+  summary   String?
+  aliases   String   @default("[]")
+  /// { "Debian:12": "high", … } : urgence par écosystème.
+  urgency   String   @default("{}")
+  published DateTime?
+  /// CVE d'origine et score CVSS 3.x calculé depuis son vecteur (fiche CVE d'OSV).
+  cve        String?
+  cvssScore  Float?
+  cvssVector String?
+  fetchedAt DateTime @default(now())
 }

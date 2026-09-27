@@ -16,6 +16,13 @@ export interface FleetNode {
   enrollment?: { deviceId: string; serial: string | null; model: string | null; enrolledAt: string } | null;
   /** Résumé de l'inventaire envoyé par l'agent (OS, mises à jour en attente). */
   inventory?: { os: string; upgradableCount: number; reportedAt: string } | null;
+  /** Résumé de la dernière analyse des failles. */
+  vulns?: {
+    total: number;
+    fixable: number;
+    fixableBySeverity: Partial<Record<'critical' | 'high' | 'medium' | 'low' | 'unassigned' | 'unimportant', number>>;
+    worstFixable: 'critical' | 'high' | 'medium' | 'low' | 'unassigned' | 'unimportant' | null;
+  } | null;
 }
 
 export async function fetchNodes(): Promise<FleetNode[]> {

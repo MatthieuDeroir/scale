@@ -35,6 +35,7 @@
       "copy": "Copy",
       "copied": "Copied"
     },
-    "updates": "{count, plural, =1 {1 update} other {# updates}}"
+    "updates": "{count, plural, =1 {1 update} other {# updates}}",
+    "faults": "{count, plural, =1 {1 fixable fault} other {# fixable faults}}"
   }
 }

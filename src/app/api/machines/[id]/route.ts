@@ -1,4 +1,4 @@
-import { getNode, mapNode, prisma, type RawHeadscaleNode } from '@/core';
+import { getNode, mapNode, prisma, severityOf, type RawHeadscaleNode } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -21,10 +21,42 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const device = node.keyId
     ? await prisma.provisioningDevice.findFirst({
         where: { keyId: node.keyId },
-        include: { inventory: true, jobs: { orderBy: { createdAt: 'desc' }, take: 20 } },
+        include: { inventory: true, vulnScan: true, jobs: { orderBy: { createdAt: 'desc' }, take: 20 } },
       })
     : null;
   const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
+
+  // Failles : résultat de la dernière analyse + fiches des failles citées.
+  let vulns = null;
+  if (device?.vulnScan) {
+    const scan = device.vulnScan;
+    const parsed = JSON.parse(scan.results || '{}') as { summary?: unknown; packages?: Array<{ fixed: string[]; remaining: string[] }> };
+    const ids = [...new Set((parsed.packages ?? []).flatMap((item) => [...item.fixed, ...item.remaining]))];
+    const records = await prisma.osvVuln.findMany({ where: { id: { in: ids } } });
+    vulns = {
+      scannedAt: scan.scannedAt.toISOString(),
+      ecosystem: scan.ecosystem,
+      error: scan.error,
+      summary: parsed.summary ?? null,
+      packages: parsed.packages ?? [],
+      details: Object.fromEntries(
+        records.map((record) => [
+          record.id,
+          {
+            summary: record.summary,
+            aliases: JSON.parse(record.aliases),
+            severity: severityOf(
+              (JSON.parse(record.urgency) as Record<string, string>)[scan.ecosystem ?? ''],
+              record.cvssScore
+            ),
+            cve: record.cve,
+            cvss: record.cvssScore,
+            published: record.published?.toISOString() ?? null,
+          },
+        ])
+      ),
+    };
+  }
 
   return NextResponse.json({
     ...node,
@@ -38,6 +70,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         }
       : null,
     agent: Boolean(device?.agentTokenHash),
+    vulns,
     inventory: device?.inventory
       ? {
           ...device.inventory,

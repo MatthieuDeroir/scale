@@ -29,8 +29,39 @@ export interface AgentJob {
   output: string | null;
 }
 
-export interface MachineDetail extends Omit<FleetNode, 'inventory'> {
+export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'unassigned' | 'unimportant';
+
+export interface VulnPackage {
+  source: string;
+  binaries: string[];
+  upgradable: string[];
+  installed: string;
+  candidate: string | null;
+  fixed: string[];
+  remaining: string[];
+}
+
+export interface VulnSummary {
+  total: number;
+  fixable: number;
+  fixableBySeverity: Partial<Record<Severity, number>>;
+  remainingBySeverity: Partial<Record<Severity, number>>;
+  packages: number;
+  worstFixable: Severity | null;
+}
+
+export interface MachineVulns {
+  scannedAt: string;
+  ecosystem: string | null;
+  error: string | null;
+  summary: VulnSummary | null;
+  packages: VulnPackage[];
+  details: Record<string, { summary: string | null; aliases: string[]; severity: Severity; cve: string | null; cvss: number | null; published: string | null }>;
+}
+
+export interface MachineDetail extends Omit<FleetNode, 'inventory' | 'vulns'> {
   agent: boolean;
+  vulns: MachineVulns | null;
   inventory: MachineInventory | null;
   jobs: AgentJob[];
 }
@@ -46,7 +77,7 @@ export async function fetchMachine(id: string): Promise<MachineDetail> {
 
 export async function requestUpdate(
   id: string,
-  input: { kind: 'upgrade-package'; package: string } | { kind: 'upgrade-system' }
+  input: { kind: 'upgrade-package'; package: string } | { kind: 'upgrade-package'; packages: string[] } | { kind: 'upgrade-system' }
 ): Promise<{ id: number }> {
   const response = await fetch(`/api/machines/${encodeURIComponent(id)}/jobs`, {
     method: 'POST',
@@ -68,4 +99,12 @@ export async function installAgent(id: string): Promise<{ token: string; install
     throw new Error(payload.message ?? `Refusé (${response.status})`);
   }
   return response.json();
+}
+
+export async function rescanMachine(id: string): Promise<void> {
+  const response = await fetch(`/api/machines/${encodeURIComponent(id)}/scan`, { method: 'POST' });
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(payload.message ?? `Analyse refusée (${response.status})`);
+  }
 }

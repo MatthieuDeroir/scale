@@ -19,7 +19,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     );
   }
 
-  const body = (await request.json().catch(() => null)) as { kind?: string; package?: string } | null;
+  const body = (await request.json().catch(() => null)) as {
+    kind?: string;
+    package?: string;
+    packages?: string[];
+  } | null;
   const kind = body?.kind as JobKind | undefined;
   if (!kind || !(JOB_KINDS as readonly string[]).includes(kind)) {
     return NextResponse.json({ message: 'Action inconnue' }, { status: 400 });
@@ -40,13 +44,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ message: "Pas d'agent Stramscale sur cette machine" }, { status: 409 });
   }
 
+  // Un ou plusieurs paquets binaires (ceux d'un même paquet source, pour corriger
+  // une faille) : chacun doit avoir une mise à jour connue.
   let packageName: string | null = null;
   if (kind === 'upgrade-package') {
-    packageName = body?.package ?? '';
-    const upgradable = JSON.parse(device.inventory?.upgradable ?? '[]') as Array<{ name: string }>;
-    if (!PACKAGE_NAME.test(packageName) || !upgradable.some((item) => item.name === packageName)) {
-      return NextResponse.json({ message: "Ce paquet n'a pas de mise à jour connue" }, { status: 400 });
+    const names = body?.packages ?? (body?.package ? [body.package] : []);
+    const upgradable = new Set(
+      (JSON.parse(device.inventory?.upgradable ?? '[]') as Array<{ name: string }>).map((item) => item.name)
+    );
+    if (
+      names.length === 0 ||
+      names.length > 50 ||
+      names.some((name) => !PACKAGE_NAME.test(name) || !upgradable.has(name))
+    ) {
+      return NextResponse.json({ message: "Paquet sans mise à jour connue" }, { status: 400 });
     }
+    packageName = [...new Set(names)].sort().join(' ');
   }
 
   const duplicate = await prisma.agentJob.findFirst({

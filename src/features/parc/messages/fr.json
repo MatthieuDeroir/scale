@@ -243,6 +243,32 @@
       "waitingInventory": "En attente du premier inventaire",
       "waitingInventoryHint": "Une commande d'installation a été générée, mais l'agent ne s'est pas encore manifesté. Si elle n'a pas été lancée sur la machine, générez-en une nouvelle : l'ancienne cessera de fonctionner.",
       "regenerateAgent": "Générer une nouvelle commande"
+    },
+    "severity": {
+      "critical": "critique",
+      "high": "élevée",
+      "medium": "moyenne",
+      "low": "faible",
+      "unassigned": "non évaluée",
+      "unimportant": "sans importance"
+    },
+    "vulns": {
+      "title": "Failles de sécurité",
+      "scannedAt": "Analysé le {date} · base {base} (OSV)",
+      "rescan": "Relancer l'analyse",
+      "rescanned": "Analyse relancée.",
+      "fixable": "{count, plural, =0 {Aucune faille corrigeable par mise à jour} =1 {1 faille corrigée par une mise à jour disponible} other {# failles corrigées par les mises à jour disponibles}}",
+      "unfixed": "{count, plural, =0 {Aucune faille sans correctif} =1 {1 faille sans correctif pour l'instant} other {# failles sans correctif pour l'instant}}",
+      "hint": "Version recommandée : la plus récente proposée par la distribution, qui corrige les failles indiquées. Cliquez sur un paquet pour voir le détail.",
+      "showUnfixable": "Paquets sans correctif ({count})",
+      "recommended": "Version recommandée",
+      "fixedColumn": "Failles corrigées",
+      "remainingColumn": "Restantes",
+      "noFix": "aucune correction",
+      "fixedBy": "corrigée en {version}",
+      "noFixYet": "pas encore de correctif",
+      "expand": "Voir les failles",
+      "collapse": "Masquer les failles"
     }
   },
   "nav": {

@@ -1,4 +1,4 @@
-import { authenticateAgent, inventorySchema, prisma } from '@/core';
+import { authenticateAgent, inventorySchema, prisma, scanDevice } from '@/core';
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -24,5 +24,7 @@ export async function POST(request: Request) {
     create: { deviceId: device.deviceId, ...data },
     update: data,
   });
+  // Analyse des failles en arrière-plan : l'agent n'a pas à attendre OSV.
+  void scanDevice(device.deviceId).catch((error) => console.error('scanDevice', error));
   return NextResponse.json({ ok: true });
 }

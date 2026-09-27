@@ -12,6 +12,7 @@ import {
   TableRow,
   usePagination,
 } from '@/shared/ui';
+import { cn } from '@/shared/lib';
 import type { FleetNode } from '../api';
 import { isHypervision, isMaster, parseFleetLabel } from '../lib';
 import { MasterBadge } from './MasterBadge';
@@ -136,6 +137,18 @@ export function MachinesTable({
                         {node.inventory.upgradableCount > 0 && (
                           <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-400">
                             {t('updates', { count: node.inventory.upgradableCount })}
+                          </span>
+                        )}
+                        {node.vulns && node.vulns.fixable > 0 && (
+                          <span
+                            className={cn(
+                              'rounded-full px-1.5 py-0.5 font-medium',
+                              node.vulns.worstFixable === 'critical' || node.vulns.worstFixable === 'high'
+                                ? 'bg-red-500/15 text-red-700 dark:text-red-400'
+                                : 'bg-muted text-muted-foreground'
+                            )}
+                          >
+                            {t('faults', { count: node.vulns.fixable })}
                           </span>
                         )}
                       </span>

@@ -243,6 +243,32 @@
       "waitingInventory": "Waiting for the first inventory",
       "waitingInventoryHint": "An install command was generated, but the agent has not reported yet. If it was not run on the machine, generate a new one: the old one will stop working.",
       "regenerateAgent": "Generate a new command"
+    },
+    "severity": {
+      "critical": "critical",
+      "high": "high",
+      "medium": "medium",
+      "low": "low",
+      "unassigned": "unrated",
+      "unimportant": "not important"
+    },
+    "vulns": {
+      "title": "Security faults",
+      "scannedAt": "Scanned on {date} · {base} database (OSV)",
+      "rescan": "Rescan",
+      "rescanned": "Scan restarted.",
+      "fixable": "{count, plural, =0 {No fault fixed by an update} =1 {1 fault fixed by an available update} other {# faults fixed by available updates}}",
+      "unfixed": "{count, plural, =0 {No unfixed fault} =1 {1 fault without a fix yet} other {# faults without a fix yet}}",
+      "hint": "Recommended version: the latest one offered by the distribution, which fixes the listed faults. Click a package for details.",
+      "showUnfixable": "Packages without a fix ({count})",
+      "recommended": "Recommended version",
+      "fixedColumn": "Faults fixed",
+      "remainingColumn": "Remaining",
+      "noFix": "no fix",
+      "fixedBy": "fixed in {version}",
+      "noFixYet": "no fix yet",
+      "expand": "Show faults",
+      "collapse": "Hide faults"
     }
   },
   "nav": {
