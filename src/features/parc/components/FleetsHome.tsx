@@ -1,7 +1,7 @@
 'use client';
 
 import { CreateFleetDialog } from '@/features/acl';
-import { StatusDot, fleetSlug, isHypervision } from '@/features/fleets';
+import { MasterBadge, StatusDot, fleetSlug, isHypervision, isMaster } from '@/features/fleets';
 import type { MachineKind } from '@/features/keys';
 import {
   AlertTriangle,
@@ -181,6 +181,7 @@ function FleetRow({
                             label={node.online ? tf('online') : tf('offline')}
                           />
                           <span className="font-medium">{node.givenName || node.name}</span>
+                          {isMaster(node.tags) && <MasterBadge />}
                           <span className="font-mono text-muted-foreground">
                             {node.ipAddresses[0]}
                           </span>

@@ -156,6 +156,38 @@
       "description": "Fleet isolation and allowed exceptions.",
       "advanced": "Advanced editor (raw HuJSON)",
       "advancedHint": "for cases not covered above"
+    },
+    "master": {
+      "open": "Set MASTERs",
+      "title": "Fleet MASTERs",
+      "description": "Tick the MASTER device(s) of “{fleet}”. The others are SLAVEs.",
+      "toggle": "MASTER: {name}",
+      "noEquipment": "No device in this fleet.",
+      "hint": "The role is a Headscale tag (tag:master): it changes neither the fleet nor the isolation.",
+      "save": "{count, plural, =0 {Save} =1 {Save (1 change)} other {Save (# changes)}}",
+      "saving": "Saving…",
+      "saved": "Roles saved.",
+      "failed": "{count, plural, =1 {1 machine could not be updated.} other {# machines could not be updated.}}"
+    },
+    "flow": {
+      "title": "Flows",
+      "description": "Allowed paths within the fleet and machine status, live.",
+      "support": "Stramatel support",
+      "supportHint": "internal fleet",
+      "hub": "Fleet network",
+      "hubHint": "no MASTER set",
+      "colLeft": "Support and hypervision",
+      "colHub": "Fleet",
+      "colRight": "Devices",
+      "more": "+ {count} more ({online} online)",
+      "allPorts": "all ports",
+      "ports": "ports {ports}",
+      "legendLive": "both ends online",
+      "legendDown": "one end offline",
+      "legendSupport": "support access",
+      "legendException": "inter-fleet exception",
+      "note": "Headscale does not measure volumes: allowed paths and status, not throughput.",
+      "aria": "Flow diagram of fleet {fleet} ({count} machines)"
     }
   },
   "nav": {

@@ -156,6 +156,38 @@
       "description": "Cloisonnement des flottes et exceptions autorisées.",
       "advanced": "Éditeur avancé (HuJSON brut)",
       "advancedHint": "pour les cas non couverts ci-dessus"
+    },
+    "master": {
+      "open": "Désigner les MASTER",
+      "title": "MASTER de la flotte",
+      "description": "Cochez le ou les équipements MASTER de « {fleet} ». Les autres sont des SLAVE.",
+      "toggle": "MASTER : {name}",
+      "noEquipment": "Aucun équipement dans cette flotte.",
+      "hint": "Le rôle est un tag Headscale (tag:master) : il ne change ni la flotte ni le cloisonnement.",
+      "save": "{count, plural, =0 {Enregistrer} =1 {Enregistrer (1 changement)} other {Enregistrer (# changements)}}",
+      "saving": "Enregistrement…",
+      "saved": "Rôles enregistrés.",
+      "failed": "{count, plural, =1 {1 machine n'a pas pu être mise à jour.} other {# machines n'ont pas pu être mises à jour.}}"
+    },
+    "flow": {
+      "title": "Flux",
+      "description": "Chemins autorisés dans la flotte et état des machines, en direct.",
+      "support": "Support Stramatel",
+      "supportHint": "flotte interne",
+      "hub": "Réseau de la flotte",
+      "hubHint": "aucun MASTER désigné",
+      "colLeft": "Support et hypervision",
+      "colHub": "Flotte",
+      "colRight": "Équipements",
+      "more": "+ {count} autres ({online} en ligne)",
+      "allPorts": "tous les ports",
+      "ports": "ports {ports}",
+      "legendLive": "les deux bouts en ligne",
+      "legendDown": "un bout hors ligne",
+      "legendSupport": "accès support",
+      "legendException": "exception entre flottes",
+      "note": "Headscale ne mesure pas les volumes : chemins autorisés et état, pas débits.",
+      "aria": "Schéma des flux de la flotte {fleet} ({count} machines)"
     }
   },
   "nav": {

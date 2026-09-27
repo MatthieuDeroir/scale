@@ -1,4 +1,12 @@
-import { describeNode, logActivity, mapNode, setNodeTags, type RawHeadscaleNode } from '@/core';
+import {
+  describeNode,
+  ensureSystemTagsInPolicy,
+  logActivity,
+  mapNode,
+  setNodeTags,
+  SYSTEM_TAGS,
+  type RawHeadscaleNode,
+} from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -21,6 +29,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   const label = await describeNode(id);
+  // Un tag système (ex. tag:master) doit être déclaré, sinon Headscale refuse.
+  if (tags.some((tag) => (SYSTEM_TAGS as readonly string[]).includes(tag))) {
+    await ensureSystemTagsInPolicy();
+  }
   const response = await setNodeTags(id, tags);
   if (!response.ok) {
     return NextResponse.json({ message: 'Changement de flotte refusé par Headscale' }, { status: 502 });

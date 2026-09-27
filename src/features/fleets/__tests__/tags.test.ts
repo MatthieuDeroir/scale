@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fleetSlug, fleetTagOf, isHypervision, tagFromSlug, withFleet } from '../lib/tags';
+import { fleetSlug, fleetTagOf, isHypervision, isMaster, tagFromSlug, withFleet, withMaster } from '../lib/tags';
 
 describe('tags de flotte', () => {
   it('changer de flotte conserve le type de machine', () => {
@@ -23,5 +23,15 @@ describe('tags de flotte', () => {
     for (const tag of ['tag:interne', 'tag:flotte-keolis-lyon']) {
       expect(tagFromSlug(fleetSlug(tag))).toBe(tag);
     }
+  });
+
+  it('MASTER : un rôle qui se pose et se retire sans toucher à la flotte', () => {
+    const master = withMaster(['tag:flotte-a'], true);
+    expect(master).toEqual(['tag:flotte-a', 'tag:master']);
+    expect(isMaster(master)).toBe(true);
+    expect(withMaster(master, false)).toEqual(['tag:flotte-a']);
+    expect(withMaster(master, true)).toEqual(['tag:flotte-a', 'tag:master']);
+    // Changer de flotte garde le rôle, comme le type.
+    expect(withFleet(master, 'tag:flotte-b')).toEqual(['tag:flotte-b', 'tag:master']);
   });
 });

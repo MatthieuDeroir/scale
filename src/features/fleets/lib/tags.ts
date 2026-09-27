@@ -11,6 +11,8 @@ export const INTERNAL_TAG = 'tag:interne';
 export const UNASSIGNED_TAG = 'tag:a-assigner';
 /** Poste d'hypervision appartenant au client (pas un équipement Stramatel). */
 export const HYPERVISION_TAG = 'tag:hypervision';
+/** Équipement MASTER de sa flotte (les SLAVE pointent vers lui). Rôle, pas flotte. */
+export const MASTER_TAG = 'tag:master';
 
 const FLEET_PREFIX = 'tag:flotte-';
 
@@ -24,6 +26,16 @@ export function fleetTagOf(tags: string[]): string | null {
 
 export function isHypervision(tags: string[]): boolean {
   return tags.includes(HYPERVISION_TAG);
+}
+
+export function isMaster(tags: string[]): boolean {
+  return tags.includes(MASTER_TAG);
+}
+
+/** Pose ou retire le rôle MASTER, sans toucher à la flotte ni au type. */
+export function withMaster(tags: string[], master: boolean): string[] {
+  const rest = tags.filter((tag) => tag !== MASTER_TAG);
+  return master ? [...rest, MASTER_TAG] : rest;
 }
 
 /** Remplace le tag de flotte en conservant les tags de type. */

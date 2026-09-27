@@ -9,10 +9,12 @@ const FLEET_TAG_PATTERN = /^tag:flotte-(.+)$/;
  * l'enregistrement :
  * - `tag:a-assigner` : machine auto-enrôlée pas encore rangée. Aucune règle
  *   ACL ne l'a en source → aucun accès sortant ; l'interne (`*:*`) la joint.
+ * - `tag:master` : équipement MASTER d'une flotte (les SLAVE pointent vers lui),
+ *   porté en plus du tag de flotte, sans effet sur le cloisonnement.
  * - `tag:hypervision` : poste d'hypervision client, toujours porté en plus d'un
  *   tag de flotte — c'est ce dernier qui décide du cloisonnement.
  */
-export const SYSTEM_TAGS = ['tag:a-assigner', 'tag:hypervision'] as const;
+export const SYSTEM_TAGS = ['tag:a-assigner', 'tag:hypervision', 'tag:master'] as const;
 
 export interface FleetPolicy {
   tag: string;

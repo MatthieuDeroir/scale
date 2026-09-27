@@ -13,7 +13,8 @@ import {
   usePagination,
 } from '@/shared/ui';
 import type { FleetNode } from '../api';
-import { isHypervision, parseFleetLabel } from '../lib';
+import { isHypervision, isMaster, parseFleetLabel } from '../lib';
+import { MasterBadge } from './MasterBadge';
 import { StatusDot } from './StatusDot';
 
 export function formatLastSeen(lastSeen: string | null): string | null {
@@ -119,6 +120,7 @@ export function MachinesTable({
                     />
                     <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     <span className="font-medium">{node.givenName || node.name}</span>
+                    {isMaster(node.tags) && <MasterBadge />}
                   </span>
                 </TableCell>
                 {showFleet && <TableCell>{fleetLabel(node)}</TableCell>}
