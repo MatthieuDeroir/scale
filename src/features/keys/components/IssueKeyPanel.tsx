@@ -46,7 +46,7 @@ function Segmented<T extends string | number>({
             'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
             value === option.value
               ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           {option.label}
@@ -67,11 +67,17 @@ export function IssueKeyPanel({
   kind,
   onIssued,
   onDone,
+  issue,
+  fixedName,
 }: {
   fleetTag: string;
   kind: MachineKind;
   onIssued?: () => void;
   onDone: () => void;
+  /** Émission propre à l'appelant (clé d'un emplacement du plan, par exemple). */
+  issue?: (expiration: string) => Promise<NewAccessKey>;
+  /** Nom imposé par l'appelant : le champ de saisie disparaît. */
+  fixedName?: string;
 }) {
   const t = useTranslations('keys');
   const queryClient = useQueryClient();
@@ -81,15 +87,18 @@ export function IssueKeyPanel({
   // Le poste du client est presque toujours un PC Windows ; un équipement, un Linux.
   const [platform, setPlatform] = useState<Platform>(kind === 'hypervision' ? 'windows' : 'linux');
 
-  const hostname = toHostname(name);
+  const hostname = toHostname(fixedName ?? name);
   const preset = PRESETS.find((days) => inDays(days) === expiration) ?? null;
 
   const mutation = useMutation({
-    mutationFn: () =>
-      createKey({
+    mutationFn: () => {
+      const until = new Date(`${expiration}T23:59:59`).toISOString();
+      if (issue) return issue(until);
+      return createKey({
         tags: kind === 'hypervision' ? [fleetTag, HYPERVISION_TAG] : [fleetTag],
-        expiration: new Date(`${expiration}T23:59:59`).toISOString(),
-      }),
+        expiration: until,
+      });
+    },
     onSuccess: async (key) => {
       await queryClient.invalidateQueries({ queryKey: ['keys'] });
       setIssued(key);
@@ -116,10 +125,7 @@ export function IssueKeyPanel({
     return (
       <>
         <div className="flex flex-col gap-4">
-          <div
-            role="alert"
-            className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-sm"
-          >
+          <div role="alert" className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5 text-sm">
             <p className="font-medium">{t('issuedTitle')}</p>
             <p className="text-muted-foreground">{t('issuedWarning')}</p>
           </div>
@@ -137,12 +143,7 @@ export function IssueKeyPanel({
                 ]}
               />
             )}
-            <CopyField
-              label={t('command')}
-              value={command}
-              copyLabel={t('copy')}
-              copiedLabel={t('copied')}
-            />
+            <CopyField label={t('command')} value={command} copyLabel={t('copy')} copiedLabel={t('copied')} />
             <p className="text-xs text-muted-foreground">
               {withAgent ? t('commandHint.agent') : t(`commandHint.${platform}`)}
             </p>
@@ -160,18 +161,20 @@ export function IssueKeyPanel({
   return (
     <>
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="key-name">{t('machineName')}</Label>
-          <Input
-            id="key-name"
-            value={name}
-            placeholder={kind === 'hypervision' ? t('machineNameHypervision') : t('machineNameEquipment')}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <p className="text-xs text-muted-foreground">
-            {hostname ? t('machineNamePreview', { hostname }) : t('machineNameHint')}
-          </p>
-        </div>
+        {fixedName === undefined && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="key-name">{t('machineName')}</Label>
+            <Input
+              id="key-name"
+              value={name}
+              placeholder={kind === 'hypervision' ? t('machineNameHypervision') : t('machineNameEquipment')}
+              onChange={(event) => setName(event.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              {hostname ? t('machineNamePreview', { hostname }) : t('machineNameHint')}
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="key-expiration">{t('expiration')}</Label>
@@ -179,7 +182,10 @@ export function IssueKeyPanel({
             label={t('expirationPresets')}
             value={preset}
             onChange={(days) => setExpiration(inDays(days))}
-            options={PRESETS.map((days) => ({ value: days, label: t('days', { count: days }) }))}
+            options={PRESETS.map((days) => ({
+              value: days,
+              label: t('days', { count: days }),
+            }))}
           />
           <Input
             id="key-expiration"
@@ -194,9 +200,7 @@ export function IssueKeyPanel({
       <DialogFooter>
         <Button variant="brand" disabled={!expiration || mutation.isPending} onClick={() => mutation.mutate()}>
           <KeyRound aria-hidden />
-          {mutation.isPending
-            ? t('issuing')
-            : t(kind === 'hypervision' ? 'issueHypervision' : 'issueEquipment')}
+          {mutation.isPending ? t('issuing') : t(kind === 'hypervision' ? 'issueHypervision' : 'issueEquipment')}
         </Button>
       </DialogFooter>
     </>

@@ -36,7 +36,17 @@
       "agent-job-system": "System update requested",
       "agent-job-done": "Update done (agent)",
       "agent-job-failed": "Update failed (agent)",
-      "agent-install": "Agent installed on a machine"
+      "agent-install": "Agent installed on a machine",
+      "product-create": "Product added",
+      "product-update": "Product edited",
+      "product-delete": "Product deleted",
+      "machine-product": "Machine product",
+      "plan-add": "Slots added to plan",
+      "plan-remove": "Slot removed",
+      "plan-assign": "Machine assigned to slot",
+      "plan-template": "Template applied",
+      "template-create": "Template created",
+      "template-delete": "Template deleted"
     },
     "search": "Search (author, target…)",
     "category": "Category",

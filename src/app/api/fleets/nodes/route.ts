@@ -37,6 +37,9 @@ export async function GET() {
     },
   });
   const byKey = new Map(devices.map((device) => [device.keyId, device]));
+  const products = new Map(
+    (await prisma.machineProduct.findMany({ include: { product: true } })).map((item) => [item.nodeId, item])
+  );
   const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
   return NextResponse.json(
     nodes.map((raw) => {
@@ -63,6 +66,13 @@ export async function GET() {
             }
           : null,
         agent: Boolean(device?.agentTokenHash),
+        product: products.has(node.id)
+          ? {
+              id: products.get(node.id)!.productId,
+              name: products.get(node.id)!.product.name,
+              reference: products.get(node.id)!.reference,
+            }
+          : null,
         // Résumé des failles (calculé à l'analyse, pas à chaque liste).
         vulns: device?.vulnScan
           ? ((JSON.parse(device.vulnScan.results || '{}') as { summary?: unknown }).summary ?? null)

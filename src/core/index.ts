@@ -65,3 +65,15 @@ export {
   type SourcePackage,
 } from './vulns';
 export { cvss3BaseScore } from './cvss';
+export { toHostname } from './hostname';
+export { issueMachineKey, KeyIssueError } from './machine-key';
+export {
+  ensureDefaultProducts,
+  tagsFor,
+  numberedLabels,
+  setMachineProduct,
+  resolveSlots,
+  assignNodeToSlot,
+  planToTemplateItems,
+  type TemplateItem,
+} from './plan';

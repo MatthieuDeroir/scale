@@ -16,6 +16,8 @@ export interface FleetNode {
   enrollment?: { deviceId: string; serial: string | null; model: string | null; enrolledAt: string } | null;
   /** Agent Stramscale prévu pour la machine (jeton émis). */
   agent?: boolean;
+  /** Produit de la gamme (ou sur mesure) et n° d'affaire. */
+  product?: { id: number; name: string; reference: string | null } | null;
   /** Résumé de l'inventaire envoyé par l'agent (OS, mises à jour en attente). */
   inventory?: { os: string; upgradableCount: number; reportedAt: string } | null;
   /** Résumé de la dernière analyse des failles. */

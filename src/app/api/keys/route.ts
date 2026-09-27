@@ -1,15 +1,10 @@
 import {
-  createPreAuthKey,
-  ensureSystemTagsInPolicy,
+  issueMachineKey,
+  KeyIssueError,
   listNodes,
   listPreAuthKeys,
   logActivity,
-  mapNewPreAuthKey,
   mapPreAuthKey,
-  prisma,
-  generateAgentToken,
-  publicStramscaleUrl,
-  SYSTEM_TAGS,
   type RawHeadscaleNode,
   type RawHeadscalePreAuthKey,
 } from '@/core';
@@ -49,7 +44,6 @@ export async function GET() {
 
 interface CreateKeyBody {
   tags?: string[];
-  reusable?: boolean;
   expiration?: string;
 }
 
@@ -73,44 +67,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Date d’expiration invalide' }, { status: 400 });
   }
 
-  let response: Response;
+  let issued;
   try {
-    if (tags.some((tag) => (SYSTEM_TAGS as readonly string[]).includes(tag))) {
-      await ensureSystemTagsInPolicy();
-    }
-    response = await createPreAuthKey({
-      tags,
-      reusable: body?.reusable ?? false,
-      expiration: expiration.toISOString(),
-    });
+    issued = await issueMachineKey({ tags, expiration, request });
   } catch (error) {
-    console.error('createPreAuthKey', error);
+    if (error instanceof KeyIssueError) {
+      return NextResponse.json({ message: error.message }, { status: error.status });
+    }
+    console.error('issueMachineKey', error);
     return NextResponse.json({ message: 'Parc non configuré' }, { status: 500 });
   }
-  if (!response.ok) {
-    return NextResponse.json({ message: 'Émission refusée par Headscale' }, { status: 502 });
-  }
 
-  const { preAuthKey } = (await response.json()) as { preAuthKey: RawHeadscalePreAuthKey };
-  // Équipement Stramatel : un agent, lié à cette clé, remontera ses specs et
-  // appliquera les mises à jour. Jamais pour un poste d'hypervision client.
-  const agent = tags.includes('tag:hypervision') ? null : generateAgentToken();
-  if (agent) {
-    await prisma.provisioningDevice.create({
-      data: { deviceId: `key-${preAuthKey.id}`, keyId: preAuthKey.id, agentTokenHash: agent.hash },
-    });
-  }
   await logActivity({
     actor: session.session.username,
     action: 'keys-create',
     target: tags.join(','),
   });
-  return NextResponse.json({
-    ...mapNewPreAuthKey(preAuthKey),
-    // Adresse que la machine cliente doit joindre (≠ HEADSCALE_API_URL, vue
-    // depuis ce serveur) — sert à afficher la commande d'installation.
-    loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,
-    agentToken: agent?.token ?? null,
-    installUrl: agent ? `${publicStramscaleUrl(request)}/api/agent/install` : null,
-  });
+  return NextResponse.json(issued);
 }

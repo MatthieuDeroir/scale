@@ -12,3 +12,59 @@ model FleetProfile {
   notes       String?
   updatedAt   DateTime @updatedAt
 }
+
+/// Catalogue des produits Stramatel (modifiable depuis l'interface). `role`
+/// « master » pose le tag MASTER sur la machine qui porte ce produit.
+model Product {
+  id        Int              @id @default(autoincrement())
+  name      String           @unique
+  /// 'gamme' | 'sur-mesure'
+  category  String           @default("gamme")
+  /// 'master' | 'slave' | null
+  role      String?
+  createdAt DateTime         @default(now())
+  machines  MachineProduct[]
+  slots     FleetSlot[]
+}
+
+/// Produit installé sur une machine (identifiée par son nœud Headscale).
+model MachineProduct {
+  nodeId    String   @id
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  /// N° d'affaire, pour un produit sur mesure.
+  reference String?
+  updatedAt DateTime @updatedAt
+}
+
+/// Emplacement prévu dans une flotte (« préparer une flotte ») : un poste
+/// d'hypervision, ou un équipement d'un produit donné. Pourvu par une clé
+/// émise pour lui, ou par une machine en attente qu'on y affecte.
+model FleetSlot {
+  id          Int       @id @default(autoincrement())
+  fleetTag    String
+  /// 'equipment' | 'hypervision'
+  kind        String    @default("equipment")
+  productId   Int?
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  label       String
+  reference   String?
+  position    Int       @default(0)
+  nodeId      String?
+  keyId       String?
+  keyIssuedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([fleetTag])
+}
+
+/// Modèle de flotte réutilisable : liste d'emplacements types.
+/// items : [{ kind, productId, count, label }]
+model FleetTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  items       String   @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

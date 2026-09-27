@@ -25,6 +25,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       })
     : null;
   const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
+  const product = await prisma.machineProduct.findUnique({ where: { nodeId: node.id }, include: { product: true } });
 
   // Failles : résultat de la dernière analyse + fiches des failles citées.
   let vulns = null;
@@ -70,6 +71,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         }
       : null,
     agent: Boolean(device?.agentTokenHash),
+    product: product ? { id: product.productId, name: product.product.name, reference: product.reference } : null,
     vulns,
     inventory: device?.inventory
       ? {

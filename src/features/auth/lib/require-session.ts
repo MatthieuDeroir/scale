@@ -45,3 +45,18 @@ export async function requireSession(minRole?: Role): Promise<SessionResult> {
   if (minRole && !covers(user.role, minRole)) return { ok: false, status: 403 };
   return { ok: true, session: { userId: user.userId, username: user.username, role: user.role } };
 }
+
+/** Réponse 401/403 prête à renvoyer, ou `null` si le rôle suffit. */
+export async function guardApi(minRole?: Role): Promise<
+  { session: { userId: number; username: string; role: string }; denied: null } | { session: null; denied: Response }
+> {
+  const result = await requireSession(minRole);
+  if (result.ok) return { session: result.session, denied: null };
+  return {
+    session: null,
+    denied: Response.json(
+      { message: result.status === 401 ? 'Non authentifié' : 'Droits insuffisants' },
+      { status: result.status }
+    ),
+  };
+}

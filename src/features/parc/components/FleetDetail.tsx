@@ -40,6 +40,7 @@ import { FleetFlowDiagram } from './FleetFlowDiagram';
 import { FleetProfileCard } from './FleetProfileCard';
 import { MasterDialog } from './MasterDialog';
 import { AddMachineDialog } from './AddMachineDialog';
+import { FleetPlan } from './FleetPlan';
 
 /** Au-delà, un champ de recherche apparaît : inutile pour trois machines. */
 const SEARCH_THRESHOLD = 10;
@@ -238,6 +239,8 @@ export function FleetDetail({ slug }: { slug: string }) {
       </div>
 
       {!fleet.internal && <FleetProfileCard tag={fleet.tag} profile={fleet.profile} />}
+
+      <FleetPlan fleetTag={fleet.tag} fleetLabel={fleet.label} />
 
       {fleet.nodes.length > 0 && (
         <Section icon={Workflow} title={t('flow.title')} description={t('flow.description')}>

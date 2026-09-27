@@ -126,6 +126,11 @@ export function MachinesTable({
                     <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                     <span className="font-medium">{node.givenName || node.name}</span>
                     {isMaster(node.tags) && <MasterBadge />}
+                    {node.product && (
+                      <span className="rounded-md border px-1.5 py-0.5 text-[11px] text-muted-foreground">
+                        {node.product.name}
+                      </span>
+                    )}
                   </span>
                 </TableCell>
                 {showFleet && <TableCell>{fleetLabel(node)}</TableCell>}

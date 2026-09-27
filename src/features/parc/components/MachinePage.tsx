@@ -61,6 +61,7 @@ import { agentInstallCommand } from '@/features/keys';
 import { fetchMachine, installAgent, requestUpdate, type AgentJob, type MachineDetail } from '../api';
 import { useFleetOptions } from '../lib';
 import { MachineVulns } from './MachineVulns';
+import { ProductField } from './ProductField';
 
 function formatDuration(seconds: number): string {
   const days = Math.floor(seconds / 86400);
@@ -402,6 +403,7 @@ export function MachinePage({ id }: { id: string }) {
           <Facts
             rows={[
               [t('machine.fleet'), fleet?.label],
+              ...(hypervision ? [] : [[t('product.label'), <ProductField key="product" machine={machine} />] as [string, ReactNode]]),
               [t('machine.role'), isHypervision(machine.tags) ? '—' : isMaster(machine.tags) ? 'MASTER' : 'SLAVE'],
               [tf('detail.serial'), machine.enrollment?.serial],
               [tf('detail.model'), machine.enrollment?.model],

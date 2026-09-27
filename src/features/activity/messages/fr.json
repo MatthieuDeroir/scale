@@ -36,7 +36,17 @@
       "agent-job-system": "Mise à jour du système demandée",
       "agent-job-done": "Mise à jour terminée (agent)",
       "agent-job-failed": "Mise à jour en échec (agent)",
-      "agent-install": "Agent installé sur une machine"
+      "agent-install": "Agent installé sur une machine",
+      "product-create": "Ajout d'un produit",
+      "product-update": "Modification d'un produit",
+      "product-delete": "Suppression d'un produit",
+      "machine-product": "Produit d'une machine",
+      "plan-add": "Ajout d'emplacements au plan",
+      "plan-remove": "Retrait d'un emplacement",
+      "plan-assign": "Affectation à un emplacement",
+      "plan-template": "Application d'un modèle",
+      "template-create": "Création d'un modèle",
+      "template-delete": "Suppression d'un modèle"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",

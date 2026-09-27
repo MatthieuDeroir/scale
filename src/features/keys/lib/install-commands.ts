@@ -1,16 +1,7 @@
 export type Platform = 'windows' | 'linux' | 'installed';
 
-/** Nom d'hôte acceptable par Tailscale : minuscules, chiffres, tirets, 63 caractères. */
-export function toHostname(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 63);
-}
+// Module pur (pas le barrel `@/core`, qui tire Prisma côté serveur).
+export { toHostname } from '@/core/hostname';
 
 /**
  * Commande à coller sur la machine à raccorder. Windows et Linux installent
