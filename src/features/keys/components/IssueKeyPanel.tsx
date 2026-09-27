@@ -69,6 +69,7 @@ export function IssueKeyPanel({
   onDone,
   issue,
   fixedName,
+  issueLabel,
 }: {
   fleetTag: string;
   kind: MachineKind;
@@ -78,6 +79,8 @@ export function IssueKeyPanel({
   issue?: (expiration: string) => Promise<NewAccessKey>;
   /** Nom imposé par l'appelant : le champ de saisie disparaît. */
   fixedName?: string;
+  /** Libellé du bouton d'émission, si ni poste client ni équipement (poste support). */
+  issueLabel?: string;
 }) {
   const t = useTranslations('keys');
   const queryClient = useQueryClient();
@@ -200,7 +203,7 @@ export function IssueKeyPanel({
       <DialogFooter>
         <Button variant="brand" disabled={!expiration || mutation.isPending} onClick={() => mutation.mutate()}>
           <KeyRound aria-hidden />
-          {mutation.isPending ? t('issuing') : t(kind === 'hypervision' ? 'issueHypervision' : 'issueEquipment')}
+          {mutation.isPending ? t('issuing') : (issueLabel ?? t(kind === 'hypervision' ? 'issueHypervision' : 'issueEquipment'))}
         </Button>
       </DialogFooter>
     </>

@@ -14,10 +14,12 @@ export interface PolicyRule {
   from?: string;
   to?: string;
   ports?: string;
+  /** Pour `support` : flottes jointes par le poste, « * » pour tout le parc. */
+  targets?: string[];
 }
 
 export interface PolicyWarning {
-  code: 'no-support' | 'no-isolation';
+  code: 'no-isolation';
   tag?: string;
 }
 

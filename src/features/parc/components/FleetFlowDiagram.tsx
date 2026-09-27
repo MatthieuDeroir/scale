@@ -19,7 +19,7 @@ import {
   Input,
   Label,
 } from '@/shared/ui';
-import { deleteLink, saveLink, type PlanSlot, type Product, type ProductLink } from '../api';
+import { deleteLink, reaches, saveLink, type PlanSlot, type Product, type ProductLink, type SupportPost } from '../api';
 import type { FleetSummary } from '../lib';
 
 const W = 960;
@@ -92,6 +92,24 @@ const TONE: Record<Tone, string> = {
   external: 'fill-card stroke-amber-500',
   more: 'fill-muted stroke-border',
 };
+
+/**
+ * Lien d'un poste support (rangée du haut) : il descend par le couloir à
+ * gauche de la colonne visée et entre dans la machine par le côté, sans
+ * traverser d'autre boîte.
+ */
+function supportPath(from: Box, to: Box, laneTop: number): string {
+  const lane = to.x - BOX_W / 2 - 14;
+  const start = from.y + BOX_H / 2;
+  const bend = (start + laneTop) / 2;
+  return [
+    `M ${from.x} ${start}`,
+    `C ${from.x} ${bend}, ${lane} ${bend}, ${lane} ${laneTop}`,
+    `L ${lane} ${to.y - 8}`,
+    `Q ${lane} ${to.y}, ${lane + 8} ${to.y}`,
+    `L ${to.x - BOX_W / 2} ${to.y}`,
+  ].join(' ');
+}
 
 function edgePath(from: Box, to: Box): string {
   if (Math.abs(from.x - to.x) < 1) {
@@ -171,6 +189,7 @@ export function FleetFlowDiagram({
   slots = [],
   products = [],
   links = [],
+  supportPosts = [],
   editable = false,
 }: {
   fleet: FleetSummary;
@@ -179,6 +198,8 @@ export function FleetFlowDiagram({
   slots?: PlanSlot[];
   products?: Product[];
   links?: ProductLink[];
+  /** Postes support : ceux qui prennent en charge la flotte joignent toutes ses machines. */
+  supportPosts?: SupportPost[];
   editable?: boolean;
 }) {
   const t = useTranslations('parc');
@@ -189,7 +210,8 @@ export function FleetFlowDiagram({
 
   const entries = entriesOf(fleet, slots, products, t);
   const productById = new Map(products.map((item) => [item.id, item]));
-  const hasSupport = !fleet.internal && rules.some((rule) => rule.kind === 'support');
+  const supports = supportPosts.filter((post) => reaches(post, fleet.tag));
+  const hasSupport = supports.length > 0;
   const outgoing = rules.filter((rule) => rule.kind === 'custom' && rule.from === fleet.tag);
   const incoming = rules.filter((rule) => rule.kind === 'custom' && rule.to === fleet.tag);
   const more = (count: number) => t('flow.moreShort', { count });
@@ -202,12 +224,23 @@ export function FleetFlowDiagram({
     ...slavesRaw.filter((entry) => !servers.some((server) => server.id === entry.serverId)),
   ];
   const others = entries.filter((entry) => entry.tone === 'equipment');
-  // Support, postes et autres équipements dans la même colonne : leurs liens
-  // vers les serveurs ne traversent aucune boîte.
+  // Postes support sur une rangée au-dessus : leurs liens (vers toutes les
+  // machines) descendent par les couloirs entre colonnes.
+  const supportEntries: Entry[] = supports.map((post) => ({
+      id: `support-${post.tag}`,
+      title: truncate(post.name),
+      subtitle: post.targets.includes('*')
+        ? t('flow.supportAll')
+        : t('flow.supportMachines', { count: post.machines.length }),
+      online: post.machines.length > 0 ? post.machines.some((machine) => machine.online) : null,
+      planned: false,
+      productId: null,
+      tone: 'support' as const,
+      href: '/support',
+    }));
+  // Postes et autres équipements dans la même colonne : leurs liens vers les
+  // serveurs ne traversent aucune boîte.
   const left: Entry[] = [
-    ...(hasSupport
-      ? [{ id: 'support', title: t('flow.support'), subtitle: t('flow.supportHint'), online: null, planned: false, productId: null, tone: 'support' as const, href: '/flottes/interne' }]
-      : []),
     ...entries.filter((entry) => entry.tone === 'hypervision'),
     ...others,
   ];
@@ -222,12 +255,19 @@ export function FleetFlowDiagram({
     { key: 'slaves', items: capped(slaves, more), title: 'REPLICA' },
   ].filter((column) => column.key === 'center' || column.items.length > 0);
   const xOf = (index: number) =>
-    columns.length === 1 ? W / 2 : 100 + (index * (W - 200)) / (columns.length - 1);
+    columns.length === 1 ? W / 2 : 120 + (index * (W - 220)) / (columns.length - 1);
 
+  // Rangée des postes support, au-dessus des colonnes.
+  const offset = supportEntries.length > 0 ? ROW + 34 : 0;
+  const supportBoxes: Box[] = supportEntries.map((entry, index) => ({
+    ...entry,
+    x: W / 2 + (index - (supportEntries.length - 1) / 2) * (BOX_W + 24),
+    y: 12 + BOX_H / 2,
+  }));
   const rows = Math.max(1, ...columns.map((column) => column.items.length));
-  const mid = TOP + ((rows - 1) * ROW) / 2 + BOX_H / 2;
+  const mid = TOP + offset + ((rows - 1) * ROW) / 2 + BOX_H / 2;
   const placed = columns.map((column, index) => ({ ...column, x: xOf(index), boxes: stack(column.items, xOf(index), mid) }));
-  const byId = new Map(placed.flatMap((column) => column.boxes).map((box) => [box.id, box]));
+  const byId = new Map([...supportBoxes, ...placed.flatMap((column) => column.boxes)].map((box) => [box.id, box]));
   const centerBoxes = placed.find((column) => column.key === 'center')!.boxes;
 
   const externalsRaw = [
@@ -256,12 +296,20 @@ export function FleetFlowDiagram({
   const edge = (from: Box | undefined, to: Box | undefined, extra: Partial<Edge> = {}) => {
     if (!from || !to || from.id === to.id) return;
     const planned = from.planned || to.planned;
-    edges.push({ from, to, live: !planned && from.online !== false && to.online !== false, planned, tone: 'data', ...extra });
+    // Un poste support sans machine raccordée n'a pas de lien vivant.
+    const idle = from.tone === 'support' && from.online === null;
+    edges.push({ from, to, live: !planned && !idle && from.online !== false && to.online !== false, planned, tone: 'data', ...extra });
   };
-  // Support et postes d'hypervision : vers les serveurs (ou le réseau de la flotte).
+  // Postes d'hypervision : vers les SERVEUR (ou le réseau de la flotte).
   for (const box of placed.find((column) => column.key === 'left')?.boxes ?? []) {
-    if (box.tone !== 'support' && box.tone !== 'hypervision') continue;
-    for (const target of centerBoxes) edge(box, target, { tone: box.tone === 'support' ? 'support' : 'data' });
+    if (box.tone !== 'hypervision') continue;
+    for (const target of centerBoxes) edge(box, target);
+  }
+  // Support : toutes les machines de la flotte, pas seulement les SERVEUR.
+  const reachable = [...byId.values()].filter((box) => !['support', 'hub', 'more'].includes(box.tone));
+  for (const box of byId.values()) {
+    if (box.tone !== 'support') continue;
+    for (const target of reachable.length > 0 ? reachable : centerBoxes) edge(box, target, { tone: 'support' });
   }
   // REPLICA → leur serveur, avec les ports du flux « produit → lui-même ».
   for (const box of placed.find((column) => column.key === 'slaves')?.boxes ?? []) {
@@ -358,7 +406,7 @@ export function FleetFlowDiagram({
           {edges.map((item, index) => (
             <path
               key={index}
-              d={edgePath(item.from, item.to)}
+              d={item.from.tone === 'support' ? supportPath(item.from, item.to, offset + 4) : edgePath(item.from, item.to)}
               fill="none"
               markerEnd="url(#flow-arrow)"
               strokeWidth={item.tone === 'exception' ? 2 : 1.5}
@@ -446,7 +494,7 @@ export function FleetFlowDiagram({
             <text
               key={column.key}
               x={column.x}
-              y={16}
+              y={offset + 16}
               textAnchor="middle"
               className="fill-muted-foreground text-[10px] uppercase tracking-wider"
             >

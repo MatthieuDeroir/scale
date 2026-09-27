@@ -17,7 +17,7 @@ export class KeyIssueError extends Error {
 /**
  * Émet une clé pour UNE machine. Pour un équipement Stramatel, crée aussi le
  * jeton de l'agent lié à cette clé (specs, failles, mises à jour) ; jamais
- * pour un poste d'hypervision client.
+ * pour un poste d'hypervision client ni pour un poste support.
  */
 export async function issueMachineKey({
   tags,
@@ -35,7 +35,8 @@ export async function issueMachineKey({
   if (!response.ok) throw new KeyIssueError('Émission refusée par Headscale', 502);
 
   const { preAuthKey } = (await response.json()) as { preAuthKey: RawHeadscalePreAuthKey };
-  const agent = tags.includes('tag:hypervision') ? null : generateAgentToken();
+  // Ni poste client, ni poste support : pas nos équipements, pas d'agent.
+  const agent = tags.some((tag) => tag === 'tag:hypervision' || tag.startsWith('tag:support-')) ? null : generateAgentToken();
   if (agent) {
     await prisma.provisioningDevice.create({
       data: { deviceId: `key-${preAuthKey.id}`, keyId: preAuthKey.id, agentTokenHash: agent.hash },

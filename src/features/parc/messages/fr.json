@@ -41,7 +41,7 @@
       "back": "Flottes",
       "notFound": "Cette flotte n'existe pas (ou plus).",
       "summary": "{total, plural, =0 {aucune machine} =1 {1 machine} other {# machines}} · {online} en ligne",
-      "isolation": "Réseau cloisonné : les machines de cette flotte ne voient qu'elles-mêmes. Le support Stramatel (flotte interne) y accède ; les autres clients, jamais.",
+      "isolation": "Réseau cloisonné : les machines de cette flotte ne voient qu'elles-mêmes. Seuls les postes support qui la prennent en charge y accèdent ; les autres clients, jamais.",
       "isolationInternal": "Flotte du support Stramatel : ses machines accèdent à toutes les flottes clients.",
       "search": "Filtrer les machines de la flotte…",
       "hypervisionTitle": "Postes d'hypervision client",
@@ -194,7 +194,9 @@
       "legendPlanned": "prévu au plan",
       "dialogSelf": "{product} : REPLICA → SERVEUR",
       "dialogTitle": "Flux {from} → {to}",
-      "dialogDescription": "Le flux vaut entre ces produits dans toutes les flottes."
+      "dialogDescription": "Le flux vaut entre ces produits dans toutes les flottes.",
+      "supportAll": "support · tout le parc",
+      "supportMachines": "support · {count, plural, =0 {aucun PC} =1 {1 PC} other {# PC}}"
     },
     "machine": {
       "identity": "Identité",
@@ -367,7 +369,9 @@
       "addSlave": "REPLICA",
       "addLine": "Ajouter une ligne",
       "slaveCount": "{count, plural, =0 {aucun REPLICA} =1 {1 REPLICA} other {# REPLICA}}",
-      "removeWithSlaves": "Retirer l'emplacement et ses REPLICA"
+      "removeWithSlaves": "Retirer l'emplacement et ses REPLICA",
+      "supportOption": "Support : {name}",
+      "supportLineHint": "Ce poste prendra en charge la flotte : il joindra toutes ses machines."
     },
     "product": {
       "label": "Produit",
@@ -518,6 +522,63 @@
       "exportVexHint": "Déclaration OpenVEX des décisions de tri, pour les clients et le suivi CRA.",
       "loading": "Chargement du détail…",
       "allExcluded": "Écartée sur toutes les machines touchées."
+    },
+    "support": {
+      "title": "Support",
+      "description": "Les postes des personnes de Stramatel et les flottes que chacun prend en charge. Un poste ne joint que les flottes de son périmètre (toutes leurs machines) ; les flottes ne le joignent jamais.",
+      "new": "Nouveau poste support",
+      "empty": "Aucun poste support",
+      "emptyHint": "Créez le poste d'une personne (Guillaume, Matthieu…), raccordez son PC, puis choisissez les flottes qu'il prend en charge.",
+      "everywhere": "Tout le parc",
+      "everywhereHint": "Exception au moindre privilège : le poste joint toutes les flottes, présentes et futures. À réserver aux postes qui en ont vraiment besoin.",
+      "fleetCount": "{count, plural, =0 {aucune flotte} =1 {1 flotte} other {# flottes}}",
+      "machineCount": "{count, plural, =0 {aucun PC raccordé} =1 {1 PC} other {# PC}}",
+      "editScope": "Périmètre",
+      "connect": "Raccorder un PC",
+      "delete": "Supprimer le poste {name}",
+      "scopeTitle": "Périmètre de {name}",
+      "scopeDescription": "Flottes que ce poste prend en charge : il joint toutes leurs machines. « À assigner » : les machines auto-enrôlées qui attendent (atelier).",
+      "searchFleet": "Chercher une flotte",
+      "saveScope": "Enregistrer le périmètre",
+      "scopeSaved": "Périmètre de {name} enregistré",
+      "unassigned": "À assigner",
+      "diagramFleet": "{online}/{total} en ligne",
+      "diagramPending": "{count, plural, =0 {aucune machine} =1 {1 machine} other {# machines}} en attente",
+      "diagramAria": "Flux du poste support {name}",
+      "noMachine": "Aucun PC raccordé",
+      "noMachineHint": "Raccorder un PC",
+      "noAccess": "Aucune flotte : ce poste ne joint rien. Réglez son périmètre.",
+      "newTitle": "Nouveau poste support",
+      "newDescription": "Un poste par personne : son ou ses PC porteront son tag.",
+      "name": "Personne",
+      "namePlaceholder": "guillaume",
+      "nameHint": "Devient le tag du poste (tag:support-guillaume) et le nom réseau de son PC.",
+      "create": "Créer le poste",
+      "connectTitle": "Raccorder un PC à {name}",
+      "connectDescription": "Clé à installer sur le PC (sans agent : ce n'est pas un équipement), ou machine déjà raccordée qui attend.",
+      "connectMode": "Façon de raccorder",
+      "modeKey": "Nouvelle clé",
+      "modeAttach": "Machine en attente ({count})",
+      "issueKey": "Émettre la clé du poste",
+      "attached": "PC rattaché au poste {name}",
+      "deleteTitle": "Supprimer le poste {name} ?",
+      "deleteDescription": "{count, plural, =0 {Aucun PC raccordé.} =1 {Son PC quitte le VPN.} other {Ses # PC quittent le VPN.}} Son accès aux flottes est retiré. Irréversible : il faudra recréer le poste et raccorder à nouveau.",
+      "confirmDelete": "Supprimer",
+      "cancel": "Annuler",
+      "deleted": "Poste {name} supprimé",
+      "footer": "Chaque périmètre est une règle de la politique d'accès, validée par Headscale avant d'être appliquée, et tracée au journal.",
+      "footerLink": "Voir la politique",
+      "cardTitle": "Support",
+      "cardDescription": "Postes Stramatel qui prennent en charge la flotte : ils joignent toutes ses machines.",
+      "manage": "Postes support",
+      "add": "Ajouter un support",
+      "none": "Aucun poste support ne prend en charge cette flotte.",
+      "noPostYet": "Aucun poste support : créez-en depuis la page Support.",
+      "removeFrom": "Retirer {name} du support de la flotte",
+      "added": "{name} prend en charge {fleet}",
+      "removed": "{name} ne prend plus en charge {fleet}",
+      "addTitle": "Support de {fleet}",
+      "addDescription": "Le poste choisi joindra toutes les machines de la flotte."
     }
   },
   "nav": {
@@ -530,6 +591,7 @@
     "tagline": "Réseau des flottes",
     "dashboard": "Tableau de bord",
     "catalog": "Produits et modèles",
-    "security": "Cybersécurité"
+    "security": "Cybersécurité",
+    "support": "Support"
   }
 }

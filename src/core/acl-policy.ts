@@ -8,7 +8,8 @@ const FLEET_TAG_PATTERN = /^tag:flotte-(.+)$/;
  * (`tagOwners`), sinon une machine qui les porte est refusée à
  * l'enregistrement :
  * - `tag:a-assigner` : machine auto-enrôlée pas encore rangée. Aucune règle
- *   ACL ne l'a en source → aucun accès sortant ; l'interne (`*:*`) la joint.
+ *   ACL ne l'a en source → aucun accès sortant ; seuls les postes support qui
+ *   ont « À assigner » dans leur périmètre la joignent (atelier).
  * - `tag:serveur` : machine SERVEUR d'une flotte (SL TEMPO, SERVEUR d'un SL MEDIA et ses REPLICA),
  *   porté en plus du tag de flotte, sans effet sur le cloisonnement.
  * - `tag:hypervision` : poste d'hypervision client, toujours porté en plus d'un
@@ -141,6 +142,11 @@ export function removeFleetFromPolicy(raw: string, tag: string): string {
 
 export type RuleKind = 'support' | 'isolation' | 'custom' | 'other';
 
+/** Poste support : un tag par PC, qui ne joint que les flottes de son périmètre. */
+export const SUPPORT_PREFIX = 'tag:support-';
+const UNASSIGNED = 'tag:a-assigner';
+export const isSupportTag = (tag: string) => tag.startsWith(SUPPORT_PREFIX);
+
 export interface PolicyRule {
   /** Empreinte stable de la règle (sources > destinations), sert à la retirer. */
   id: string;
@@ -151,10 +157,12 @@ export interface PolicyRule {
   from?: string;
   to?: string;
   ports?: string;
+  /** Pour `support` : flottes jointes par le poste, ou « * » pour tout le parc. */
+  targets?: string[];
 }
 
 export interface PolicyWarning {
-  code: 'no-support' | 'no-isolation';
+  code: 'no-isolation';
   tag?: string;
 }
 
@@ -166,8 +174,9 @@ function ruleId(rule: { src: string[]; dst: string[] }): string {
 
 function classify(rule: AclRule): PolicyRule {
   const base = { id: ruleId(rule), src: rule.src, dst: rule.dst };
-  if (rule.src.length === 1 && rule.src[0] === INTERNAL_TAG && rule.dst.length === 1 && rule.dst[0] === '*:*') {
-    return { ...base, kind: 'support' };
+  if (rule.src.length === 1 && isSupportTag(rule.src[0])) {
+    const targets = rule.dst.includes('*:*') ? ['*'] : rule.dst.map((entry) => entry.replace(/:\*$/, ''));
+    return { ...base, kind: 'support', from: rule.src[0], targets };
   }
   if (rule.src.length === 1 && rule.dst.length === 1 && rule.dst[0] === `${rule.src[0]}:*`) {
     return { ...base, kind: 'isolation' };
@@ -191,7 +200,6 @@ export function parsePolicyRules(raw: string): {
   const policy = parsePolicy(raw);
   const rules = policy.acls.filter((rule) => rule.action === 'accept').map(classify);
   const warnings: PolicyWarning[] = [];
-  if (!rules.some((rule) => rule.kind === 'support')) warnings.push({ code: 'no-support' });
   for (const tag of Object.keys(policy.tagOwners).filter((item) => FLEET_TAG_PATTERN.test(item))) {
     if (!rules.some((rule) => rule.kind === 'isolation' && rule.src[0] === tag)) {
       warnings.push({ code: 'no-isolation', tag });
@@ -225,7 +233,6 @@ export function addAccessRule(raw: string, input: { from: string; to: string; po
   const policy = parsePolicy(raw);
   const { from, to } = input;
   if (from === to) throw new Error('La source et la destination sont la même flotte.');
-  if (from === INTERNAL_TAG) throw new Error('Le support Stramatel joint déjà tout le parc.');
   for (const tag of [from, to]) {
     if (!isFleet(tag) || !policy.tagOwners[tag]) throw new Error(`Flotte inconnue : ${tag}.`);
   }
@@ -247,5 +254,81 @@ export function removeAccessRule(raw: string, id: string): string {
     throw new Error("Cette règle fait partie du cloisonnement de base : elle ne se retire pas d'ici.");
   }
   policy.acls.splice(index, 1);
+  return JSON.stringify(policy, null, 2);
+}
+
+// --- Postes support ---------------------------------------------------------
+
+export interface SupportPost {
+  tag: string;
+  /** Flottes jointes (tags), « * » pour tout le parc ; vide = aucun accès. */
+  targets: string[];
+}
+
+/** Postes support déclarés et leur périmètre. */
+export function parseSupportPosts(raw: string): SupportPost[] {
+  const policy = parsePolicy(raw);
+  return Object.keys(policy.tagOwners)
+    .filter(isSupportTag)
+    .sort()
+    .map((tag) => {
+      const rule = policy.acls.find((item) => item.src.length === 1 && item.src[0] === tag);
+      return { tag, targets: rule ? (classify(rule).targets ?? []) : [] };
+    });
+}
+
+/** Déclare un poste support (sans aucun accès tant que son périmètre est vide). */
+export function addSupportPost(raw: string, tag: string): string {
+  if (!isSupportTag(tag) || !/^tag:support-[a-z0-9][a-z0-9-]*$/.test(tag)) throw new Error('Nom de poste invalide.');
+  const policy = parsePolicy(raw);
+  if (policy.tagOwners[tag]) throw new Error('Ce poste support existe déjà.');
+  policy.tagOwners[tag] = ['stramatel@'];
+  return JSON.stringify(policy, null, 2);
+}
+
+/**
+ * Périmètre d'un poste support : une seule règle, vers les flottes choisies
+ * (et « À assigner » pour l'atelier), ou tout le parc (« * »). Un périmètre
+ * vide retire la règle : le poste ne joint plus rien.
+ */
+export function setSupportAccess(raw: string, tag: string, targets: string[]): string {
+  const policy = parsePolicy(raw);
+  if (!isSupportTag(tag) || !policy.tagOwners[tag]) throw new Error('Poste support inconnu.');
+  const all = targets.includes('*');
+  for (const target of all ? [] : targets) {
+    if (!(FLEET_TAG_PATTERN.test(target) || target === INTERNAL_TAG || target === UNASSIGNED) || !policy.tagOwners[target]) {
+      throw new Error(`Flotte inconnue : ${target}.`);
+    }
+  }
+  policy.acls = policy.acls.filter((rule) => !(rule.src.length === 1 && rule.src[0] === tag));
+  const unique = [...new Set(targets)];
+  if (all) policy.acls.push({ action: 'accept', src: [tag], dst: ['*:*'] });
+  else if (unique.length > 0) policy.acls.push({ action: 'accept', src: [tag], dst: unique.map((target) => `${target}:*`) });
+  return JSON.stringify(policy, null, 2);
+}
+
+/** Retire un poste support : sa déclaration et sa règle. */
+export function removeSupportPost(raw: string, tag: string): string {
+  const policy = parsePolicy(raw);
+  if (!isSupportTag(tag) || !policy.tagOwners[tag]) throw new Error('Poste support inconnu.');
+  delete policy.tagOwners[tag];
+  policy.acls = policy.acls.filter((rule) => !rule.src.includes(tag));
+  if (policy.ssh) policy.ssh = policy.ssh.filter((rule) => !rule.src.includes(tag));
+  return JSON.stringify(policy, null, 2);
+}
+
+/**
+ * Retire l'ancienne flotte Interne et son accès total (`tag:interne → *:*`),
+ * remplacés par les postes support et leur périmètre. Refusé si une machine
+ * la porte encore (à passer en poste support d'abord).
+ */
+export function removeInternalFleet(raw: string): string {
+  const policy = parsePolicy(raw);
+  delete policy.tagOwners[INTERNAL_TAG];
+  policy.acls = policy.acls
+    .filter((rule) => !rule.src.includes(INTERNAL_TAG))
+    .map((rule) => ({ ...rule, dst: rule.dst.filter((entry) => !targetsTag(entry, INTERNAL_TAG)) }))
+    .filter((rule) => rule.dst.length > 0);
+  if (policy.ssh) policy.ssh = policy.ssh.filter((rule) => !rule.src.includes(INTERNAL_TAG));
   return JSON.stringify(policy, null, 2);
 }

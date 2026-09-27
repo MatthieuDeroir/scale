@@ -51,7 +51,12 @@
       "product-unlink": "Flow deleted",
       "parc-reset": "Fleet reset",
       "vuln-assess": "Vulnerability triaged",
-      "vuln-unassess": "Triage decision removed"
+      "vuln-unassess": "Triage decision removed",
+      "support-create": "Support post created",
+      "support-access": "Support post scope",
+      "support-delete": "Support post deleted",
+      "support-attach": "PC attached to support post",
+      "acl-internal-remove": "Internal fleet removed"
     },
     "search": "Search (author, target…)",
     "category": "Category",

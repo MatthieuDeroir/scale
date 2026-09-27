@@ -87,7 +87,15 @@ function AddSlotsForm({ fleetTag, onDone }: { fleetTag: string; onDone: () => vo
       let slots: PlanSlot[] = [];
       // Dans l'ordre saisi : le plan garde la composition telle qu'elle a été pensée.
       for (const item of items) {
-        slots = await addSlots(fleetTag, { ...item, reference: item.kind === 'equipment' ? reference : undefined });
+        if (item.kind === 'support') continue;
+        slots = await addSlots(fleetTag, {
+          kind: item.kind,
+          productId: item.productId,
+          count: item.count,
+          label: item.label,
+          slaves: item.slaves,
+          reference: item.kind === 'equipment' ? reference : undefined,
+        });
       }
       return slots;
     },

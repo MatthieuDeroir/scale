@@ -9,4 +9,5 @@ export { MachinePage } from './MachinePage';
 export { Dashboard } from './Dashboard';
 export { CatalogScreen } from './CatalogScreen';
 export { SecurityScreen } from './SecurityScreen';
+export { SupportScreen } from './SupportScreen';
 export { FleetPlan } from './FleetPlan';

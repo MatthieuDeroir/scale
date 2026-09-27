@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, ArrowRight, Lock, Plus, ShieldCheck, Terminal, Trash2, Waypoints } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -223,9 +224,7 @@ function Rules({ policy, fleets }: { policy: AclPolicy; fleets: FleetOption[] })
           {policy.warnings.map((warning) => (
             <p key={`${warning.code}-${warning.tag ?? ''}`} className="flex items-center gap-2">
               <AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden />
-              {warning.code === 'no-support'
-                ? t('rules.warnNoSupport')
-                : t('rules.warnNoIsolation', { fleet: label(warning.tag!) })}
+              {t('rules.warnNoIsolation', { fleet: label(warning.tag!) })}
             </p>
           ))}
         </div>
@@ -247,8 +246,28 @@ function Rules({ policy, fleets }: { policy: AclPolicy; fleets: FleetOption[] })
         <CardContent className="px-5 pb-3">
           <ul className="divide-y">
             {support.map((rule) => (
-              <RuleRow key={rule.id} icon={<ShieldCheck />} action={<Badge variant="secondary">{t('rules.base')}</Badge>}>
-                {t.rich('rules.support', { name: (chunks) => <Name>{chunks}</Name> })}
+              <RuleRow
+                key={rule.id}
+                icon={<ShieldCheck />}
+                action={
+                  <Link href="/support" className="text-xs font-medium text-muted-foreground hover:text-foreground">
+                    {t('rules.supportManage')}
+                  </Link>
+                }
+              >
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <Name>{t('rules.supportPost', { name: rule.from!.replace(/^tag:support-/, '') })}</Name>
+                  <ArrowRight className="size-3.5" aria-label={t('rules.canReach')} />
+                  {rule.targets?.includes('*') ? (
+                    <Badge variant="warning">{t('rules.supportEverywhere')}</Badge>
+                  ) : (
+                    rule.targets?.map((tag) => (
+                      <Badge key={tag} variant="outline">
+                        {label(tag)}
+                      </Badge>
+                    ))
+                  )}
+                </span>
               </RuleRow>
             ))}
             <RuleRow icon={<Lock />} action={<Badge variant="secondary">{t('rules.base')}</Badge>}>

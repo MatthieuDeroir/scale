@@ -2,18 +2,12 @@
 
 import { CornerDownRight, Monitor, Plus, Server, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import {
-  Button,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui';
-import type { Product, TemplateItem } from '../api';
+import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui';
+import type { Product, SupportPost, TemplateItem } from '../api';
 
 const HYPERVISION = 'hypervision';
+/** Valeur d'une ligne support dans le choix : `support:<tag>`. */
+const SUPPORT = 'support:';
 
 /** Une ligne de composition : un produit (ou un poste d'hypervision), et ses REPLICA pour un SL MEDIA. */
 export interface SlotLine {
@@ -32,13 +26,26 @@ function productOf(line: SlotLine, products: Product[]) {
 
 /** Libellé effectif : saisi, sinon le nom du produit. */
 export function lineLabel(line: SlotLine, products: Product[], hypervisionLabel: string): string {
-  return line.label.trim() || (line.target === HYPERVISION ? hypervisionLabel : (productOf(line, products)?.name ?? ''));
+  if (line.target.startsWith(SUPPORT)) return line.target.slice(SUPPORT.length).replace(/^tag:support-/, '');
+  return (
+    line.label.trim() || (line.target === HYPERVISION ? hypervisionLabel : (productOf(line, products)?.name ?? ''))
+  );
 }
 
 export function linesToItems(lines: SlotLine[], products: Product[], hypervisionLabel: string): TemplateItem[] {
   return lines
     .filter((line) => line.target)
-    .map((line) => {
+    .map((line): TemplateItem => {
+      if (line.target.startsWith(SUPPORT)) {
+        const supportTag = line.target.slice(SUPPORT.length);
+        return {
+          kind: 'support',
+          productId: null,
+          count: 1,
+          label: supportTag.replace(/^tag:support-/, ''),
+          supportTag,
+        };
+      }
       const product = productOf(line, products);
       return {
         kind: line.target === HYPERVISION ? ('hypervision' as const) : ('equipment' as const),
@@ -59,10 +66,13 @@ export function SlotLinesEditor({
   lines,
   onChange,
   products,
+  supportPosts,
 }: {
   lines: SlotLine[];
   onChange: (lines: SlotLine[]) => void;
   products: Product[];
+  /** Pour un modèle : les postes support qui prendront en charge la flotte. */
+  supportPosts?: SupportPost[];
 }) {
   const t = useTranslations('parc.plan');
   const update = (index: number, patch: Partial<SlotLine>) =>
@@ -73,11 +83,12 @@ export function SlotLinesEditor({
       <ul className="flex flex-col gap-3">
         {lines.map((line, index) => {
           const product = productOf(line, products);
+          const support = line.target.startsWith(SUPPORT);
           const label = lineLabel(line, products, t('hypervision'));
           return (
             <li key={index} className="flex flex-col gap-1.5 rounded-lg border p-2.5">
               <div className="flex flex-wrap items-center gap-2">
-                {!product?.slaves && (
+                {!product?.slaves && !support && (
                   <>
                     <Input
                       aria-label={t('count')}
@@ -86,7 +97,9 @@ export function SlotLinesEditor({
                       max={50}
                       className="w-16"
                       value={line.count}
-                      onChange={(event) => update(index, { count: Math.min(50, Math.max(1, Number(event.target.value) || 1)) })}
+                      onChange={(event) =>
+                        update(index, { count: Math.min(50, Math.max(1, Number(event.target.value) || 1)) })
+                      }
                     />
                     <span className="text-sm text-muted-foreground">×</span>
                   </>
@@ -102,15 +115,24 @@ export function SlotLinesEditor({
                       </SelectItem>
                     ))}
                     <SelectItem value={HYPERVISION}>{t('hypervision')}</SelectItem>
+                    {(supportPosts ?? []).map((post) => (
+                      <SelectItem key={post.tag} value={`${SUPPORT}${post.tag}`}>
+                        {t('supportOption', { name: post.name })}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                <Input
-                  aria-label={t('label')}
-                  className="min-w-32 flex-1"
-                  placeholder={lineLabel({ ...line, label: '' }, products, t('hypervision')) || t('label')}
-                  value={line.label}
-                  onChange={(event) => update(index, { label: event.target.value })}
-                />
+                {support ? (
+                  <span className="min-w-32 flex-1 text-xs text-muted-foreground">{t('supportLineHint')}</span>
+                ) : (
+                  <Input
+                    aria-label={t('label')}
+                    className="min-w-32 flex-1"
+                    placeholder={lineLabel({ ...line, label: '' }, products, t('hypervision')) || t('label')}
+                    value={line.label}
+                    onChange={(event) => update(index, { label: event.target.value })}
+                  />
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
@@ -174,6 +196,7 @@ export function slotIcon(kind: string) {
 
 /** Résumé d'un élément de modèle : « 1 × SL TEMPO », « SL MEDIA + 3 REPLICA ». */
 export function describeItem(item: TemplateItem): string {
+  if (item.kind === 'support') return `Support : ${item.label}`;
   const head = item.count > 1 ? `${item.count} × ${item.label}` : item.label;
   return item.slaves ? `${head} + ${item.slaves} REPLICA` : head;
 }

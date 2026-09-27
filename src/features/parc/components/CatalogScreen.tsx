@@ -45,6 +45,7 @@ import {
   type Product,
   type ProductLink,
 } from '../api';
+import { useSupportPosts } from './FleetSupportCard';
 import { SlotLinesEditor, describeItem, emptyLine, linesToItems, type SlotLine } from './SlotLinesEditor';
 
 function Panel({
@@ -351,6 +352,7 @@ function TemplateBuilder({ products }: { products: Product[] }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [lines, setLines] = useState<SlotLine[]>([emptyLine()]);
+  const supportPosts = useSupportPosts().data ?? [];
   const items = linesToItems(lines, products, tp('hypervision'));
   const create = useCatalogMutation(
     () => createTemplate({ name: name.trim(), description, items }),
@@ -375,7 +377,7 @@ function TemplateBuilder({ products }: { products: Product[] }) {
           <Input id="template-description" value={description} onChange={(event) => setDescription(event.target.value)} />
         </div>
       </div>
-      <SlotLinesEditor lines={lines} onChange={setLines} products={products} />
+      <SlotLinesEditor lines={lines} onChange={setLines} products={products} supportPosts={supportPosts} />
       <Button
         size="sm"
         variant="brand"

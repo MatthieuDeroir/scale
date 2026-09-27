@@ -281,12 +281,15 @@ export async function assignNodeToSlot(slotId: number, nodeId: string) {
 }
 
 export interface TemplateItem {
-  kind: 'equipment' | 'hypervision';
+  /** `support` : un poste support qui prend en charge la flotte (accès, pas un emplacement). */
+  kind: 'equipment' | 'hypervision' | 'support';
   productId: number | null;
   count: number;
   label: string;
   /** REPLICA par serveur (produit à REPLICA). */
   slaves?: number;
+  /** Pour `support` : tag du poste support. */
+  supportTag?: string;
 }
 
 /**

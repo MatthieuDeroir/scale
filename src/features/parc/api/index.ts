@@ -58,3 +58,14 @@ export {
   type VexJustification,
   type VulnState,
 } from './security.api';
+export {
+  fetchSupportPosts,
+  createSupportPost,
+  setSupportTargets,
+  deleteSupportPost,
+  issueSupportKey,
+  attachToSupport,
+  reaches,
+  withFleetTarget,
+  type SupportPost,
+} from './support.api';

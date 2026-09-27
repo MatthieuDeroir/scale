@@ -41,7 +41,7 @@
       "back": "Fleets",
       "notFound": "This fleet doesn't exist (anymore).",
       "summary": "{total, plural, =0 {no machine} =1 {1 machine} other {# machines}} · {online} online",
-      "isolation": "Isolated network: machines in this fleet only see each other. Stramatel support (internal fleet) can reach them; other customers never can.",
+      "isolation": "Isolated network: machines in this fleet only see each other. Only the support posts handling it get in; other customers, never.",
       "isolationInternal": "Stramatel support fleet: its machines can reach every customer fleet.",
       "search": "Filter this fleet's machines…",
       "hypervisionTitle": "Customer hypervision stations",
@@ -194,7 +194,9 @@
       "legendPlanned": "planned",
       "dialogSelf": "{product}: REPLICA → SERVER",
       "dialogTitle": "Flow {from} → {to}",
-      "dialogDescription": "The flow applies between these products in every fleet."
+      "dialogDescription": "The flow applies between these products in every fleet.",
+      "supportAll": "support · whole park",
+      "supportMachines": "support · {count, plural, =0 {no PC} =1 {1 PC} other {# PCs}}"
     },
     "machine": {
       "identity": "Identity",
@@ -367,7 +369,9 @@
       "addSlave": "REPLICA",
       "addLine": "Add a line",
       "slaveCount": "{count, plural, =0 {no REPLICA} =1 {1 REPLICA} other {# REPLICAs}}",
-      "removeWithSlaves": "Remove slot and its REPLICAs"
+      "removeWithSlaves": "Remove slot and its REPLICAs",
+      "supportOption": "Support: {name}",
+      "supportLineHint": "This post will handle the fleet: it will reach all its machines."
     },
     "product": {
       "label": "Product",
@@ -518,6 +522,63 @@
       "exportVexHint": "OpenVEX statement of triage decisions, for customers and CRA follow-up.",
       "loading": "Loading details…",
       "allExcluded": "Dismissed on every affected machine."
+    },
+    "support": {
+      "title": "Support",
+      "description": "Stramatel people's support posts and the fleets each one handles. A post only reaches the fleets in its scope (all their machines); fleets never reach it.",
+      "new": "New support post",
+      "empty": "No support post",
+      "emptyHint": "Create a person's post (Guillaume, Matthieu…), connect their PC, then choose the fleets they handle.",
+      "everywhere": "Whole park",
+      "everywhereHint": "Exception to least privilege: the post reaches every fleet, present and future. Keep it for posts that really need it.",
+      "fleetCount": "{count, plural, =0 {no fleet} =1 {1 fleet} other {# fleets}}",
+      "machineCount": "{count, plural, =0 {no PC connected} =1 {1 PC} other {# PCs}}",
+      "editScope": "Scope",
+      "connect": "Connect a PC",
+      "delete": "Delete post {name}",
+      "scopeTitle": "Scope of {name}",
+      "scopeDescription": "Fleets this post handles: it reaches all their machines. “Unassigned”: auto-enrolled machines waiting (workshop).",
+      "searchFleet": "Search a fleet",
+      "saveScope": "Save scope",
+      "scopeSaved": "Scope of {name} saved",
+      "unassigned": "Unassigned",
+      "diagramFleet": "{online}/{total} online",
+      "diagramPending": "{count, plural, =0 {no machine} =1 {1 machine} other {# machines}} waiting",
+      "diagramAria": "Flows of support post {name}",
+      "noMachine": "No PC connected",
+      "noMachineHint": "Connect a PC",
+      "noAccess": "No fleet: this post reaches nothing. Set its scope.",
+      "newTitle": "New support post",
+      "newDescription": "One post per person: their PCs will carry its tag.",
+      "name": "Person",
+      "namePlaceholder": "guillaume",
+      "nameHint": "Becomes the post tag (tag:support-guillaume) and their PC's network name.",
+      "create": "Create post",
+      "connectTitle": "Connect a PC to {name}",
+      "connectDescription": "Key to install on the PC (no agent: not equipment), or an already connected waiting machine.",
+      "connectMode": "How to connect",
+      "modeKey": "New key",
+      "modeAttach": "Waiting machine ({count})",
+      "issueKey": "Issue the post key",
+      "attached": "PC attached to post {name}",
+      "deleteTitle": "Delete post {name}?",
+      "deleteDescription": "{count, plural, =0 {No PC connected.} =1 {Its PC leaves the VPN.} other {Its # PCs leave the VPN.}} Its fleet access is removed. Irreversible: the post must be recreated and reconnected.",
+      "confirmDelete": "Delete",
+      "cancel": "Cancel",
+      "deleted": "Post {name} deleted",
+      "footer": "Each scope is an access-policy rule, validated by Headscale before being applied, and logged.",
+      "footerLink": "View the policy",
+      "cardTitle": "Support",
+      "cardDescription": "Stramatel posts handling this fleet: they reach all its machines.",
+      "manage": "Support posts",
+      "add": "Add support",
+      "none": "No support post handles this fleet.",
+      "noPostYet": "No support post: create one from the Support page.",
+      "removeFrom": "Remove {name} from this fleet's support",
+      "added": "{name} now handles {fleet}",
+      "removed": "{name} no longer handles {fleet}",
+      "addTitle": "Support of {fleet}",
+      "addDescription": "The chosen post will reach every machine of the fleet."
     }
   },
   "nav": {
@@ -530,6 +591,7 @@
     "tagline": "Fleet network",
     "dashboard": "Dashboard",
     "catalog": "Products and templates",
-    "security": "Cybersecurity"
+    "security": "Cybersecurity",
+    "support": "Support"
   }
 }

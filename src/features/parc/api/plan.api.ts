@@ -35,12 +35,15 @@ export interface PlanSlot {
 }
 
 export interface TemplateItem {
-  kind: SlotKind;
+  /** `support` : un poste support qui prend en charge la flotte (accès, pas un emplacement). */
+  kind: SlotKind | 'support';
   productId: number | null;
   count: number;
   label: string;
   /** REPLICA par serveur, pour un produit qui en accepte. */
   slaves?: number;
+  /** Pour `support` : tag du poste support. */
+  supportTag?: string;
 }
 
 export interface FleetTemplate {

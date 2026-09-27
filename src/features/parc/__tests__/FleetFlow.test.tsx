@@ -65,19 +65,25 @@ describe('FleetFlowDiagram', () => {
       <FleetFlowDiagram
         fleet={fleetOf(nodes)}
         rules={[
-          { id: 's', kind: 'support', src: ['tag:interne'], dst: ['*:*'] },
           { id: 'x', kind: 'custom', src: ['tag:flotte-a'], dst: ['tag:flotte-b:22'], from: 'tag:flotte-a', to: 'tag:flotte-b', ports: '22' },
         ]}
         labelOf={(tag) => (tag === 'tag:flotte-a' ? 'Keolis Lyon' : tag)}
         products={products}
         links={links}
+        supportPosts={[
+          { tag: 'tag:support-guillaume', name: 'guillaume', targets: ['tag:flotte-b'], machines: [{ id: '9', name: 'pc-guillaume', online: true, ip: null, lastSeen: null }] },
+          { tag: 'tag:support-autre', name: 'autre', targets: ['tag:flotte-z'], machines: [] },
+        ]}
       />
     );
+    // Seuls les postes qui prennent en charge la flotte y figurent, reliés à toutes ses machines.
+    expect(screen.getByText('guillaume')).toBeInTheDocument();
+    expect(screen.queryByText('autre')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('path.stroke-brand')).toHaveLength(5);
     expect(screen.getByText('♛ machine-1')).toBeInTheDocument();
     expect(screen.getByText('machine-2')).toBeInTheDocument();
     // SL TEMPO est une machine maîtresse : dans la colonne SERVEUR, comme le SL MEDIA.
     expect(screen.getByText('♛ machine-5')).toBeInTheDocument();
-    expect(screen.getByText('Support Stramatel')).toBeInTheDocument();
     expect(screen.getByText('Keolis Lyon')).toBeInTheDocument();
     // Deux REPLICA vers leur serveur sur 5000, SL TEMPO vers le serveur sur 123.
     expect(screen.getAllByText('5000')).toHaveLength(2);

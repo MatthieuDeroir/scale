@@ -1,4 +1,4 @@
-import { logActivity, planToTemplateItems, prisma, type TemplateItem } from '@/core';
+import { getPolicy, isSupportTag, logActivity, parseSupportPosts, planToTemplateItems, prisma, SUPPORT_PREFIX, type TemplateItem } from '@/core';
 import { guardApi } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -32,17 +32,33 @@ export async function POST(request: Request) {
 
   let items: TemplateItem[];
   if (body?.fromFleet) {
-    items = planToTemplateItems(await prisma.fleetSlot.findMany({ where: { fleetTag: body.fromFleet }, orderBy: { position: 'asc' } }));
+    const fleetTag = body.fromFleet;
+    items = planToTemplateItems(await prisma.fleetSlot.findMany({ where: { fleetTag }, orderBy: { position: 'asc' } }));
+    // Postes support qui prennent en charge la flotte (hors « tout le parc »).
+    const policy = await getPolicy();
+    if (policy.ok) {
+      const { policy: raw } = (await policy.json()) as { policy: string };
+      for (const post of parseSupportPosts(raw).filter((item) => item.targets.includes(fleetTag))) {
+        items.push({ kind: 'support', productId: null, count: 1, label: post.tag.slice(SUPPORT_PREFIX.length), supportTag: post.tag });
+      }
+    }
   } else {
     items = (body?.items ?? [])
-      .map((item) => ({
-        kind: item.kind === 'hypervision' ? ('hypervision' as const) : ('equipment' as const),
-        productId: item.kind === 'hypervision' ? null : Number(item.productId) || null,
-        count: Math.min(Math.max(Number(item.count) || 1, 1), 50),
-        label: String(item.label ?? '').trim().slice(0, 60),
-        ...(item.kind !== 'hypervision' && Number(item.slaves) > 0 ? { slaves: Math.min(Number(item.slaves), 50) } : {}),
-      }))
-      .filter((item) => item.label && (item.kind === 'hypervision' || item.productId));
+      .map((item): TemplateItem | null => {
+        if (item.kind === 'support') {
+          return item.supportTag && isSupportTag(item.supportTag)
+            ? { kind: 'support', productId: null, count: 1, label: item.supportTag.slice(SUPPORT_PREFIX.length), supportTag: item.supportTag }
+            : null;
+        }
+        return {
+          kind: item.kind === 'hypervision' ? 'hypervision' : 'equipment',
+          productId: item.kind === 'hypervision' ? null : Number(item.productId) || null,
+          count: Math.min(Math.max(Number(item.count) || 1, 1), 50),
+          label: String(item.label ?? '').trim().slice(0, 60),
+          ...(item.kind !== 'hypervision' && Number(item.slaves) > 0 ? { slaves: Math.min(Number(item.slaves), 50) } : {}),
+        };
+      })
+      .filter((item): item is TemplateItem => item !== null && Boolean(item.label) && (item.kind !== 'equipment' || Boolean(item.productId)));
   }
   if (items.length === 0) return NextResponse.json({ message: 'Le modèle est vide' }, { status: 400 });
 

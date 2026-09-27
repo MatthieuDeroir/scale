@@ -40,6 +40,7 @@ import { FleetFlowDiagram } from './FleetFlowDiagram';
 import { FleetProfileCard } from './FleetProfileCard';
 import { AddMachineDialog } from './AddMachineDialog';
 import { FleetPlan, planKey } from './FleetPlan';
+import { FleetSupportCard, useSupportPosts } from './FleetSupportCard';
 import { fetchLinks, fetchPlan, fetchProducts } from '../api';
 
 /** Au-delà, un champ de recherche apparaît : inutile pour trois machines. */
@@ -101,6 +102,7 @@ export function FleetDetail({ slug }: { slug: string }) {
   const planQuery = useQuery({ queryKey: planKey(tag), queryFn: () => fetchPlan(tag), refetchInterval: 15000 });
   const productsQuery = useQuery({ queryKey: ['products'], queryFn: fetchProducts });
   const linksQuery = useQuery({ queryKey: ['links'], queryFn: fetchLinks });
+  const supportQuery = useSupportPosts();
 
   const policyFleets = useMemo(() => policyQuery.data?.fleets ?? [], [policyQuery.data]);
   const fleet = useMemo(
@@ -253,6 +255,7 @@ export function FleetDetail({ slug }: { slug: string }) {
             slots={planQuery.data ?? []}
             products={productsQuery.data ?? []}
             links={linksQuery.data ?? []}
+            supportPosts={supportQuery.data ?? []}
             editable={operate}
           />
         </Section>
@@ -298,6 +301,8 @@ export function FleetDetail({ slug }: { slug: string }) {
           {pendingBlock('hypervision')}
         </Section>
       )}
+
+      {!fleet.internal && <FleetSupportCard fleetTag={fleet.tag} fleetLabel={fleet.label} />}
 
       <Section
         icon={Server}

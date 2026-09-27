@@ -9,6 +9,11 @@ import {
   fleetTagFromName,
   parsePolicyFleets,
   removeFleetFromPolicy,
+  addSupportPost,
+  parseSupportPosts,
+  removeInternalFleet,
+  removeSupportPost,
+  setSupportAccess,
 } from '../acl-policy';
 
 const BASE_POLICY = `{
@@ -97,13 +102,15 @@ describe('ensureSystemTags', () => {
 });
 
 describe('règles guidées', () => {
-  const withB = addFleetToPolicy(BASE_POLICY, 'tag:flotte-clientb');
+  // Parc sans l'ancienne flotte Interne : le support passe par des postes support.
+  const withB = addFleetToPolicy(removeInternalFleet(BASE_POLICY), 'tag:flotte-clientb');
 
   it('classe support, cloisonnement et accès ajouté', () => {
-    const raw = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '22, 443' });
+    let raw = addAccessRule(withB, { from: 'tag:flotte-clienta', to: 'tag:flotte-clientb', ports: '22, 443' });
+    raw = setSupportAccess(addSupportPost(raw, 'tag:support-guillaume'), 'tag:support-guillaume', ['tag:flotte-clienta']);
     const kinds = parsePolicyRules(raw).rules.map((rule) => rule.kind);
-    expect(kinds).toEqual(['support', 'isolation', 'isolation', 'custom']);
-    const custom = parsePolicyRules(raw).rules[3];
+    expect(kinds).toEqual(['isolation', 'isolation', 'custom', 'support']);
+    const custom = parsePolicyRules(raw).rules[2];
     expect([custom.from, custom.to, custom.ports]).toEqual(['tag:flotte-clienta', 'tag:flotte-clientb', '22,443']);
   });
 
@@ -145,5 +152,52 @@ describe('règles guidées', () => {
     expect(() => normalizePorts('22;rm')).toThrow();
     expect(() => normalizePorts('70000')).toThrow();
     expect(() => normalizePorts('10-2')).toThrow();
+  });
+});
+
+describe('postes support', () => {
+  const base = addFleetToPolicy(addFleetToPolicy(removeInternalFleet(BASE_POLICY), 'tag:flotte-piscine'), 'tag:flotte-cinema');
+  const guillaume = 'tag:support-guillaume';
+
+  it('un poste déclaré ne joint rien tant que son périmètre est vide', () => {
+    const raw = addSupportPost(base, guillaume);
+    expect(parseSupportPosts(raw)).toEqual([{ tag: guillaume, targets: [] }]);
+    expect(JSON.parse(raw).acls.some((rule: { src: string[] }) => rule.src.includes(guillaume))).toBe(false);
+  });
+
+  it('une seule règle par poste : les flottes choisies, toutes leurs machines', () => {
+    let raw = setSupportAccess(addSupportPost(base, guillaume), guillaume, ['tag:flotte-piscine', 'tag:a-assigner']);
+    raw = setSupportAccess(raw, guillaume, ['tag:flotte-piscine', 'tag:flotte-cinema']);
+    const rules = JSON.parse(raw).acls.filter((rule: { src: string[] }) => rule.src.includes(guillaume));
+    expect(rules).toEqual([{ action: 'accept', src: [guillaume], dst: ['tag:flotte-piscine:*', 'tag:flotte-cinema:*'] }]);
+    expect(parseSupportPosts(raw)[0].targets).toEqual(['tag:flotte-piscine', 'tag:flotte-cinema']);
+  });
+
+  it('« tout le parc » est explicite, un périmètre vide retire la règle', () => {
+    const raw = setSupportAccess(addSupportPost(base, guillaume), guillaume, ['*']);
+    expect(parseSupportPosts(raw)[0].targets).toEqual(['*']);
+    expect(parseSupportPosts(setSupportAccess(raw, guillaume, []))[0].targets).toEqual([]);
+  });
+
+  it('refuse une flotte inconnue, un poste inconnu ou un nom invalide', () => {
+    const raw = addSupportPost(base, guillaume);
+    expect(() => setSupportAccess(raw, guillaume, ['tag:flotte-zzz'])).toThrow();
+    expect(() => setSupportAccess(raw, 'tag:support-inconnu', ['*'])).toThrow();
+    expect(() => addSupportPost(raw, guillaume)).toThrow();
+    expect(() => addSupportPost(raw, 'tag:support-Pas Bon')).toThrow();
+  });
+
+  it('supprimer une flotte la retire du périmètre ; supprimer le poste retire sa règle', () => {
+    const raw = setSupportAccess(addSupportPost(base, guillaume), guillaume, ['tag:flotte-piscine', 'tag:flotte-cinema']);
+    expect(parseSupportPosts(removeFleetFromPolicy(raw, 'tag:flotte-cinema'))[0].targets).toEqual(['tag:flotte-piscine']);
+    const gone = JSON.parse(removeSupportPost(raw, guillaume));
+    expect(gone.tagOwners[guillaume]).toBeUndefined();
+    expect(gone.acls.some((rule: { src: string[] }) => rule.src.includes(guillaume))).toBe(false);
+  });
+
+  it("retire l'ancienne flotte Interne et son accès total", () => {
+    const after = JSON.parse(removeInternalFleet(BASE_POLICY));
+    expect(after.tagOwners['tag:interne']).toBeUndefined();
+    expect(after.acls.some((rule: { src: string[]; dst: string[] }) => rule.src.includes('tag:interne') || rule.dst.includes('*:*'))).toBe(false);
   });
 });

@@ -13,7 +13,7 @@ const policy = {
   ssh: [],
   warnings: [{ code: 'no-isolation', tag: 'tag:flotte-orpheline' }],
   rules: [
-    { id: 'a', kind: 'support', src: ['tag:interne'], dst: ['*:*'] },
+    { id: 'a', kind: 'support', src: ['tag:support-guillaume'], dst: ['tag:flotte-clienta:*'], from: 'tag:support-guillaume', targets: ['tag:flotte-clienta'] },
     { id: 'b', kind: 'isolation', src: ['tag:flotte-clienta'], dst: ['tag:flotte-clienta:*'] },
     {
       id: 'tag:flotte-clienta>tag:flotte-clientb:22',
@@ -27,7 +27,6 @@ const policy = {
   ],
 };
 const fleets = [
-  { tag: 'tag:interne', label: 'Interne' },
   { tag: 'tag:flotte-clienta', label: 'Keolis Lyon' },
   { tag: 'tag:flotte-clientb', label: 'Transports B' },
 ];
@@ -52,7 +51,7 @@ describe('AccessRules', () => {
 
   it('lit les règles en phrases, avec les noms des flottes', async () => {
     afficher();
-    expect(await screen.findByText('Support Stramatel')).toBeInTheDocument();
+    expect(await screen.findByText('Poste support guillaume')).toBeInTheDocument();
     expect(screen.getAllByText('Keolis Lyon').length).toBeGreaterThan(0);
     expect(screen.getByText('Transports B')).toBeInTheDocument();
     expect(screen.getByText('sur les ports 22')).toBeInTheDocument();
@@ -73,7 +72,7 @@ describe('AccessRules', () => {
 
   it('un Lecteur ne peut ni ajouter ni retirer', async () => {
     afficher(false);
-    await screen.findByText('Support Stramatel');
+    await screen.findByText('Poste support guillaume');
     expect(screen.queryByRole('button', { name: 'Autoriser un accès' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Retirer cet accès' })).not.toBeInTheDocument();
   });
