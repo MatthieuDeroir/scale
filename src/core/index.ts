@@ -75,5 +75,10 @@ export {
   resolveSlots,
   assignNodeToSlot,
   planToTemplateItems,
+  createSlots,
+  addSlaves,
+  isServerSlot,
+  MAX_SLOTS,
+  type NewSlots,
   type TemplateItem,
 } from './plan';

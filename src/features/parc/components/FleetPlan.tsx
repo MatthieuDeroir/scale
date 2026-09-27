@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MasterBadge, StatusDot, formatLastSeen, type FleetNode } from '@/features/fleets';
 import { IssueKeyPanel } from '@/features/keys';
-import { BookmarkPlus, ClipboardList, Inbox, KeyRound, LayoutTemplate, Monitor, Plus, Server, Trash2 } from 'lucide-react';
+import { BookmarkPlus, ClipboardList, CornerDownRight, Inbox, KeyRound, LayoutTemplate, Monitor, Plus, Server, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState, type ReactNode } from 'react';
@@ -24,14 +24,8 @@ import {
   DialogTitle,
   Input,
   Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   usePermissions,
 } from '@/shared/ui';
-import { cn } from '@/shared/lib';
 import {
   addSlots,
   applyTemplate,
@@ -43,9 +37,10 @@ import {
   fetchTemplates,
   issueSlotKey,
   type PlanSlot,
-  type SlotKind,
 } from '../api';
 import { unassignedNodes, useNodes } from '../lib';
+import { cn } from '@/shared/lib';
+import { SlotLinesEditor, describeItem, emptyLine, linesToItems, type SlotLine } from './SlotLinesEditor';
 
 type Open =
   | { kind: 'add' }
@@ -56,6 +51,17 @@ type Open =
   | null;
 
 export const planKey = (tag: string) => ['plan', tag] as const;
+
+/** Chaque serveur suivi de ses SLAVE, dans l'ordre du plan. */
+export function orderedSlots(slots: PlanSlot[]): PlanSlot[] {
+  const ids = new Set(slots.map((slot) => slot.id));
+  const out: PlanSlot[] = [];
+  for (const slot of slots) {
+    if (slot.parentSlotId && ids.has(slot.parentSlotId)) continue;
+    out.push(slot, ...slots.filter((item) => item.parentSlotId === slot.id));
+  }
+  return out;
+}
 
 function Field({ id, label, hint, children }: { id?: string; label: string; hint?: string; children: ReactNode }) {
   return (
@@ -71,99 +77,41 @@ function AddSlotsForm({ fleetTag, onDone }: { fleetTag: string; onDone: () => vo
   const t = useTranslations('parc.plan');
   const queryClient = useQueryClient();
   const products = useQuery({ queryKey: ['products'], queryFn: fetchProducts });
-  const [kind, setKind] = useState<SlotKind>('equipment');
-  const [productId, setProductId] = useState<string>('');
-  const [count, setCount] = useState(1);
-  const [label, setLabel] = useState('');
+  const [lines, setLines] = useState<SlotLine[]>([emptyLine()]);
   const [reference, setReference] = useState('');
-  const product = products.data?.find((item) => String(item.id) === productId);
+  const items = linesToItems(lines, products.data ?? [], t('hypervision'));
 
   const mutation = useMutation({
-    mutationFn: () =>
-      addSlots(fleetTag, {
-        kind,
-        productId: kind === 'equipment' ? Number(productId) : null,
-        count,
-        label: label.trim() || (kind === 'hypervision' ? t('hypervision') : product?.name ?? ''),
-        reference,
-      }),
+    mutationFn: async () => {
+      let slots: PlanSlot[] = [];
+      // Dans l'ordre saisi : le plan garde la composition telle qu'elle a été pensée.
+      for (const item of items) {
+        slots = await addSlots(fleetTag, { ...item, reference: item.kind === 'equipment' ? reference : undefined });
+      }
+      return slots;
+    },
     onSuccess: (slots) => {
       queryClient.setQueryData(planKey(fleetTag), slots);
-      toast.success(t('added', { count }));
+      toast.success(t('added', { count: items.reduce((sum, item) => sum + item.count * (1 + (item.slaves ?? 0)), 0) }));
       onDone();
     },
-    onError: (error: Error) => toast.error(error.message),
+    onError: async (error: Error) => {
+      toast.error(error.message);
+      await queryClient.invalidateQueries({ queryKey: planKey(fleetTag) });
+    },
   });
 
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div role="radiogroup" aria-label={t('kind')} className="flex gap-1 rounded-lg bg-muted p-1">
-          {(['equipment', 'hypervision'] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={kind === value}
-              onClick={() => setKind(value)}
-              className={cn(
-                'flex-1 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors',
-                kind === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {value === 'equipment' ? t('equipment') : t('hypervision')}
-            </button>
-          ))}
-        </div>
-        {kind === 'equipment' && (
-          <Field label={t('product')}>
-            <Select value={productId} onValueChange={setProductId}>
-              <SelectTrigger aria-label={t('product')}>
-                <SelectValue placeholder={t('chooseProduct')} />
-              </SelectTrigger>
-              <SelectContent>
-                {(products.data ?? []).map((item) => (
-                  <SelectItem key={item.id} value={String(item.id)}>
-                    {item.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        )}
-        <div className="grid grid-cols-[6rem_1fr] gap-3">
-          <Field id="slot-count" label={t('count')}>
-            <Input
-              id="slot-count"
-              type="number"
-              min={1}
-              max={50}
-              value={count}
-              onChange={(event) => setCount(Math.min(50, Math.max(1, Number(event.target.value) || 1)))}
-            />
-          </Field>
-          <Field id="slot-label" label={t('label')}>
-            <Input
-              id="slot-label"
-              value={label}
-              placeholder={kind === 'hypervision' ? t('hypervision') : product?.name ?? ''}
-              onChange={(event) => setLabel(event.target.value)}
-            />
-          </Field>
-        </div>
-        <p className="-mt-2 text-xs text-muted-foreground">{t('labelHint')}</p>
-        {kind === 'equipment' && (
-          <Field id="slot-reference" label={t('reference')}>
-            <Input id="slot-reference" value={reference} onChange={(event) => setReference(event.target.value)} />
-          </Field>
-        )}
+        <SlotLinesEditor lines={lines} onChange={setLines} products={products.data ?? []} />
+        <p className="text-xs text-muted-foreground">{t('labelHint')}</p>
+        <Field id="slot-reference" label={t('reference')}>
+          <Input id="slot-reference" value={reference} onChange={(event) => setReference(event.target.value)} />
+        </Field>
       </div>
       <DialogFooter>
-        <Button
-          variant="brand"
-          disabled={mutation.isPending || (kind === 'equipment' && !productId)}
-          onClick={() => mutation.mutate()}
-        >
+        <Button variant="brand" disabled={mutation.isPending || items.length === 0} onClick={() => mutation.mutate()}>
           <Plus aria-hidden />
           {t('add')}
         </Button>
@@ -208,7 +156,7 @@ function TemplatePicker({ fleetTag, onDone }: { fleetTag: string; onDone: () => 
               {template.items
                 .map(
                   (item) =>
-                    `${item.count} × ${item.kind === 'hypervision' ? item.label : names.has(item.productId ?? -1) ? item.label : `${item.label} (${tc('unknownProduct')})`}`
+                    `${describeItem(item)}${item.kind === 'equipment' && !names.has(item.productId ?? -1) ? ` (${tc('unknownProduct')})` : ''}`
                 )
                 .join(' · ')}
             </span>
@@ -329,7 +277,13 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
     onError: (error: Error) => toast.error(error.message),
   });
 
-  const slots = plan.data ?? [];
+  const addSlave = useMutation({
+    mutationFn: (parentSlotId: number) => addSlots(fleetTag, { parentSlotId, count: 1 }),
+    onSuccess: (next) => queryClient.setQueryData(planKey(fleetTag), next),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const slots = orderedSlots(plan.data ?? []);
   const filled = slots.filter((slot) => slot.machine).length;
   const close = () => setOpen(null);
 
@@ -394,7 +348,7 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
   })();
 
   return (
-    <Card>
+    <Card id="plan" className="scroll-mt-4">
       <CardHeader className="px-5 pt-5 pb-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1.5">
@@ -419,21 +373,45 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
           <ul className="-mx-2 flex flex-col divide-y">
             {slots.map((slot) => {
               const Icon = slot.kind === 'hypervision' ? Monitor : Server;
+              const server = Boolean(slot.product?.slaves) && !slot.parentSlotId;
+              const slaveCount = slots.filter((item) => item.parentSlotId === slot.id).length;
               return (
-                <li key={slot.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-2 py-2.5">
-                  <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                <li
+                  key={slot.id}
+                  className={cn('flex flex-wrap items-center gap-x-3 gap-y-2 px-2 py-2.5', slot.parentSlotId && 'pl-9')}
+                >
+                  {slot.parentSlotId ? (
+                    <CornerDownRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  ) : (
+                    <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  )}
                   <span className="flex min-w-40 flex-1 flex-col">
                     <span className="flex items-center gap-2 text-sm font-medium">
                       {slot.label}
-                      {slot.product?.role === 'master' && <MasterBadge />}
+                      {server && <MasterBadge />}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {[slot.kind === 'hypervision' ? t('hypervision') : slot.product?.name, slot.reference]
+                      {[
+                        slot.kind === 'hypervision' ? t('hypervision') : slot.product?.name,
+                        server ? t('slaveCount', { count: slaveCount }) : slot.parentSlotId ? 'SLAVE' : null,
+                        slot.reference,
+                      ]
                         .filter((part) => part && part !== slot.label)
                         .join(' · ')}
                     </span>
                   </span>
                   <SlotStatus slot={slot} />
+                  {operate && server && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={addSlave.isPending}
+                      onClick={() => addSlave.mutate(slot.id)}
+                    >
+                      <Plus aria-hidden />
+                      {t('addSlave')}
+                    </Button>
+                  )}
                   {operate && !slot.machine && (
                     <span className="flex gap-1.5">
                       <Button variant="outline" size="sm" onClick={() => setOpen({ kind: 'key', slot })}>
@@ -453,7 +431,7 @@ export function FleetPlan({ fleetTag, fleetLabel }: { fleetTag: string; fleetLab
                       variant="ghost"
                       size="icon"
                       aria-label={`${t('remove')} : ${slot.label}`}
-                      title={t('remove')}
+                      title={server && slaveCount > 0 ? t('removeWithSlaves') : t('remove')}
                       disabled={removal.isPending}
                       onClick={() => removal.mutate(slot.id)}
                     >

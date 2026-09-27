@@ -27,17 +27,18 @@ describe('plan de flotte', () => {
     ]);
   });
 
-  it('regroupe le plan en éléments de modèle, numéros retirés', () => {
+  it('regroupe le plan en éléments de modèle : serveurs avec leurs SLAVE, numéros retirés', () => {
     expect(
       planToTemplateItems([
-        { kind: 'equipment', productId: 1, label: 'SL MEDIA MASTER' },
-        { kind: 'equipment', productId: 2, label: 'SL MEDIA SLAVE 1' },
-        { kind: 'equipment', productId: 2, label: 'SL MEDIA SLAVE 2' },
-        { kind: 'hypervision', productId: null, label: "Poste d'hypervision" },
+        { id: 1, kind: 'equipment', productId: 2, label: 'SL TEMPO', parentSlotId: null },
+        { id: 2, kind: 'equipment', productId: 1, label: 'SL MEDIA', parentSlotId: null },
+        { id: 3, kind: 'equipment', productId: 1, label: 'SL MEDIA SLAVE 1', parentSlotId: 2 },
+        { id: 4, kind: 'equipment', productId: 1, label: 'SL MEDIA SLAVE 2', parentSlotId: 2 },
+        { id: 5, kind: 'hypervision', productId: null, label: "Poste d'hypervision", parentSlotId: null },
       ])
     ).toEqual([
-      { kind: 'equipment', productId: 1, count: 1, label: 'SL MEDIA MASTER' },
-      { kind: 'equipment', productId: 2, count: 2, label: 'SL MEDIA SLAVE' },
+      { kind: 'equipment', productId: 2, count: 1, label: 'SL TEMPO' },
+      { kind: 'equipment', productId: 1, count: 1, label: 'SL MEDIA', slaves: 2 },
       { kind: 'hypervision', productId: null, count: 1, label: "Poste d'hypervision" },
     ]);
   });

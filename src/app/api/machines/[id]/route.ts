@@ -71,7 +71,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         }
       : null,
     agent: Boolean(device?.agentTokenHash),
-    product: product ? { id: product.productId, name: product.product.name, reference: product.reference } : null,
+    product: product
+      ? {
+          id: product.productId,
+          name: product.product.name,
+          reference: product.reference,
+          slaves: product.product.slaves,
+          masterNodeId: product.masterNodeId,
+        }
+      : null,
     vulns,
     inventory: device?.inventory
       ? {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Boxes, LayoutTemplate, Plus, Save, Trash2, X } from 'lucide-react';
+import { ArrowRight, Boxes, LayoutTemplate, Plus, Save, Trash2, Workflow } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState, type ComponentType, type ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  Switch,
   Table,
   TableBody,
   TableCell,
@@ -33,17 +34,18 @@ import {
 import {
   createProduct,
   createTemplate,
+  deleteLink,
   deleteProduct,
   deleteTemplate,
+  fetchLinks,
   fetchProducts,
   fetchTemplates,
+  saveLink,
   updateProduct,
   type Product,
-  type TemplateItem,
+  type ProductLink,
 } from '../api';
-
-const NO_ROLE = 'none';
-const HYPERVISION = 'hypervision';
+import { SlotLinesEditor, describeItem, emptyLine, linesToItems, type SlotLine } from './SlotLinesEditor';
 
 function Panel({
   icon: Icon,
@@ -75,11 +77,11 @@ function useCatalogMutation<T>(fn: (input: T) => Promise<unknown>, message: stri
   return useMutation({
     mutationFn: fn,
     onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['products'] }),
-        queryClient.invalidateQueries({ queryKey: ['templates'] }),
-        queryClient.invalidateQueries({ queryKey: ['fleets', 'nodes'] }),
-      ]);
+      await Promise.all(
+        [['products'], ['links'], ['templates'], ['fleets', 'nodes']].map((queryKey) =>
+          queryClient.invalidateQueries({ queryKey })
+        )
+      );
       toast.success(message);
       onDone?.();
     },
@@ -102,32 +104,13 @@ function CategorySelect({ value, onChange }: { value: string; onChange: (value: 
   );
 }
 
-function RoleSelect({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const t = useTranslations('parc.catalog');
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger aria-label={t('role')} className="w-28">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={NO_ROLE}>{t('roleNone')}</SelectItem>
-        <SelectItem value="master">MASTER</SelectItem>
-        <SelectItem value="slave">SLAVE</SelectItem>
-      </SelectContent>
-    </Select>
-  );
-}
-
 function ProductRow({ product, editable }: { product: Product; editable: boolean }) {
   const t = useTranslations('parc.catalog');
   const [name, setName] = useState(product.name);
   const [category, setCategory] = useState<string>(product.category);
-  const [role, setRole] = useState(product.role ?? NO_ROLE);
-  const dirty = name.trim() !== product.name || category !== product.category || role !== (product.role ?? NO_ROLE);
-  const save = useCatalogMutation(
-    () => updateProduct(product.id, { name: name.trim(), category, role: role === NO_ROLE ? null : role }),
-    t('productSaved')
-  );
+  const [slaves, setSlaves] = useState(product.slaves);
+  const dirty = name.trim() !== product.name || category !== product.category || slaves !== product.slaves;
+  const save = useCatalogMutation(() => updateProduct(product.id, { name: name.trim(), category, slaves }), t('productSaved'));
   const remove = useCatalogMutation(() => deleteProduct(product.id), t('productDeleted'));
 
   if (!editable) {
@@ -135,7 +118,7 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
       <TableRow>
         <TableCell className="font-medium">{product.name}</TableCell>
         <TableCell>{product.category === 'gamme' ? t('gamme') : t('surMesure')}</TableCell>
-        <TableCell>{product.role?.toUpperCase() ?? '—'}</TableCell>
+        <TableCell>{product.slaves ? t('yes') : '—'}</TableCell>
         <TableCell className="text-right tabular-nums">{product.machines}</TableCell>
         <TableCell />
       </TableRow>
@@ -150,7 +133,7 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
         <CategorySelect value={category} onChange={setCategory} />
       </TableCell>
       <TableCell>
-        <RoleSelect value={role} onChange={setRole} />
+        <Switch aria-label={t('slaves')} checked={slaves} onCheckedChange={setSlaves} />
       </TableCell>
       <TableCell className="text-right tabular-nums">{product.machines}</TableCell>
       <TableCell>
@@ -165,7 +148,7 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
             size="icon"
             variant="ghost"
             aria-label={`${t('delete')} : ${product.name}`}
-            title={t('delete')}
+            title={product.machines > 0 ? t('usedProduct') : t('delete')}
             disabled={product.machines > 0 || remove.isPending}
             onClick={() => remove.mutate(undefined)}
           >
@@ -180,16 +163,12 @@ function ProductRow({ product, editable }: { product: Product; editable: boolean
 function Products({ products, editable }: { products: Product[]; editable: boolean }) {
   const t = useTranslations('parc.catalog');
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('gamme');
-  const [role, setRole] = useState(NO_ROLE);
-  const add = useCatalogMutation(
-    () => createProduct({ name: name.trim(), category, role: role === NO_ROLE ? null : role }),
-    t('productAdded'),
-    () => {
-      setName('');
-      setRole(NO_ROLE);
-    }
-  );
+  const [category, setCategory] = useState('sur-mesure');
+  const [slaves, setSlaves] = useState(false);
+  const add = useCatalogMutation(() => createProduct({ name: name.trim(), category, slaves }), t('productAdded'), () => {
+    setName('');
+    setSlaves(false);
+  });
 
   return (
     <Table>
@@ -197,21 +176,25 @@ function Products({ products, editable }: { products: Product[]; editable: boole
         <TableRow className="hover:bg-transparent">
           <TableHead>{t('name')}</TableHead>
           <TableHead>{t('category')}</TableHead>
-          <TableHead>{t('role')}</TableHead>
+          <TableHead title={t('slavesHint')}>{t('slaves')}</TableHead>
           <TableHead className="text-right">{t('machines')}</TableHead>
           <TableHead />
         </TableRow>
       </TableHeader>
       <TableBody>
         {products.map((product) => (
-          <ProductRow key={`${product.id}-${product.name}-${product.category}-${product.role}`} product={product} editable={editable} />
+          <ProductRow
+            key={`${product.id}-${product.name}-${product.category}-${product.slaves}`}
+            product={product}
+            editable={editable}
+          />
         ))}
         {editable && (
           <TableRow className="hover:bg-transparent">
             <TableCell>
               <Input
-                aria-label={t('name')}
-                placeholder={t('name')}
+                aria-label={t('newProductName')}
+                placeholder={t('newProductName')}
                 value={name}
                 onChange={(event) => setName(event.target.value)}
               />
@@ -220,7 +203,7 @@ function Products({ products, editable }: { products: Product[]; editable: boole
               <CategorySelect value={category} onChange={setCategory} />
             </TableCell>
             <TableCell>
-              <RoleSelect value={role} onChange={setRole} />
+              <Switch aria-label={t('slaves')} checked={slaves} onCheckedChange={setSlaves} />
             </TableCell>
             <TableCell />
             <TableCell className="text-right">
@@ -236,10 +219,111 @@ function Products({ products, editable }: { products: Product[]; editable: boole
   );
 }
 
-interface Line {
-  target: string;
-  count: number;
-  label: string;
+/** Libellé d'un flux : « SL TEMPO → SL MEDIA », ou « SLAVE → serveur SL MEDIA ». */
+export function linkLabel(link: Pick<ProductLink, 'fromId' | 'toId'>, products: Product[], serverLabel: string) {
+  const name = (id: number) => products.find((item) => item.id === id)?.name ?? '?';
+  if (link.fromId === link.toId) return { from: `${name(link.fromId)} SLAVE`, to: `${name(link.toId)} ${serverLabel}` };
+  return { from: name(link.fromId), to: name(link.toId) };
+}
+
+function Flows({ products, editable }: { products: Product[]; editable: boolean }) {
+  const t = useTranslations('parc.catalog');
+  const links = useQuery({ queryKey: ['links'], queryFn: fetchLinks });
+  const [fromId, setFromId] = useState('');
+  const [toId, setToId] = useState('');
+  const [ports, setPorts] = useState('');
+  const [note, setNote] = useState('');
+  const save = useCatalogMutation(
+    () => saveLink({ fromId: Number(fromId), toId: Number(toId), ports: ports || '*', note }),
+    t('flowSaved'),
+    () => {
+      setPorts('');
+      setNote('');
+    }
+  );
+  const remove = useCatalogMutation((id: number) => deleteLink(id), t('flowDeleted'));
+  const productSelect = (value: string, onChange: (value: string) => void, label: string) => (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger aria-label={label} className="w-44">
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent>
+        {products.map((item) => (
+          <SelectItem key={item.id} value={String(item.id)}>
+            {item.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      {(links.data ?? []).length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t('noFlows')}</p>
+      ) : (
+        <ul className="flex flex-col divide-y">
+          {links.data!.map((link) => {
+            const { from, to } = linkLabel(link, products, t('server'));
+            return (
+              <li key={link.id} className="flex flex-wrap items-center gap-2 py-2.5 text-sm">
+                <span className="font-medium">{from}</span>
+                <ArrowRight className="size-4 text-muted-foreground" aria-hidden />
+                <span className="font-medium">{to}</span>
+                <Badge variant="secondary" className="font-mono">
+                  {link.ports === '*' ? t('allPorts') : link.ports}
+                </Badge>
+                {link.note && <span className="text-xs text-muted-foreground">{link.note}</span>}
+                {editable && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="ml-auto"
+                    aria-label={`${t('delete')} : ${from} → ${to}`}
+                    disabled={remove.isPending}
+                    onClick={() => remove.mutate(link.id)}
+                  >
+                    <Trash2 aria-hidden />
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {editable && (
+        <div className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed p-3">
+          {productSelect(fromId, setFromId, t('flowFrom'))}
+          <ArrowRight className="mb-2.5 size-4 text-muted-foreground" aria-hidden />
+          {productSelect(toId, setToId, t('flowTo'))}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="flow-ports" className="text-xs">
+              {t('ports')}
+            </Label>
+            <Input
+              id="flow-ports"
+              className="w-40 font-mono"
+              placeholder="*"
+              value={ports}
+              onChange={(event) => setPorts(event.target.value)}
+            />
+          </div>
+          <Input
+            aria-label={t('flowNote')}
+            placeholder={t('flowNote')}
+            className="min-w-40 flex-1"
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+          />
+          <Button size="sm" variant="outline" disabled={!fromId || !toId || save.isPending} onClick={() => save.mutate(undefined)}>
+            <Plus aria-hidden />
+            {t('addFlow')}
+          </Button>
+          <p className="basis-full text-xs text-muted-foreground">{t('flowHint')}</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function TemplateBuilder({ products }: { products: Product[] }) {
@@ -247,31 +331,17 @@ function TemplateBuilder({ products }: { products: Product[] }) {
   const tp = useTranslations('parc.plan');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [lines, setLines] = useState<Line[]>([{ target: '', count: 1, label: '' }]);
-
-  const labelOf = (line: Line) =>
-    line.label.trim() ||
-    (line.target === HYPERVISION ? tp('hypervision') : products.find((item) => String(item.id) === line.target)?.name) ||
-    '';
-  const items: TemplateItem[] = lines
-    .filter((line) => line.target)
-    .map((line) => ({
-      kind: line.target === HYPERVISION ? 'hypervision' : 'equipment',
-      productId: line.target === HYPERVISION ? null : Number(line.target),
-      count: line.count,
-      label: labelOf(line),
-    }));
+  const [lines, setLines] = useState<SlotLine[]>([emptyLine()]);
+  const items = linesToItems(lines, products, tp('hypervision'));
   const create = useCatalogMutation(
     () => createTemplate({ name: name.trim(), description, items }),
     t('templateCreated'),
     () => {
       setName('');
       setDescription('');
-      setLines([{ target: '', count: 1, label: '' }]);
+      setLines([emptyLine()]);
     }
   );
-  const update = (index: number, patch: Partial<Line>) =>
-    setLines((current) => current.map((line, i) => (i === index ? { ...line, ...patch } : line)));
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-dashed p-4">
@@ -286,76 +356,26 @@ function TemplateBuilder({ products }: { products: Product[] }) {
           <Input id="template-description" value={description} onChange={(event) => setDescription(event.target.value)} />
         </div>
       </div>
-      <ul className="flex flex-col gap-2">
-        {lines.map((line, index) => (
-          <li key={index} className="flex flex-wrap items-center gap-2">
-            <Input
-              aria-label={tp('count')}
-              type="number"
-              min={1}
-              max={50}
-              className="w-20"
-              value={line.count}
-              onChange={(event) => update(index, { count: Math.min(50, Math.max(1, Number(event.target.value) || 1)) })}
-            />
-            <span className="text-sm text-muted-foreground">×</span>
-            <Select value={line.target} onValueChange={(target) => update(index, { target })}>
-              <SelectTrigger aria-label={tp('product')} className="w-56">
-                <SelectValue placeholder={tp('chooseProduct')} />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((item) => (
-                  <SelectItem key={item.id} value={String(item.id)}>
-                    {item.name}
-                  </SelectItem>
-                ))}
-                <SelectItem value={HYPERVISION}>{tp('hypervision')}</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              aria-label={tp('label')}
-              className="min-w-40 flex-1"
-              placeholder={labelOf({ ...line, label: '' }) || tp('label')}
-              value={line.label}
-              onChange={(event) => update(index, { label: event.target.value })}
-            />
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label={t('delete')}
-              disabled={lines.length === 1}
-              onClick={() => setLines((current) => current.filter((_, i) => i !== index))}
-            >
-              <X aria-hidden />
-            </Button>
-          </li>
-        ))}
-      </ul>
-      <div className="flex flex-wrap justify-between gap-2">
-        <Button size="sm" variant="outline" onClick={() => setLines((current) => [...current, { target: '', count: 1, label: '' }])}>
-          <Plus aria-hidden />
-          {t('addLine')}
-        </Button>
-        <Button
-          size="sm"
-          variant="brand"
-          disabled={!name.trim() || items.length === 0 || create.isPending}
-          onClick={() => create.mutate(undefined)}
-        >
-          <LayoutTemplate aria-hidden />
-          {t('createTemplate')}
-        </Button>
-      </div>
+      <SlotLinesEditor lines={lines} onChange={setLines} products={products} />
+      <Button
+        size="sm"
+        variant="brand"
+        className="w-fit self-end"
+        disabled={!name.trim() || items.length === 0 || create.isPending}
+        onClick={() => create.mutate(undefined)}
+      >
+        <LayoutTemplate aria-hidden />
+        {t('createTemplate')}
+      </Button>
     </div>
   );
 }
 
 function Templates({ products, editable }: { products: Product[]; editable: boolean }) {
   const t = useTranslations('parc.catalog');
-  const tp = useTranslations('parc.plan');
   const templates = useQuery({ queryKey: ['templates'], queryFn: fetchTemplates });
   const remove = useCatalogMutation((id: number) => deleteTemplate(id), t('templateDeleted'));
-  const names = new Set(products.map((item) => item.id));
+  const known = new Set(products.map((item) => item.id));
 
   return (
     <div className="flex flex-col gap-4">
@@ -371,8 +391,8 @@ function Templates({ products, editable }: { products: Product[]; editable: bool
                 <span className="flex flex-wrap gap-1.5">
                   {template.items.map((item, index) => (
                     <Badge key={index} variant="secondary">
-                      {item.count} × {item.kind === 'hypervision' ? item.label || tp('hypervision') : item.label}
-                      {item.kind === 'equipment' && !names.has(item.productId ?? -1) && ` (${t('unknownProduct')})`}
+                      {describeItem(item)}
+                      {item.kind === 'equipment' && !known.has(item.productId ?? -1) && ` (${t('unknownProduct')})`}
                     </Badge>
                   ))}
                 </span>
@@ -398,7 +418,7 @@ function Templates({ products, editable }: { products: Product[]; editable: bool
   );
 }
 
-/** Catalogue des produits posés sur les machines et modèles de flotte. */
+/** Catalogue des produits, flux entre produits, et modèles de flotte. */
 export function CatalogScreen() {
   const t = useTranslations('parc.catalog');
   const { operate } = usePermissions();
@@ -413,6 +433,9 @@ export function CatalogScreen() {
         <>
           <Panel icon={Boxes} title={t('products')} description={t('productsHint')}>
             <Products products={products.data ?? []} editable={operate} />
+          </Panel>
+          <Panel icon={Workflow} title={t('flows')} description={t('flowsHint')}>
+            <Flows products={products.data ?? []} editable={operate} />
           </Panel>
           <Panel icon={LayoutTemplate} title={t('templates')} description={t('templatesHint')}>
             <Templates products={products.data ?? []} editable={operate} />

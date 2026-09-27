@@ -1,4 +1,4 @@
-import { logActivity, numberedLabels, prisma, resolveSlots, type TemplateItem } from '@/core';
+import { createSlots, logActivity, prisma, resolveSlots, type TemplateItem } from '@/core';
 import { guardApi } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -13,21 +13,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ tag
   const template = body?.templateId ? await prisma.fleetTemplate.findUnique({ where: { id: body.templateId } }) : null;
   if (!template) return NextResponse.json({ message: 'Modèle introuvable' }, { status: 404 });
 
-  const items = JSON.parse(template.items) as TemplateItem[];
-  const existing = await prisma.fleetSlot.findMany({ where: { fleetTag: tag }, select: { label: true, position: true } });
-  const taken = existing.map((slot) => slot.label);
-  let position = existing.reduce((max, slot) => Math.max(max, slot.position), 0);
   const products = new Set((await prisma.product.findMany({ select: { id: true } })).map((product) => product.id));
-  const data = [];
-  for (const item of items) {
+  for (const item of JSON.parse(template.items) as TemplateItem[]) {
     // Un produit supprimé du catalogue depuis la création du modèle est ignoré.
     if (item.kind === 'equipment' && (!item.productId || !products.has(item.productId))) continue;
-    for (const label of numberedLabels(item.label, item.count, taken)) {
-      taken.push(label);
-      data.push({ fleetTag: tag, kind: item.kind, productId: item.kind === 'equipment' ? item.productId : null, label, position: ++position });
-    }
+    await createSlots(tag, { ...item, productId: item.kind === 'equipment' ? item.productId : null });
   }
-  await prisma.fleetSlot.createMany({ data });
   await logActivity({ actor: session!.username, action: 'plan-template', target: `${tag} ← ${template.name}` });
   return NextResponse.json(await resolveSlots(tag));
 }

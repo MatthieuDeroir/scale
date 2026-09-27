@@ -20,11 +20,31 @@ model Product {
   name      String           @unique
   /// 'gamme' | 'sur-mesure'
   category  String           @default("gamme")
-  /// 'master' | 'slave' | null
+  /// Obsolète (remplacé par `slaves`), conservé pour ne pas perdre de colonne.
   role      String?
+  /// Accepte des SLAVE rattachés (SL MEDIA) : la machine est alors serveur ou SLAVE.
+  slaves    Boolean          @default(false)
   createdAt DateTime         @default(now())
   machines  MachineProduct[]
   slots     FleetSlot[]
+  linksFrom ProductLink[]    @relation("LinkFrom")
+  linksTo   ProductLink[]    @relation("LinkTo")
+}
+
+/// Flux entre produits : « SL TEMPO joint SL MEDIA sur tel port ». Un lien
+/// d'un produit vers lui-même relie les SLAVE à leur serveur.
+model ProductLink {
+  id        Int      @id @default(autoincrement())
+  fromId    Int
+  from      Product  @relation("LinkFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      Int
+  to        Product  @relation("LinkTo", fields: [toId], references: [id], onDelete: Cascade)
+  /// Ports ou plages, séparés par des virgules ; « * » pour tous.
+  ports     String   @default("*")
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([fromId, toId])
 }
 
 /// Produit installé sur une machine (identifiée par son nœud Headscale).
@@ -34,6 +54,8 @@ model MachineProduct {
   product   Product  @relation(fields: [productId], references: [id])
   /// N° d'affaire, pour un produit sur mesure.
   reference String?
+  /// Pour un SLAVE : le serveur (nœud) auquel il est rattaché.
+  masterNodeId String?
   updatedAt DateTime @updatedAt
 }
 
@@ -53,13 +75,17 @@ model FleetSlot {
   nodeId      String?
   keyId       String?
   keyIssuedAt DateTime?
+  /// SLAVE : emplacement du serveur auquel il est rattaché.
+  parentSlotId Int?
+  parent       FleetSlot?  @relation("SlotSlaves", fields: [parentSlotId], references: [id], onDelete: Cascade)
+  slaves       FleetSlot[] @relation("SlotSlaves")
   createdAt   DateTime  @default(now())
 
   @@index([fleetTag])
 }
 
 /// Modèle de flotte réutilisable : liste d'emplacements types.
-/// items : [{ kind, productId, count, label }]
+/// items : [{ kind, productId, count, label, slaves }]
 model FleetTemplate {
   id          Int      @id @default(autoincrement())
   name        String   @unique

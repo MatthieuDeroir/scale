@@ -404,7 +404,6 @@ export function MachinePage({ id }: { id: string }) {
             rows={[
               [t('machine.fleet'), fleet?.label],
               ...(hypervision ? [] : [[t('product.label'), <ProductField key="product" machine={machine} />] as [string, ReactNode]]),
-              [t('machine.role'), isHypervision(machine.tags) ? '—' : isMaster(machine.tags) ? 'MASTER' : 'SLAVE'],
               [tf('detail.serial'), machine.enrollment?.serial],
               [tf('detail.model'), machine.enrollment?.model],
               [tf('detail.joinedAt'), formatLastSeen(machine.createdAt ?? null)],

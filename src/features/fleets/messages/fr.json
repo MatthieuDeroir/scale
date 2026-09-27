@@ -36,6 +36,7 @@
       "copied": "Copié"
     },
     "updates": "{count, plural, =1 {1 mise à jour} other {# mises à jour}}",
-    "faults": "{count, plural, =1 {1 faille corrigeable} other {# failles corrigeables}}"
+    "faults": "{count, plural, =1 {1 faille corrigeable} other {# failles corrigeables}}",
+    "noProduct": "Produit à renseigner"
   }
 }

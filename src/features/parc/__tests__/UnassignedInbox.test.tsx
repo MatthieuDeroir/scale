@@ -63,12 +63,24 @@ const nodes = [
   { id: '6', name: 'nuc-6', givenName: 'nuc-6', ipAddresses: ['100.64.0.6'], online: true, lastSeen: null, tags: ['tag:a-assigner'] },
   { id: '7', name: 'rpi-7', givenName: 'rpi-7', ipAddresses: ['100.64.0.7'], online: true, lastSeen: null, tags: ['tag:interne'] },
 ];
+// Plan de la flotte : un SL MEDIA pourvu, puis ses deux SLAVE libres.
+let plan: Array<Record<string, unknown>> = [];
+const fullPlan = [
+  { id: 1, kind: 'equipment', label: 'SL MEDIA', reference: null, parentSlotId: null, product: { id: 1, name: 'SL MEDIA', slaves: true },
+    keyIssuedAt: null, machine: { id: '9', name: 'sl-media', online: true, ip: null } },
+  { id: 2, kind: 'equipment', label: 'SL MEDIA SLAVE 1', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', slaves: true },
+    keyIssuedAt: null, machine: null },
+  { id: 3, kind: 'equipment', label: 'SL MEDIA SLAVE 2', reference: null, parentSlotId: 1, product: { id: 1, name: 'SL MEDIA', slaves: true },
+    keyIssuedAt: null, machine: null },
+];
 const policy = { fleets: [{ tag: 'tag:flotte-keolis', label: 'keolis', deletable: true }], raw: '{}', updatedAt: 'x' };
 
 describe('UnassignedInbox', () => {
   beforeEach(() => {
+    plan = fullPlan;
     vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
       if (url.includes('/api/acl/policy')) return jsonResponse(policy);
+      if (url.startsWith('/api/plan/') && !init?.method) return jsonResponse(plan);
       if (init?.method === 'POST') return jsonResponse({});
       return jsonResponse(nodes);
     }));
@@ -87,21 +99,30 @@ describe('UnassignedInbox', () => {
     expect(screen.getByRole('button', { name: 'Assigner (2)' })).toBeDisabled();
   });
 
-  it('assigne la sélection en remplaçant le tag a-assigner', async () => {
+  it('pourvoit les emplacements libres du plan, dans l’ordre', async () => {
     renderWithProviders(<UnassignedInbox />);
-    fireEvent.click(await screen.findByLabelText('Sélectionner nuc-5'));
+    fireEvent.click(await screen.findByLabelText('Tout sélectionner'));
+    fireEvent.change(screen.getByLabelText('Flotte de destination'), { target: { value: 'tag:flotte-keolis' } });
 
-    fireEvent.change(screen.getByLabelText('Flotte de destination'), {
-      target: { value: 'tag:flotte-keolis' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Assigner (1)' }));
+    expect(await screen.findByText(/SL MEDIA SLAVE 1, SL MEDIA SLAVE 2/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Assigner (2)' }));
 
-    await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/fleets/nodes/5/tags',
-        expect.objectContaining({ body: JSON.stringify({ tags: ['tag:flotte-keolis'] }) })
-      )
-    );
-    expect(fetch).not.toHaveBeenCalledWith('/api/fleets/nodes/6/tags', expect.anything());
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/plan/slots/3/assign', expect.anything()));
+    const calls = vi.mocked(fetch).mock.calls.filter(([url]) => String(url).endsWith('/assign'));
+    expect(calls.map(([url, init]) => [url, JSON.parse(init!.body as string).nodeId])).toEqual([
+      ['/api/plan/slots/2/assign', '5'],
+      ['/api/plan/slots/3/assign', '6'],
+    ]);
+  });
+
+  it('refuse de ranger plus de machines que d’emplacements libres', async () => {
+    plan = fullPlan.slice(0, 2);
+    renderWithProviders(<UnassignedInbox />);
+    fireEvent.click(await screen.findByLabelText('Tout sélectionner'));
+    fireEvent.change(screen.getByLabelText('Flotte de destination'), { target: { value: 'tag:flotte-keolis' } });
+
+    expect(await screen.findByText(/Il manque 1 emplacement libre/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Ouvrir le plan' })).toHaveAttribute('href', '/flottes/keolis#plan');
+    expect(screen.getByRole('button', { name: 'Assigner (2)' })).toBeDisabled();
   });
 });

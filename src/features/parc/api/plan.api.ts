@@ -4,8 +4,18 @@ export interface Product {
   id: number;
   name: string;
   category: 'gamme' | 'sur-mesure';
-  role: 'master' | 'slave' | null;
+  /** Accepte des SLAVE (SL MEDIA) : ses machines sont serveur ou SLAVE. */
+  slaves: boolean;
   machines: number;
+}
+
+/** Flux d'un produit vers un autre ; vers lui-même : les SLAVE vers leur serveur. */
+export interface ProductLink {
+  id: number;
+  fromId: number;
+  toId: number;
+  ports: string;
+  note: string | null;
 }
 
 export type SlotKind = 'equipment' | 'hypervision';
@@ -15,7 +25,9 @@ export interface PlanSlot {
   kind: SlotKind;
   label: string;
   reference: string | null;
-  product: { id: number; name: string; role: string | null } | null;
+  /** SLAVE : emplacement de son serveur. */
+  parentSlotId: number | null;
+  product: { id: number; name: string; slaves: boolean } | null;
   keyIssuedAt: string | null;
   machine: { id: string; name: string; online: boolean; ip: string | null } | null;
 }
@@ -25,6 +37,8 @@ export interface TemplateItem {
   productId: number | null;
   count: number;
   label: string;
+  /** SLAVE par serveur, pour un produit qui en accepte. */
+  slaves?: number;
 }
 
 export interface FleetTemplate {
@@ -51,19 +65,29 @@ async function call<T>(url: string, init?: RequestInit & { json?: unknown }): Pr
 const planUrl = (tag: string) => `/api/plan/${encodeURIComponent(tag)}`;
 
 export const fetchProducts = () => call<Product[]>('/api/products');
-export const createProduct = (input: { name: string; category: string; role: string | null }) =>
+export const createProduct = (input: { name: string; category: string; slaves: boolean }) =>
   call<Product>('/api/products', { method: 'POST', json: input });
-export const updateProduct = (id: number, input: Partial<{ name: string; category: string; role: string | null }>) =>
+export const updateProduct = (id: number, input: Partial<{ name: string; category: string; slaves: boolean }>) =>
   call<Product>(`/api/products/${id}`, { method: 'PATCH', json: input });
 export const deleteProduct = (id: number) => call<{ ok: true }>(`/api/products/${id}`, { method: 'DELETE' });
 
-export const setMachineProduct = (id: string, input: { productId: number | null; reference: string }) =>
+export const fetchLinks = () => call<ProductLink[]>('/api/products/links');
+export const saveLink = (input: { fromId: number; toId: number; ports: string; note?: string }) =>
+  call<ProductLink>('/api/products/links', { method: 'POST', json: input });
+export const deleteLink = (id: number) => call<{ ok: true }>(`/api/products/links/${id}`, { method: 'DELETE' });
+
+export const setMachineProduct = (
+  id: string,
+  input: { productId: number; reference: string; role?: 'server' | 'slave'; masterNodeId?: string | null }
+) =>
   call<{ ok: true }>(`/api/machines/${encodeURIComponent(id)}/product`, { method: 'PUT', json: input });
 
 export const fetchPlan = (tag: string) => call<PlanSlot[]>(planUrl(tag));
 export const addSlots = (
   tag: string,
-  input: { kind: SlotKind; productId: number | null; count: number; label: string; reference: string }
+  input:
+    | { kind: SlotKind; productId: number | null; count: number; label: string; reference?: string; slaves?: number }
+    | { parentSlotId: number; count: number }
 ) => call<PlanSlot[]>(planUrl(tag), { method: 'POST', json: input });
 export const applyTemplate = (tag: string, templateId: number) =>
   call<PlanSlot[]>(`${planUrl(tag)}/template`, { method: 'POST', json: { templateId } });

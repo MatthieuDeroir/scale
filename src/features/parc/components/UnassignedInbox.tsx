@@ -1,8 +1,10 @@
 'use client';
 
-import { StatusDot, formatLastSeen } from '@/features/fleets';
+import { useQuery } from '@tanstack/react-query';
+import { StatusDot, fleetSlug, formatLastSeen } from '@/features/fleets';
 import { CheckCircle2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
   Badge,
@@ -24,12 +26,16 @@ import {
   TableRow,
   usePermissions,
 } from '@/shared/ui';
-import { unassignedNodes, useAssignNodes, useFleetOptions, useNodes, usePolicy } from '../lib';
+import { fetchPlan } from '../api';
+import { freeSlots, unassignedNodes, useAssignNodes, useFleetOptions, useNodes, usePolicy } from '../lib';
+import { orderedSlots } from './FleetPlan';
 
 /**
  * Boîte de réception des machines auto-enrôlées (`tag:a-assigner`) : elles
  * n'ont aucun accès sortant tant qu'on ne les a pas rangées. Sélection
- * multiple, pour affecter d'un coup un lot de NUC sortis d'atelier.
+ * multiple, pour affecter d'un coup un lot de NUC sortis d'atelier : elles
+ * pourvoient dans l'ordre les emplacements libres du plan de la flotte, dont
+ * elles prennent le nom, le produit et le rôle.
  */
 export function UnassignedInbox() {
   const t = useTranslations('parc');
@@ -48,6 +54,13 @@ export function UnassignedInbox() {
   const allChecked = nodes.length > 0 && chosen.length === nodes.length;
 
   const mutation = useAssignNodes(() => setSelected(new Set()));
+  const plan = useQuery({
+    queryKey: ['plan', target],
+    queryFn: () => fetchPlan(target),
+    enabled: Boolean(target),
+  });
+  const free = freeSlots(orderedSlots(plan.data ?? []));
+  const missing = Math.max(0, chosen.length - free.length);
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -118,14 +131,30 @@ export function UnassignedInbox() {
             </Select>
             <Button
               variant="brand"
-              disabled={chosen.length === 0 || !target || mutation.isPending}
-              onClick={() => mutation.mutate({ nodes: chosen, fleetTag: target })}
+              disabled={chosen.length === 0 || !target || missing > 0 || plan.isPending || mutation.isPending}
+              onClick={() => mutation.mutate({ nodes: chosen, slots: free, fleetTag: target })}
             >
               {mutation.isPending
                 ? t('inbox.assigning')
                 : t('inbox.assign', { count: chosen.length })}
             </Button>
           </div>
+          {target && plan.data && (
+            <p className="basis-full text-xs text-muted-foreground" role="status">
+              {missing > 0 ? (
+                <>
+                  {t('inbox.missingSlots', { count: missing })}{' '}
+                  <Link className="font-medium text-foreground underline" href={`/flottes/${fleetSlug(target)}#plan`}>
+                    {t('inbox.openPlan')}
+                  </Link>
+                </>
+              ) : chosen.length > 0 ? (
+                t('inbox.willFill', { slots: free.slice(0, chosen.length).map((slot) => slot.label).join(', ') })
+              ) : (
+                t('inbox.freeSlots', { count: free.length })
+              )}
+            </p>
+          )}
         </div>
       )}
 

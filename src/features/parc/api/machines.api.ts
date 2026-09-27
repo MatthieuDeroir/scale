@@ -61,7 +61,7 @@ export interface MachineVulns {
 
 export interface MachineDetail extends Omit<FleetNode, 'inventory' | 'vulns'> {
   agent: boolean;
-  product: { id: number; name: string; reference: string | null } | null;
+  product: NonNullable<FleetNode['product']> | null;
   vulns: MachineVulns | null;
   inventory: MachineInventory | null;
   jobs: AgentJob[];

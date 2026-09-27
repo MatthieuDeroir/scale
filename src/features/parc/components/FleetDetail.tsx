@@ -16,7 +16,7 @@ import {
   recentlyUsed,
   type MachineKind,
 } from '@/features/keys';
-import { Crown, Download, KeyRound, Monitor, Plus, Search, Server, ShieldCheck, Workflow } from 'lucide-react';
+import { ClipboardList, Download, KeyRound, Monitor, Plus, Search, Server, ShieldCheck, Workflow } from 'lucide-react';
 import { datedFilename, downloadFile, toCsv } from '@/shared/lib';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -38,9 +38,9 @@ import {
 import { nodeMatches, summarizeFleets, useFleetOptions, useNodes, usePolicy, useProfiles } from '../lib';
 import { FleetFlowDiagram } from './FleetFlowDiagram';
 import { FleetProfileCard } from './FleetProfileCard';
-import { MasterDialog } from './MasterDialog';
 import { AddMachineDialog } from './AddMachineDialog';
-import { FleetPlan } from './FleetPlan';
+import { FleetPlan, planKey } from './FleetPlan';
+import { fetchLinks, fetchPlan, fetchProducts } from '../api';
 
 /** Au-delà, un champ de recherche apparaît : inutile pour trois machines. */
 const SEARCH_THRESHOLD = 10;
@@ -98,7 +98,9 @@ export function FleetDetail({ slug }: { slug: string }) {
 
   const [query, setQuery] = useState('');
   const [adding, setAdding] = useState<MachineKind | null>(null);
-  const [choosingMaster, setChoosingMaster] = useState(false);
+  const planQuery = useQuery({ queryKey: planKey(tag), queryFn: () => fetchPlan(tag), refetchInterval: 15000 });
+  const productsQuery = useQuery({ queryKey: ['products'], queryFn: fetchProducts });
+  const linksQuery = useQuery({ queryKey: ['links'], queryFn: fetchLinks });
 
   const policyFleets = useMemo(() => policyQuery.data?.fleets ?? [], [policyQuery.data]);
   const fleet = useMemo(
@@ -242,12 +244,16 @@ export function FleetDetail({ slug }: { slug: string }) {
 
       <FleetPlan fleetTag={fleet.tag} fleetLabel={fleet.label} />
 
-      {fleet.nodes.length > 0 && (
+      {(fleet.nodes.length > 0 || (planQuery.data ?? []).length > 0) && (
         <Section icon={Workflow} title={t('flow.title')} description={t('flow.description')}>
           <FleetFlowDiagram
             fleet={fleet}
             rules={policyQuery.data?.rules ?? []}
             labelOf={(item) => fleetOptions.find((option) => option.tag === item)?.label ?? item}
+            slots={planQuery.data ?? []}
+            products={productsQuery.data ?? []}
+            links={linksQuery.data ?? []}
+            editable={operate}
           />
         </Section>
       )}
@@ -300,15 +306,10 @@ export function FleetDetail({ slug }: { slug: string }) {
         count={equipment.length}
         action={
           operate && (
-            <span className="flex flex-wrap gap-2">
-              {!fleet.internal && equipment.length > 0 && (
-                <Button variant="outline" size="sm" onClick={() => setChoosingMaster(true)}>
-                  <Crown aria-hidden />
-                  {t('master.open')}
-                </Button>
-              )}
-              {addButton('equipment')}
-            </span>
+            <Button variant="outline" size="sm" onClick={() => document.getElementById('plan')?.scrollIntoView({ behavior: 'smooth' })}>
+              <ClipboardList aria-hidden />
+              {t('fleet.addViaPlan')}
+            </Button>
           )
         }
       >
@@ -322,19 +323,9 @@ export function FleetDetail({ slug }: { slug: string }) {
         {pendingBlock('equipment')}
       </Section>
 
-      {choosingMaster && (
-        <MasterDialog
-          fleetLabel={fleet.label}
-          equipment={fleet.nodes.filter((node) => !isHypervision(node.tags))}
-          open
-          onOpenChange={setChoosingMaster}
-        />
-      )}
-
       <AddMachineDialog
         fleetTag={fleet.tag}
         fleetLabel={fleet.label}
-        kind={adding ?? 'equipment'}
         open={adding !== null}
         onOpenChange={(open) => !open && setAdding(null)}
       />

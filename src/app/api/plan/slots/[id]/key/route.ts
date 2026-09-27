@@ -1,4 +1,4 @@
-import { issueMachineKey, KeyIssueError, logActivity, prisma, toHostname } from '@/core';
+import { isServerSlot, issueMachineKey, KeyIssueError, logActivity, prisma, toHostname } from '@/core';
 import { guardApi } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Clé pour pourvoir un emplacement : tags de la flotte, `hypervision` pour un
- * poste client, MASTER si le produit l'est ; nom de la machine tiré du
+ * poste client, MASTER pour un serveur SL MEDIA ; nom de la machine tiré du
  * libellé. La machine qui s'en servira remplira l'emplacement.
  */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -26,7 +26,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const tags = [
     slot.fleetTag,
     ...(slot.kind === 'hypervision' ? ['tag:hypervision'] : []),
-    ...(slot.product?.role === 'master' ? ['tag:master'] : []),
+    ...(isServerSlot(slot) ? ['tag:master'] : []),
   ];
   try {
     const issued = await issueMachineKey({ tags, expiration, request });

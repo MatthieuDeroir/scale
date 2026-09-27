@@ -1,4 +1,4 @@
-import { deleteNode, describeNode, getNode, logActivity, mapNode, type RawHeadscaleNode } from '@/core';
+import { deleteNode, describeNode, getNode, logActivity, mapNode, prisma, type RawHeadscaleNode } from '@/core';
 import { requireSession } from '@/features/auth/lib/require-session';
 import { NextResponse } from 'next/server';
 
@@ -39,6 +39,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!response.ok) {
     return NextResponse.json({ message: 'Suppression refusée par Headscale' }, { status: 502 });
   }
+  // Son produit disparaît avec elle ; ses SLAVE attendront un autre serveur.
+  await prisma.machineProduct.deleteMany({ where: { nodeId: id } });
+  await prisma.machineProduct.updateMany({ where: { masterNodeId: id }, data: { masterNodeId: null } });
 
   await logActivity({ actor: session.session.username, action: 'fleets-node-delete', target: label });
   return NextResponse.json({ ok: true });

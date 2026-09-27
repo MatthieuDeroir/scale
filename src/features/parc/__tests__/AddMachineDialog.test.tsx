@@ -18,12 +18,12 @@ function jsonResponse(body: unknown) {
   return { ok: true, status: 200, json: async () => body };
 }
 
-function afficher(kind: 'hypervision' | 'equipment') {
+function afficher() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <NextIntlClientProvider locale="fr" messages={messages}>
       <QueryClientProvider client={client}>
-        <AddMachineDialog fleetTag="tag:flotte-keolis" fleetLabel="keolis" kind={kind} open onOpenChange={vi.fn()} />
+        <AddMachineDialog fleetTag="tag:flotte-keolis" fleetLabel="keolis" open onOpenChange={vi.fn()} />
       </QueryClientProvider>
     </NextIntlClientProvider>
   );
@@ -43,33 +43,8 @@ describe('AddMachineDialog', () => {
     );
   });
 
-  it('équipement : range une machine en attente dans la flotte', async () => {
-    afficher('equipment');
-    // Des machines attendent : c'est la source proposée par défaut.
-    fireEvent.click(await screen.findByLabelText('Sélectionner nuc-5'));
-    expect(screen.queryByText('rpi-7')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Ajouter à keolis (1)' }));
-
-    await waitFor(() =>
-      expect(fetch).toHaveBeenCalledWith(
-        '/api/fleets/nodes/5/tags',
-        expect.objectContaining({ body: JSON.stringify({ tags: ['tag:flotte-keolis'] }) })
-      )
-    );
-  });
-
-  it('équipement : peut basculer sur une clé d’équipement, sans tag hypervision', async () => {
-    afficher('equipment');
-    fireEvent.click(await screen.findByRole('radio', { name: /Installation manuelle/ }));
-    fireEvent.click(screen.getByRole('button', { name: /Émettre la clé d'équipement/ }));
-
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith('/api/keys', expect.anything()));
-    const body = JSON.parse(vi.mocked(fetch).mock.calls.find(([url]) => url === '/api/keys')![1]!.body as string);
-    expect(body.tags).toEqual(['tag:flotte-keolis']);
-  });
-
   it('poste d’hypervision : uniquement par clé, marquée hypervision', async () => {
-    afficher('hypervision');
+    afficher();
     // Pas de choix d'origine : un poste d'hypervision arrive toujours par une clé.
     expect(screen.queryByRole('radio', { name: /Déjà démarré/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Nom de la machine (facultatif)'), {

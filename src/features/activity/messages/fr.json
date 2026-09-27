@@ -46,7 +46,10 @@
       "plan-assign": "Affectation à un emplacement",
       "plan-template": "Application d'un modèle",
       "template-create": "Création d'un modèle",
-      "template-delete": "Suppression d'un modèle"
+      "template-delete": "Suppression d'un modèle",
+      "product-link": "Définition d'un flux",
+      "product-unlink": "Suppression d'un flux",
+      "parc-reset": "Remise à zéro du parc"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",

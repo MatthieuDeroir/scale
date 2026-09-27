@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { StatusDot, formatLastSeen, isHypervision, type FleetNode } from '@/features/fleets';
-import { ArrowUpCircle, Bot, ChevronRight, History, Inbox, ServerCrash, ShieldAlert, Wifi } from 'lucide-react';
+import { ArrowUpCircle, Bot, ChevronRight, History, Inbox, PackageX, ServerCrash, ShieldAlert, Wifi } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useMemo, type ComponentType, type ReactNode } from 'react';
@@ -86,6 +86,8 @@ export function Dashboard() {
   const pending = unassignedNodes(nodes);
   const withAgent = equipment.filter((node) => node.agent);
   const withoutAgent = equipment.filter((node) => !node.agent);
+  // Toute machine Stramatel rangée porte un produit ; celles en attente le recevront à l'affectation.
+  const withoutProduct = equipment.filter((node) => !node.product && !node.tags.includes('tag:a-assigner'));
   const exposed = nodes
     .filter((node) => node.vulns && node.vulns.fixable > 0)
     .sort(
@@ -242,6 +244,23 @@ export function Dashboard() {
             </ul>
           )}
         </Panel>
+
+        {withoutProduct.length > 0 && (
+          <Panel icon={PackageX} title={t('dashboard.noProductTitle', { count: withoutProduct.length })}>
+            <p className="mb-2 text-xs text-muted-foreground">{t('dashboard.noProductHint')}</p>
+            <ul className="-mx-2 flex flex-col">
+              {withoutProduct.slice(0, LIST_SIZE).map((node) => (
+                <li key={node.id}>
+                  <MachineLink node={node}>
+                    <StatusDot online={node.online} label={node.online ? tf('online') : tf('offline')} />
+                    <span className="min-w-0 flex-1 truncate font-medium">{node.givenName || node.name}</span>
+                    <span className="text-xs text-muted-foreground">{fleetLabel(node)}</span>
+                  </MachineLink>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        )}
 
         {withoutAgent.length > 0 && (
           <Panel icon={Bot} title={t('dashboard.noAgentTitle', { count: withoutAgent.length })}>

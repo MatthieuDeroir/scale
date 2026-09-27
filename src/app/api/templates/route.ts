@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         productId: item.kind === 'hypervision' ? null : Number(item.productId) || null,
         count: Math.min(Math.max(Number(item.count) || 1, 1), 50),
         label: String(item.label ?? '').trim().slice(0, 60),
+        ...(item.kind !== 'hypervision' && Number(item.slaves) > 0 ? { slaves: Math.min(Number(item.slaves), 50) } : {}),
       }))
       .filter((item) => item.label && (item.kind === 'hypervision' || item.productId));
   }

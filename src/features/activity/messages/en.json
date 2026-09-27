@@ -46,7 +46,10 @@
       "plan-assign": "Machine assigned to slot",
       "plan-template": "Template applied",
       "template-create": "Template created",
-      "template-delete": "Template deleted"
+      "template-delete": "Template deleted",
+      "product-link": "Flow defined",
+      "product-unlink": "Flow deleted",
+      "parc-reset": "Fleet reset"
     },
     "search": "Search (author, target…)",
     "category": "Category",

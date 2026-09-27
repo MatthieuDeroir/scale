@@ -208,9 +208,11 @@ function FleetRow({
               </Button>
             )}
             {operate && (
-              <Button size="sm" variant="outline" onClick={() => onAdd('equipment')}>
-                <Server aria-hidden />
-                {t('fleet.addEquipment')}
+              <Button size="sm" variant="outline" asChild>
+                <Link href={`${href}#plan`}>
+                  <Server aria-hidden />
+                  {t('fleet.addViaPlan')}
+                </Link>
               </Button>
             )}
             <Link
@@ -449,7 +451,6 @@ export function FleetsHome() {
         <AddMachineDialog
           fleetTag={adding.fleet.tag}
           fleetLabel={adding.fleet.label}
-          kind={adding.kind}
           open
           onOpenChange={(open) => !open && setAdding(null)}
         />

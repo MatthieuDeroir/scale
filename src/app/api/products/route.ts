@@ -17,7 +17,7 @@ export async function GET() {
       id: product.id,
       name: product.name,
       category: product.category,
-      role: product.role,
+      slaves: product.slaves,
       machines: product._count.machines,
     }))
   );
@@ -26,15 +26,15 @@ export async function GET() {
 export async function POST(request: Request) {
   const { session, denied } = await guardApi('OPERATOR');
   if (denied) return denied;
-  const body = (await request.json().catch(() => null)) as { name?: string; category?: string; role?: string | null } | null;
+  const body = (await request.json().catch(() => null)) as { name?: string; category?: string; slaves?: boolean } | null;
   const name = body?.name?.trim();
   if (!name || name.length > 60) return NextResponse.json({ message: 'Nom requis (60 caractères au plus)' }, { status: 400 });
   const category = body?.category === 'sur-mesure' ? 'sur-mesure' : 'gamme';
-  const role = body?.role === 'master' || body?.role === 'slave' ? body.role : null;
+  const slaves = body?.slaves === true;
   if (await prisma.product.findUnique({ where: { name } })) {
     return NextResponse.json({ message: 'Ce produit existe déjà' }, { status: 409 });
   }
-  const product = await prisma.product.create({ data: { name, category, role } });
+  const product = await prisma.product.create({ data: { name, category, slaves } });
   await logActivity({ actor: session!.username, action: 'product-create', target: name });
   return NextResponse.json(product);
 }
