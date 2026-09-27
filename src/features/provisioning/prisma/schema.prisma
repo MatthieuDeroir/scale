@@ -2,10 +2,60 @@
 /// émise pour elle : un nœud Headscale porte l'identifiant de la clé qui l'a
 /// enregistré, c'est ce qui relie l'enrôlement à la machine.
 model ProvisioningDevice {
-  deviceId   String   @id
-  enrolledAt DateTime @default(now())
-  keyId      String?
-  serial     String?
-  model      String?
-  hostname   String?
+  deviceId       String            @id
+  enrolledAt     DateTime          @default(now())
+  keyId          String?
+  serial         String?
+  model          String?
+  hostname       String?
+  /// Empreinte SHA-256 du jeton de l'agent, jamais le jeton lui-même.
+  agentTokenHash String?
+  inventory      MachineInventory?
+  jobs           AgentJob[]
+
+  @@index([agentTokenHash])
+}
+
+/// Dernier inventaire envoyé par l'agent de la machine (à l'enrôlement, puis
+/// chaque jour). Listes de paquets stockées en JSON.
+model MachineInventory {
+  deviceId      String             @id
+  device        ProvisioningDevice @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  reportedAt    DateTime           @default(now())
+  hostname      String?
+  osName        String?
+  osVersion     String?
+  kernel        String?
+  arch          String?
+  cpu           String?
+  cores         Int?
+  memoryMb      Int?
+  diskTotalGb   Int?
+  diskFreeGb    Int?
+  uptimeSeconds Int?
+  /// [{ name, version }]
+  packages      String             @default("[]")
+  /// [{ name, current, candidate }]
+  upgradable    String             @default("[]")
+}
+
+/// Mise à jour demandée depuis l'interface, exécutée par l'agent quand il
+/// vient chercher ses ordres. Seulement deux actions possibles, jamais une
+/// commande libre.
+model AgentJob {
+  id         Int                @id @default(autoincrement())
+  deviceId   String
+  device     ProvisioningDevice @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+  /// 'upgrade-package' | 'upgrade-system'
+  kind       String
+  package    String?
+  /// 'pending' | 'running' | 'done' | 'failed'
+  status     String             @default("pending")
+  createdBy  String
+  createdAt  DateTime           @default(now())
+  startedAt  DateTime?
+  finishedAt DateTime?
+  output     String?
+
+  @@index([deviceId, status])
 }

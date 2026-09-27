@@ -29,7 +29,10 @@ export async function GET() {
   const { nodes } = (await response.json()) as { nodes: RawHeadscaleNode[] };
   // Enrôlement automatique relié par la clé émise : numéro de série et modèle
   // déclarés par la machine au premier démarrage.
-  const devices = await prisma.provisioningDevice.findMany({ where: { keyId: { not: null } } });
+  const devices = await prisma.provisioningDevice.findMany({
+    where: { keyId: { not: null } },
+    include: { inventory: { select: { osName: true, osVersion: true, upgradable: true, reportedAt: true } } },
+  });
   const byKey = new Map(devices.map((device) => [device.keyId, device]));
   const baseDomain = process.env.HEADSCALE_BASE_DOMAIN;
   return NextResponse.json(
@@ -46,6 +49,14 @@ export async function GET() {
               serial: device.serial,
               model: device.model,
               enrolledAt: device.enrolledAt.toISOString(),
+            }
+          : null,
+        // Résumé d'inventaire pour les listes ; le détail est sur la page machine.
+        inventory: device?.inventory
+          ? {
+              os: [device.inventory.osName, device.inventory.osVersion].filter(Boolean).join(' '),
+              upgradableCount: (JSON.parse(device.inventory.upgradable) as unknown[]).length,
+              reportedAt: device.inventory.reportedAt.toISOString(),
             }
           : null,
       };

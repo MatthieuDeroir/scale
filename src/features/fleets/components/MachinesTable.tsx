@@ -34,6 +34,7 @@ export function MachinesTable({
   nodes,
   onSelect,
   showFleet = false,
+  showSystem = false,
   fleetLabel = (node: FleetNode) => parseFleetLabel(node.tags),
   pageSize = 25,
   selection,
@@ -41,6 +42,8 @@ export function MachinesTable({
   nodes: FleetNode[];
   onSelect?: (node: FleetNode) => void;
   showFleet?: boolean;
+  /** Colonne OS et mises à jour en attente (inventaire de l'agent). */
+  showSystem?: boolean;
   /** Libellé de flotte à afficher (nom lisible de la fiche, par exemple). */
   fleetLabel?: (node: FleetNode) => string;
   pageSize?: number;
@@ -83,6 +86,7 @@ export function MachinesTable({
             )}
             <TableHead>{t('columns.machine')}</TableHead>
             {showFleet && <TableHead>{t('columns.fleet')}</TableHead>}
+            {showSystem && <TableHead className="hidden lg:table-cell">{t('columns.system')}</TableHead>}
             <TableHead>{t('columns.address')}</TableHead>
             <TableHead className="text-right">{t('columns.lastSeen')}</TableHead>
           </TableRow>
@@ -124,6 +128,22 @@ export function MachinesTable({
                   </span>
                 </TableCell>
                 {showFleet && <TableCell>{fleetLabel(node)}</TableCell>}
+                {showSystem && (
+                  <TableCell className="hidden text-xs text-muted-foreground lg:table-cell">
+                    {node.inventory ? (
+                      <span className="flex items-center gap-2">
+                        {node.inventory.os}
+                        {node.inventory.upgradableCount > 0 && (
+                          <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 font-medium text-amber-700 dark:text-amber-400">
+                            {t('updates', { count: node.inventory.upgradableCount })}
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                )}
                 <TableCell className="font-mono text-xs text-muted-foreground">
                   {node.ipAddresses[0] ?? '—'}
                 </TableCell>

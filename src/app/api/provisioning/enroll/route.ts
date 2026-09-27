@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto';
 import {
   createPreAuthKey,
+  generateAgentToken,
   ensureSystemTagsInPolicy,
   logActivity,
   mapNewPreAuthKey,
@@ -78,10 +79,13 @@ export async function POST(request: Request) {
 
   const { preAuthKey } = (await response.json()) as { preAuthKey: Parameters<typeof mapNewPreAuthKey>[0] };
   const serial = clean(body?.serial);
+  // Jeton de l'agent : remis une seule fois ici, seule son empreinte est gardée.
+  const agent = generateAgentToken();
   await prisma.provisioningDevice.create({
     data: {
       deviceId,
       keyId: preAuthKey.id,
+      agentTokenHash: agent.hash,
       serial,
       model: clean(body?.model),
       hostname: clean(body?.hostname),
@@ -95,6 +99,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     authKey: mapNewPreAuthKey(preAuthKey).key,
+    agentToken: agent.token,
     loginServer: process.env.HEADSCALE_PUBLIC_URL || process.env.HEADSCALE_API_URL,
   });
 }

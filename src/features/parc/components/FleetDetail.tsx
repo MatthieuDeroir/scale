@@ -3,7 +3,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { DeleteFleetButton } from '@/features/acl';
 import {
-  MachineDetailPanel,
   MachinesTable,
   isHypervision,
   tagFromSlug,
@@ -97,7 +96,6 @@ export function FleetDetail({ slug }: { slug: string }) {
   const keysQuery = useQuery({ queryKey: ['keys'], queryFn: fetchKeys });
 
   const [query, setQuery] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [adding, setAdding] = useState<MachineKind | null>(null);
   const [choosingMaster, setChoosingMaster] = useState(false);
 
@@ -163,7 +161,6 @@ export function FleetDetail({ slug }: { slug: string }) {
     );
   }
 
-  const selected = fleet.nodes.find((node) => node.id === selectedId) ?? null;
   const deletable = operate && fleet.inPolicy && !fleet.internal;
 
   const addButton = (kind: MachineKind) => (
@@ -283,7 +280,7 @@ export function FleetDetail({ slug }: { slug: string }) {
           action={operate && addButton('hypervision')}
         >
           {hypervision.length > 0 ? (
-            <MachinesTable nodes={hypervision} onSelect={(node) => setSelectedId(node.id)} pageSize={10} />
+            <MachinesTable nodes={hypervision} onSelect={(node) => router.push(`/machines/${node.id}`)} pageSize={10} />
           ) : (
             <p className="text-sm text-muted-foreground">
               {query ? t('fleet.noMatch') : t('fleet.noHypervision')}
@@ -313,7 +310,7 @@ export function FleetDetail({ slug }: { slug: string }) {
         }
       >
         {equipment.length > 0 ? (
-          <MachinesTable nodes={equipment} onSelect={(node) => setSelectedId(node.id)} />
+          <MachinesTable nodes={equipment} showSystem onSelect={(node) => router.push(`/machines/${node.id}`)} />
         ) : (
           <p className="text-sm text-muted-foreground">
             {query ? t('fleet.noMatch') : t('fleet.noEquipment')}
@@ -339,15 +336,6 @@ export function FleetDetail({ slug }: { slug: string }) {
         onOpenChange={(open) => !open && setAdding(null)}
       />
 
-      {selected && (
-        <MachineDetailPanel
-          key={selected.id}
-          node={selected}
-          fleets={fleetOptions}
-          open
-          onOpenChange={(open) => !open && setSelectedId(null)}
-        />
-      )}
     </>
   );
 }

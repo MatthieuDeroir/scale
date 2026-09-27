@@ -38,3 +38,14 @@ export {
 } from './acl-policy';
 export { ensureSystemTagsInPolicy } from './system-tags';
 export { updatePolicy } from './policy-update';
+export {
+  generateAgentToken,
+  hashAgentToken,
+  authenticateAgent,
+  inventorySchema,
+  PACKAGE_NAME,
+  JOB_KINDS,
+  MAX_JOB_OUTPUT,
+  type Inventory,
+  type JobKind,
+} from './agent';

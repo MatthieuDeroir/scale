@@ -31,7 +31,11 @@
       "auth-password-change-failed": "Password change refused",
       "fleets-profile-update": "Fleet sheet updated",
       "acl-rule-create": "Inter-fleet access allowed",
-      "acl-rule-delete": "Inter-fleet access removed"
+      "acl-rule-delete": "Inter-fleet access removed",
+      "agent-job-package": "Package update requested",
+      "agent-job-system": "System update requested",
+      "agent-job-done": "Update done (agent)",
+      "agent-job-failed": "Update failed (agent)"
     },
     "search": "Search (author, target…)",
     "category": "Category",
@@ -47,7 +51,8 @@
       "fleets": "Machines and fleets",
       "acl": "Access policy",
       "provisioning": "Enrollment",
-      "users": "Accounts"
+      "users": "Accounts",
+      "agent": "Updates"
     }
   },
   "nav": {

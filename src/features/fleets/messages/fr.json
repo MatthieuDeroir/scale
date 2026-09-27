@@ -13,7 +13,8 @@
       "fleet": "Flotte",
       "address": "Adresse",
       "status": "État",
-      "lastSeen": "Dernière connexion"
+      "lastSeen": "Dernière connexion",
+      "system": "Système"
     },
     "detail": {
       "tags": "Tags",
@@ -33,6 +34,7 @@
       "dnsName": "Nom dans le VPN",
       "copy": "Copier",
       "copied": "Copié"
-    }
+    },
+    "updates": "{count, plural, =1 {1 mise à jour} other {# mises à jour}}"
   }
 }

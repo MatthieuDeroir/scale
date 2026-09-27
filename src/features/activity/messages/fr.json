@@ -31,7 +31,11 @@
       "auth-password-change-failed": "Changement de mot de passe refusé",
       "fleets-profile-update": "Fiche flotte modifiée",
       "acl-rule-create": "Accès entre flottes autorisé",
-      "acl-rule-delete": "Accès entre flottes retiré"
+      "acl-rule-delete": "Accès entre flottes retiré",
+      "agent-job-package": "Mise à jour d'un paquet demandée",
+      "agent-job-system": "Mise à jour du système demandée",
+      "agent-job-done": "Mise à jour terminée (agent)",
+      "agent-job-failed": "Mise à jour en échec (agent)"
     },
     "search": "Rechercher (auteur, cible…)",
     "category": "Catégorie",
@@ -47,7 +51,8 @@
       "fleets": "Machines et flottes",
       "acl": "Politique d'accès",
       "provisioning": "Enrôlement",
-      "users": "Comptes"
+      "users": "Comptes",
+      "agent": "Mises à jour"
     }
   },
   "nav": {

@@ -57,7 +57,7 @@ describe('GlobalSearch', () => {
     fireEvent.change(input, { target: { value: 'sn-4471' } });
     expect(await screen.findByText('nuc-quai')).toBeInTheDocument();
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(push).toHaveBeenCalledWith('/flottes/keolis');
+    expect(push).toHaveBeenCalledWith('/machines/1');
   });
 
   it('retrouve une flotte par son nom lisible', async () => {

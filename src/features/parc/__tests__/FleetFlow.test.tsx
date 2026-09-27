@@ -11,6 +11,9 @@ import type { FleetSummary } from '../lib';
 
 const messages = { ...fleets, ...parc };
 
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
+
 function node(id: number, tags: string[], online = true): FleetNode {
   return { id: String(id), name: `n${id}`, givenName: `machine-${id}`, ipAddresses: [`100.64.0.${id}`], online, lastSeen: null, tags };
 }
@@ -62,6 +65,21 @@ describe('FleetFlowDiagram', () => {
     expect(screen.getByText('Support Stramatel')).toBeInTheDocument();
     expect(screen.getByText('Keolis Lyon')).toBeInTheDocument();
     expect(screen.getByText('ports 22')).toBeInTheDocument();
+  });
+
+  it('un clic sur une machine ouvre sa page, sur une flotte externe la flotte', () => {
+    push.mockReset();
+    wrap(
+      <FleetFlowDiagram
+        fleet={fleetOf([node(7, ['tag:flotte-b', 'tag:master'])])}
+        rules={[{ id: 'x', kind: 'custom', src: ['tag:flotte-a'], dst: ['tag:flotte-b:*'], from: 'tag:flotte-a', to: 'tag:flotte-b', ports: '*' }]}
+        labelOf={() => 'Keolis Lyon'}
+      />
+    );
+    fireEvent.click(screen.getByRole('link', { name: 'machine-7' }));
+    expect(push).toHaveBeenCalledWith('/machines/7');
+    fireEvent.keyDown(screen.getByRole('link', { name: 'Keolis Lyon' }), { key: 'Enter' });
+    expect(push).toHaveBeenCalledWith('/flottes/a');
   });
 
   it('sans MASTER, relie tout au réseau de la flotte', () => {

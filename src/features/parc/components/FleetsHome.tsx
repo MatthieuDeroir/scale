@@ -172,10 +172,11 @@ function FleetRow({
                     </p>
                     <ul className="flex flex-wrap gap-1.5">
                       {group.slice(0, CHIP_LIMIT).map((node) => (
-                        <li
-                          key={node.id}
-                          className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-xs"
-                        >
+                        <li key={node.id}>
+                          <Link
+                            href={`/machines/${node.id}`}
+                            className="inline-flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-xs hover:border-foreground/30 hover:bg-muted/50"
+                          >
                           <StatusDot
                             online={node.online}
                             label={node.online ? tf('online') : tf('offline')}
@@ -185,6 +186,7 @@ function FleetRow({
                           <span className="font-mono text-muted-foreground">
                             {node.ipAddresses[0]}
                           </span>
+                          </Link>
                         </li>
                       ))}
                     </ul>

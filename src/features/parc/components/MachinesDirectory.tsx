@@ -2,7 +2,6 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  MachineDetailPanel,
   MachinesTable,
   UNASSIGNED_TAG,
   deleteNode,
@@ -14,6 +13,7 @@ import {
   type FleetNode,
 } from '@/features/fleets';
 import { Download, Search, Server } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -58,6 +58,7 @@ type BulkAction = 'retag' | 'delete';
 /** Tout le parc à plat : retrouver une machine sans savoir dans quelle flotte elle vit. */
 export function MachinesDirectory() {
   const t = useTranslations('parc');
+  const router = useRouter();
   const { operate } = usePermissions();
   const queryClient = useQueryClient();
   const nodesQuery = useNodes();
@@ -69,7 +70,6 @@ export function MachinesDirectory() {
   const [fleet, setFleet] = useState(ALL);
   const [status, setStatus] = useState(ALL);
   const [kind, setKind] = useState(ALL);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [target, setTarget] = useState('');
   const [confirming, setConfirming] = useState<BulkAction | null>(null);
@@ -93,8 +93,6 @@ export function MachinesDirectory() {
       .sort((a, b) => (a.givenName || a.name).localeCompare(b.givenName || b.name));
   }, [nodesQuery.data, query, fleet, status, kind]);
 
-  // Toujours la version à jour de la machine ouverte, pas une copie figée au clic.
-  const selected = nodesQuery.data?.find((node) => node.id === selectedId) ?? null;
   const chosen = (nodesQuery.data ?? []).filter((node) => checked.has(node.id));
 
   const bulk = useMutation({
@@ -292,8 +290,9 @@ export function MachinesDirectory() {
           <MachinesTable
             key={`${query}|${fleet}|${status}|${kind}`}
             nodes={nodes}
-            onSelect={(node) => setSelectedId(node.id)}
+            onSelect={(node) => router.push(`/machines/${node.id}`)}
             showFleet
+            showSystem
             fleetLabel={fleetLabel}
             pageSize={50}
             selection={
@@ -313,15 +312,6 @@ export function MachinesDirectory() {
         </Card>
       )}
 
-      {selected && (
-        <MachineDetailPanel
-          key={selected.id}
-          node={selected}
-          fleets={fleetOptions}
-          open
-          onOpenChange={(open) => !open && setSelectedId(null)}
-        />
-      )}
     </>
   );
 }

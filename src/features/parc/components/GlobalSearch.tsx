@@ -72,12 +72,11 @@ export function GlobalSearch() {
     const machineResults: Result[] = (nodes ?? [])
       .filter((node) => machineMatches(node, q))
       .map((node) => {
-        const tag = node.tags.find((item) => slugOf.has(item));
         return {
           kind: 'machine',
           node,
           fleetLabel: label(node),
-          href: tag ? `/flottes/${slugOf.get(tag)}` : '/a-assigner',
+          href: `/machines/${node.id}`,
         };
       });
     return [...fleetResults, ...machineResults].slice(0, MAX_RESULTS);

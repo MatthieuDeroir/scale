@@ -12,7 +12,15 @@ import { readSession, sessionCookie } from '@/features/auth';
 // `/api/provisioning/enroll` est public par nature (F1) : une machine qui
 // vient de démarrer n'a pas de session Stramatel. Elle s'authentifie par un
 // secret de fabrication propre à la route (voir ce fichier), pas par cookie.
-const PUBLIC_PATHS = ['/api/health', '/login', '/api/auth/login', '/api/provisioning/enroll'];
+// `/api/agent/*` : l'agent des machines n'a pas de session non plus ; chaque
+// route exige son jeton propre à la machine (voir `authenticateAgent`).
+const PUBLIC_PATHS = [
+  '/api/health',
+  '/login',
+  '/api/auth/login',
+  '/api/provisioning/enroll',
+  '/api/agent',
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

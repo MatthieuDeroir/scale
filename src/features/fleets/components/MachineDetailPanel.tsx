@@ -38,12 +38,15 @@ export function MachineDetailPanel({
   fleets,
   open,
   onOpenChange,
+  onDeleted,
 }: {
   node: FleetNode;
   /** Flottes connues de la politique ACL — cibles possibles d'un changement de flotte. */
   fleets: FleetOption[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Après suppression (ex. quitter la page de la machine). */
+  onDeleted?: () => void;
 }) {
   const t = useTranslations('fleets');
   const { operate } = usePermissions();
@@ -55,7 +58,11 @@ export function MachineDetailPanel({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   function invalidate() {
-    return queryClient.invalidateQueries({ queryKey: ['fleets', 'nodes'] });
+    // La page d'une machine a son propre cache (['machines', id]) : on rafraîchit les deux.
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['fleets', 'nodes'] }),
+      queryClient.invalidateQueries({ queryKey: ['machines'] }),
+    ]);
   }
 
   const renameMutation = useMutation({
@@ -81,9 +88,11 @@ export function MachineDetailPanel({
   const deleteMutation = useMutation({
     mutationFn: () => deleteNode(node.id),
     onSuccess: async () => {
-      await invalidate();
+      // Quitter d'abord : la page de la machine n'a plus rien à afficher.
       onOpenChange(false);
+      onDeleted?.();
       toast.success(t('detail.deleted'));
+      await invalidate();
     },
     onError: (error: Error) => toast.error(error.message),
   });

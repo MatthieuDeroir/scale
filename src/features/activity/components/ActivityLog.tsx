@@ -31,7 +31,7 @@ import { fetchActivity, type ActivityEvent } from '../api';
 
 const ALL = 'all';
 /** Famille d'une action, d'après son préfixe : `keys-create` → `keys`. */
-const CATEGORIES = ['auth', 'keys', 'fleets', 'acl', 'provisioning', 'users'] as const;
+const CATEGORIES = ['auth', 'keys', 'fleets', 'acl', 'provisioning', 'agent', 'users'] as const;
 
 function categoryOf(action: string): string {
   return action.split('-')[0];

@@ -1,7 +1,8 @@
 'use client';
 
 import type { PolicyRule } from '@/features/acl';
-import { isHypervision, isMaster, type FleetNode } from '@/features/fleets';
+import { fleetSlug, isHypervision, isMaster, type FleetNode } from '@/features/fleets';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { FleetSummary } from '../lib';
 
@@ -21,6 +22,8 @@ type Box = {
   subtitle?: string;
   online: boolean | null;
   tone: 'support' | 'master' | 'hub' | 'slave' | 'hypervision' | 'external' | 'more';
+  /** Page ouverte au clic : la machine, ou la flotte pour un nœud externe. */
+  href?: string;
 };
 
 type Edge = { from: Box; to: Box; live: boolean; label?: string; tone: 'data' | 'support' | 'exception' };
@@ -43,6 +46,7 @@ function capped(nodes: FleetNode[], max: number, tone: Box['tone'], more: (count
     subtitle: node.ipAddresses[0],
     online: node.online,
     tone,
+    href: `/machines/${node.id}`,
   }));
   const rest = nodes.slice(max);
   if (rest.length > 0) {
@@ -93,6 +97,7 @@ export function FleetFlowDiagram({
   labelOf: (tag: string) => string;
 }) {
   const t = useTranslations('parc');
+  const router = useRouter();
 
   const masters = fleet.nodes.filter((node) => isMaster(node.tags) && !isHypervision(node.tags));
   const slaves = fleet.nodes.filter((node) => !isMaster(node.tags) && !isHypervision(node.tags));
@@ -103,7 +108,7 @@ export function FleetFlowDiagram({
 
   const more = (count: number, online: number) => t('flow.more', { count, online });
   const leftItems: Omit<Box, 'x' | 'y'>[] = [
-    ...(hasSupport ? [{ id: 'support', title: t('flow.support'), subtitle: t('flow.supportHint'), online: null, tone: 'support' as const }] : []),
+    ...(hasSupport ? [{ id: 'support', title: t('flow.support'), subtitle: t('flow.supportHint'), online: null, tone: 'support' as const, href: '/flottes/interne' }] : []),
     ...capped(stations, MAX_SIDE - (hasSupport ? 1 : 0), 'hypervision', more),
   ];
   const rightItems = capped(slaves, MAX_SIDE, 'slave', more);
@@ -133,6 +138,7 @@ export function FleetFlowDiagram({
       subtitle: item.rule.ports === '*' ? t('flow.allPorts') : t('flow.ports', { ports: item.rule.ports! }),
       online: null,
       tone: 'external' as const,
+      href: `/flottes/${fleetSlug(item.tag)}`,
     },
   }));
   const height = (externals.length > 0 ? bottomY + BOX_H / 2 : mid + ((rows - 1) * ROW) / 2 + BOX_H / 2) + 30;
@@ -206,8 +212,29 @@ export function FleetFlowDiagram({
           ))}
 
           {boxes.map((box) => (
-            <g key={box.id} transform={`translate(${box.x - BOX_W / 2} ${box.y - BOX_H / 2})`}>
-              <rect width={BOX_W} height={BOX_H} rx={8} strokeWidth={box.tone === 'master' ? 2 : 1.2} className={TONE[box.tone]} />
+            <g
+              key={box.id}
+              transform={`translate(${box.x - BOX_W / 2} ${box.y - BOX_H / 2})`}
+              {...(box.href
+                ? {
+                    role: 'link',
+                    tabIndex: 0,
+                    'aria-label': box.title,
+                    className: 'group cursor-pointer outline-none',
+                    onClick: () => router.push(box.href!),
+                    onKeyDown: (event: React.KeyboardEvent) => {
+                      if (event.key === 'Enter' || event.key === ' ') router.push(box.href!);
+                    },
+                  }
+                : {})}
+            >
+              <rect
+                width={BOX_W}
+                height={BOX_H}
+                rx={8}
+                strokeWidth={box.tone === 'master' ? 2 : 1.2}
+                className={`${TONE[box.tone]} ${box.href ? 'transition-[filter] group-hover:brightness-95 group-focus-visible:stroke-ring dark:group-hover:brightness-125' : ''}`}
+              />
               {box.online !== null && (
                 <circle cx={14} cy={BOX_H / 2} r={4} className={box.online ? 'fill-emerald-500' : 'fill-muted-foreground/50'} />
               )}

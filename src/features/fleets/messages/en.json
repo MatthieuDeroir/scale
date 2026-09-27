@@ -13,7 +13,8 @@
       "fleet": "Fleet",
       "address": "Address",
       "status": "Status",
-      "lastSeen": "Last seen"
+      "lastSeen": "Last seen",
+      "system": "System"
     },
     "detail": {
       "tags": "Tags",
@@ -33,6 +34,7 @@
       "dnsName": "VPN name",
       "copy": "Copy",
       "copied": "Copied"
-    }
+    },
+    "updates": "{count, plural, =1 {1 update} other {# updates}}"
   }
 }
