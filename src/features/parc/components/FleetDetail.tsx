@@ -118,7 +118,7 @@ export function FleetDetail({ slug }: { slug: string }) {
 
   if (nodesQuery.isPending || policyQuery.isPending) return <Skeleton className="h-96 w-full" />;
 
-  const back = { href: '/', label: t('fleet.back') };
+  const back = { href: '/flottes', label: t('fleet.back') };
   const error = nodesQuery.error ?? policyQuery.error;
   if (error) {
     return (
@@ -223,7 +223,7 @@ export function FleetDetail({ slug }: { slug: string }) {
               <DeleteFleetButton
                 tag={fleet.tag}
                 machineCount={fleet.nodes.length}
-                onDeleted={() => router.push('/')}
+                onDeleted={() => router.push('/flottes')}
               />
             )}
           </>

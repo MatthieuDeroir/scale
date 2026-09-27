@@ -62,6 +62,7 @@ export async function GET() {
               reportedAt: device.inventory.reportedAt.toISOString(),
             }
           : null,
+        agent: Boolean(device?.agentTokenHash),
         // Résumé des failles (calculé à l'analyse, pas à chaque liste).
         vulns: device?.vulnScan
           ? ((JSON.parse(device.vulnScan.results || '{}') as { summary?: unknown }).summary ?? null)

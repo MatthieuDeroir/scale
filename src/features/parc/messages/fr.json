@@ -269,6 +269,23 @@
       "noFixYet": "pas encore de correctif",
       "expand": "Voir les failles",
       "collapse": "Masquer les failles"
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "description": "Ce qui demande de l'attention sur le parc.",
+      "online": "Machines en ligne",
+      "exposed": "Machines exposées (faille élevée ou critique corrigeable)",
+      "updates": "{machines, plural, =0 {Mises à jour en attente} =1 {Mises à jour en attente sur 1 machine} other {Mises à jour en attente sur # machines}}",
+      "agents": "Équipements avec agent",
+      "faultsTitle": "Failles corrigeables sur le parc",
+      "noFault": "Aucune faille corrigeable : le parc est à jour.",
+      "faultsHint": "{machines, plural, =1 {Sur 1 machine.} other {Sur # machines.}} Une même faille présente sur plusieurs machines compte pour chacune.",
+      "priority": "Machines à traiter en priorité",
+      "offlineTitle": "{count, plural, =0 {Hors ligne} other {Hors ligne ({count})}}",
+      "allOnline": "Toutes les machines sont en ligne.",
+      "jobsTitle": "Dernières mises à jour",
+      "noAgentTitle": "{count, plural, =1 {1 équipement sans agent} other {# équipements sans agent}}",
+      "noAgentHint": "Sans agent, ni specs, ni failles, ni mises à jour : ouvrez la machine pour générer la commande d'installation."
     }
   },
   "nav": {
@@ -278,6 +295,7 @@
     "admin": "Administration",
     "collapse": "Réduire le menu",
     "expand": "Déplier le menu",
-    "tagline": "Réseau des flottes"
+    "tagline": "Réseau des flottes",
+    "dashboard": "Tableau de bord"
   }
 }

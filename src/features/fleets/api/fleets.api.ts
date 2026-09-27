@@ -14,6 +14,8 @@ export interface FleetNode {
   keyId?: string | null;
   /** Renseigné si la machine s'est auto-enrôlée en déclarant ces informations. */
   enrollment?: { deviceId: string; serial: string | null; model: string | null; enrolledAt: string } | null;
+  /** Agent Stramscale prévu pour la machine (jeton émis). */
+  agent?: boolean;
   /** Résumé de l'inventaire envoyé par l'agent (OS, mises à jour en attente). */
   inventory?: { os: string; upgradableCount: number; reportedAt: string } | null;
   /** Résumé de la dernière analyse des failles. */

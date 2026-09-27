@@ -108,3 +108,13 @@ export async function rescanMachine(id: string): Promise<void> {
     throw new Error(payload.message ?? `Analyse refusée (${response.status})`);
   }
 }
+
+export interface RecentJob extends Omit<AgentJob, 'startedAt' | 'output'> {
+  deviceId: string;
+}
+
+export async function fetchRecentJobs(): Promise<RecentJob[]> {
+  const response = await fetch('/api/jobs');
+  if (!response.ok) throw new Error(`Mises à jour indisponibles (${response.status})`);
+  return response.json();
+}

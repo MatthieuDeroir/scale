@@ -7,7 +7,8 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/flottes/clienta' }));
 const sections = [
   {
     links: [
-      { href: '/', label: 'Flottes', icon: <span /> },
+      { href: '/', label: 'Tableau de bord', icon: <span /> },
+      { href: '/flottes', label: 'Flottes', icon: <span /> },
       { href: '/machines', label: 'Machines', icon: <span /> },
     ],
   },
@@ -40,6 +41,8 @@ describe('AppShell', () => {
     expect(fleets.some((link) => link.getAttribute('aria-current') === 'page')).toBe(true);
     const machines = screen.getAllByRole('link', { name: /Machines/ });
     expect(machines.every((link) => !link.hasAttribute('aria-current'))).toBe(true);
+    const home = screen.getAllByRole('link', { name: /Tableau de bord/ });
+    expect(home.every((link) => !link.hasAttribute('aria-current'))).toBe(true);
   });
 
   it('se replie sur demande et garde les liens (icône + infobulle)', () => {

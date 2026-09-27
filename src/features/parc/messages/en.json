@@ -269,6 +269,23 @@
       "noFixYet": "no fix yet",
       "expand": "Show faults",
       "collapse": "Hide faults"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "What needs attention across the park.",
+      "online": "Machines online",
+      "exposed": "Exposed machines (fixable high or critical fault)",
+      "updates": "{machines, plural, =0 {Pending updates} =1 {Pending updates on 1 machine} other {Pending updates on # machines}}",
+      "agents": "Devices with agent",
+      "faultsTitle": "Fixable faults across the park",
+      "noFault": "No fixable fault: the park is up to date.",
+      "faultsHint": "{machines, plural, =1 {On 1 machine.} other {On # machines.}} A fault present on several machines counts for each.",
+      "priority": "Machines to handle first",
+      "offlineTitle": "{count, plural, =0 {Offline} other {Offline ({count})}}",
+      "allOnline": "All machines are online.",
+      "jobsTitle": "Latest updates",
+      "noAgentTitle": "{count, plural, =1 {1 device without agent} other {# devices without agent}}",
+      "noAgentHint": "Without an agent: no specs, faults or updates. Open the machine to generate the install command."
     }
   },
   "nav": {
@@ -278,6 +295,7 @@
     "admin": "Administration",
     "collapse": "Collapse menu",
     "expand": "Expand menu",
-    "tagline": "Fleet network"
+    "tagline": "Fleet network",
+    "dashboard": "Dashboard"
   }
 }

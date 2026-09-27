@@ -152,7 +152,7 @@ export function SidebarLogo({ tagline }: { tagline: string }) {
 }
 
 function isActive(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/' || pathname.startsWith('/flottes');
+  if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

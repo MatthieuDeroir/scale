@@ -1,4 +1,4 @@
-import { History, Inbox, Layers, Server, ShieldCheck, Users } from 'lucide-react';
+import { History, Inbox, Layers, LayoutDashboard, Server, ShieldCheck, Users } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { covers, type Role } from '@/features/auth';
 import type { NavSection } from '@/shared/ui';
@@ -10,7 +10,8 @@ export async function navSections(role: Role): Promise<NavSection[]> {
   const sections: NavSection[] = [
     {
       links: [
-        { href: '/', label: t('fleets'), icon: <Layers /> },
+        { href: '/', label: t('dashboard'), icon: <LayoutDashboard /> },
+        { href: '/flottes', label: t('fleets'), icon: <Layers /> },
         { href: '/machines', label: t('machines'), icon: <Server /> },
         { href: '/a-assigner', label: t('unassigned'), icon: <Inbox /> },
       ],

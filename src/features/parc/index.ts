@@ -1,2 +1,2 @@
 export { config, default as parcConfig } from './feature.config';
-export { FleetsHome, FleetDetail, UnassignedInbox, MachinesDirectory, GlobalSearch, PolicyScreen, MachinePage } from './components';
+export { FleetsHome, FleetDetail, UnassignedInbox, MachinesDirectory, GlobalSearch, PolicyScreen, MachinePage, Dashboard } from './components';

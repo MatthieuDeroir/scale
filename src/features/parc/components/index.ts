@@ -6,3 +6,4 @@ export { AddMachineDialog } from './AddMachineDialog';
 export { GlobalSearch } from './GlobalSearch';
 export { PolicyScreen } from './PolicyScreen';
 export { MachinePage } from './MachinePage';
+export { Dashboard } from './Dashboard';

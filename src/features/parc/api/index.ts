@@ -4,6 +4,8 @@ export {
   requestUpdate,
   installAgent,
   rescanMachine,
+  fetchRecentJobs,
+  type RecentJob,
   type Severity,
   type VulnPackage,
   type VulnSummary,
