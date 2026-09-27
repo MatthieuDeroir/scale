@@ -579,6 +579,28 @@
       "removed": "{name} no longer handles {fleet}",
       "addTitle": "Support of {fleet}",
       "addDescription": "The chosen post will reach every machine of the fleet."
+    },
+    "map": {
+      "title": "Map",
+      "description": "The whole ecosystem at a glance: each fleet as a cluster, support posts above, waiting machines apart. Drag to move around, scroll to zoom.",
+      "search": "Go to a fleet…",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fit": "Show all",
+      "resetLayout": "Original layout",
+      "fleetLink": "Fleet {name} (drag to move)",
+      "aria": "Ecosystem map: {fleets} fleets, {machines} machines",
+      "legend": {
+        "server": "SERVER",
+        "replica": "REPLICA",
+        "equipment": "Other equipment",
+        "hypervision": "Supervision station",
+        "support": "Support post",
+        "pending": "Waiting",
+        "supportLink": "handled by",
+        "exception": "cross-fleet exception"
+      },
+      "help": "Drag background: move · drag a fleet name or a machine: move it · click: open"
     }
   },
   "nav": {
@@ -592,6 +614,7 @@
     "dashboard": "Dashboard",
     "catalog": "Products and templates",
     "security": "Cybersecurity",
-    "support": "Support"
+    "support": "Support",
+    "map": "Map"
   }
 }

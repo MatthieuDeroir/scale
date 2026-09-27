@@ -10,4 +10,5 @@ export { Dashboard } from './Dashboard';
 export { CatalogScreen } from './CatalogScreen';
 export { SecurityScreen } from './SecurityScreen';
 export { SupportScreen } from './SupportScreen';
+export { EcosystemMap } from './EcosystemMap';
 export { FleetPlan } from './FleetPlan';

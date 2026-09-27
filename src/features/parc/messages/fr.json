@@ -579,6 +579,28 @@
       "removed": "{name} ne prend plus en charge {fleet}",
       "addTitle": "Support de {fleet}",
       "addDescription": "Le poste choisi joindra toutes les machines de la flotte."
+    },
+    "map": {
+      "title": "Carte",
+      "description": "Tout l'écosystème d'un coup d'œil : chaque flotte en grappe, les postes support au-dessus, les machines en attente à part. Glissez pour vous déplacer, molette pour zoomer.",
+      "search": "Aller à une flotte…",
+      "zoomIn": "Zoomer",
+      "zoomOut": "Dézoomer",
+      "fit": "Tout afficher",
+      "resetLayout": "Disposition d'origine",
+      "fleetLink": "Flotte {name} (glisser pour déplacer)",
+      "aria": "Carte de l'écosystème : {fleets} flottes, {machines} machines",
+      "legend": {
+        "server": "SERVEUR",
+        "replica": "REPLICA",
+        "equipment": "Autre équipement",
+        "hypervision": "Poste d'hypervision",
+        "support": "Poste support",
+        "pending": "En attente",
+        "supportLink": "prise en charge",
+        "exception": "exception entre flottes"
+      },
+      "help": "Glisser le fond : se déplacer · glisser le nom d'une flotte ou une machine : la déplacer · clic : ouvrir"
     }
   },
   "nav": {
@@ -592,6 +614,7 @@
     "dashboard": "Tableau de bord",
     "catalog": "Produits et modèles",
     "security": "Cybersécurité",
-    "support": "Support"
+    "support": "Support",
+    "map": "Carte"
   }
 }
