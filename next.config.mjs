@@ -4,7 +4,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // Docker utilise le bundle standalone ; Vercel fournit son propre runtime Next.
+  output: process.env.VERCEL ? undefined : 'standalone',
   // L'agent et ses unités systemd sont servis par /api/agent/* : à embarquer dans le build.
   outputFileTracingIncludes: { '/api/agent/**': ['./agent/**'] },
   reactStrictMode: true,
