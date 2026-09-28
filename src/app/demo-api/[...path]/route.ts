@@ -21,8 +21,17 @@ function data(path: string) {
   if (path === 'jobs') return [];
   if (path === 'keys') return [];
   if (path === 'products') return [{ id: 1, name: 'SL MEDIA', category: 'gamme', master: true, slaves: true, machines: 1, supportTags: ['tag:support-jgirard'] }, { id: 2, name: 'SL VIDEO SYSTEM 3', category: 'gamme', master: false, slaves: false, machines: 2, supportTags: ['tag:support-jgirard'] }];
-  if (path === 'support') return [{ tag: 'tag:support-jgirard', name: 'J. Girard', targets: ['tag:flotte-arena-rennes', 'tag:flotte-palais-lyon'] }];
-  if (path.startsWith('machines/')) return { ...nodes.find((node) => node.id === path.split('/')[1]), jobs: [] };
+  if (path === 'support') return [{ tag: 'tag:support-jgirard', name: 'Jessy Girard', targets: ['tag:flotte-arena-rennes', 'tag:flotte-palais-lyon'], manualTargets: ['tag:flotte-arena-rennes', 'tag:flotte-palais-lyon'], automaticTargets: [], machines: [{ id: 'support-1', name: 'SUPPORT-JGIRARD', online: true, ip: '100.64.0.5', lastSeen: now }] }];
+  if (path === 'products/links') return [{ id: 1, fromId: 1, toId: 2, ports: '443, 41641', note: 'Flux de démonstration' }];
+  if (path === 'templates') return [];
+  if (path === 'activity') return { events: [], total: 0, retentionDays: 365 };
+  if (path === 'users') return [{ id: 1, username: 'demo', role: 'ADMIN', disabled: false, mustChangePassword: false, createdAt: now }];
+  if (path === 'updates') return { machines: [], skipped: [], totalFixes: 0 };
+  if (path.startsWith('plan/')) return [];
+  if (path.startsWith('machines/')) {
+    const node = nodes.find((item) => item.id === path.split('/')[1]) ?? nodes[0];
+    return { ...node, jobs: [], inventory: node.inventory ? { reportedAt: now, hostname: node.name, osName: node.inventory.os, osVersion: null, kernel: null, arch: 'x86_64', cpu: null, cores: null, memoryMb: null, diskTotalGb: null, diskFreeGb: null, uptimeSeconds: null, packages: [], upgradable: [] } : null, vulns: null };
+  }
   return [];
 }
 
