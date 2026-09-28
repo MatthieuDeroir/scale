@@ -18,7 +18,7 @@
     "format:check": "prettier --check .",
     "i18n:check": "tsx scripts/check-translations.ts",
     "lint": "eslint .",
-    "prebuild": "pnpm build:registry",
+    "prebuild": "pnpm db:generate",
     "predev": "pnpm build:registry",
     "release": "bash scripts/release-docker.sh",
     "release:offline": "bash scripts/release-docker.sh --offline",
