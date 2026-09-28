@@ -26,12 +26,20 @@ model Product {
   master    Boolean          @default(false)
   /// Accepte des SLAVE rattachés (SL MEDIA) : la machine est alors maîtresse ou SLAVE.
   slaves    Boolean          @default(false)
+  /// Tags des postes support responsables du produit (tableau JSON).
+  supportTags String         @default("[]")
   createdAt DateTime         @default(now())
   machines  MachineProduct[]
   slots     FleetSlot[]
   linksFrom ProductLink[]    @relation("LinkFrom")
   linksTo   ProductLink[]    @relation("LinkTo")
   assessments VulnAssessment[]
+}
+
+/// Règles ACL générées pour les responsables produit, distinctes des règles manuelles.
+model ProductSupportRule {
+  tag     String @id
+  targets String
 }
 
 /// Tri d'une faille (VEX) : « non concerné », « en analyse » ou « concerné »,
