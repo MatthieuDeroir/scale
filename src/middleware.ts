@@ -15,6 +15,8 @@ import { readSession, sessionCookie } from '@/features/auth';
 // `/api/agent/*` : l'agent des machines n'a pas de session non plus ; chaque
 // route exige son jeton propre à la machine (voir `authenticateAgent`).
 const PUBLIC_PATHS = [
+  // Vitrine commerciale autonome : données fictives uniquement, aucun accès API.
+  '/demo',
   '/api/health',
   '/login',
   '/api/auth/login',
@@ -24,6 +26,17 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Déploiement vitrine Vercel : les écrans utilisent des réponses fictives,
+  // jamais la base locale, Headscale ou une machine client.
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+    if (pathname.startsWith('/api/')) {
+      const target = request.nextUrl.clone();
+      target.pathname = `/demo-api${pathname.slice(4)}`;
+      return NextResponse.rewrite(target);
+    }
+    return NextResponse.next();
+  }
 
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.next();
