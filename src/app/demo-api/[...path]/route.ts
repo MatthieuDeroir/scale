@@ -34,7 +34,7 @@ const productByNode: Record<string, { id: number; name: string; master: boolean;
 const nodes = nodeRows.map(([id, name, givenName, ip, tags, agent]) => ({ id, name, givenName, ipAddresses: [ip], online: true, lastSeen: now, tags, agent, product: productByNode[id] ? { ...productByNode[id], reference: null } : null, inventory: agent ? inventory : null, vulns: agent ? noVulns : null }));
 const fleets = ['piscine', 'cinema', 'bowling', 'test-windows'].map((name) => ({ tag: fleetTag(name), label: name, deletable: true }));
 const policy = { fleets, rules: [], ssh: [], warnings: [], raw: '{}', updatedAt: now };
-const profiles = [{ tag: fleetTag('test-windows'), displayName: 'Test Windows', sector: null, contact: null, phone: null, email: null, site: null, reference: null, notes: 'Banc de test VPN : SL VIDEO SYSTEM 3 sous Windows 11, poste client hypervision, support jgirard. Préparé via Codex.', updatedAt: now }];
+const profiles = [{ tag: fleetTag('test-windows'), displayName: 'Test Windows', sector: null, contact: null, phone: null, email: null, site: null, reference: null, notes: 'Banc de test VPN : SL VIDEO SYSTEM 3 sous Windows 11, poste client hypervision, support Matthieu Deroir. Préparé via Codex.', updatedAt: now }];
 const products = [
   { id: 6, name: 'SL MEDIA', category: 'gamme', master: true, slaves: true, machines: 9, supportTags: [] },
   { id: 7, name: 'SL TEMPO', category: 'gamme', master: true, slaves: false, machines: 1, supportTags: [] },
@@ -47,7 +47,10 @@ const slots = [
   [21, 'bowling', 'equipment', 6, 'SL MEDIA', '34', null], [22, 'bowling', 'equipment', 6, 'SL MEDIA REPLICA 1', '35', 21], [23, 'bowling', 'equipment', 6, 'SL MEDIA REPLICA 2', '36', 21], [26, 'bowling', 'hypervision', null, "Poste d'hypervision", '37', null],
   [27, 'bowling-atlantis', 'equipment', 6, 'SL MEDIA', null, null], [28, 'bowling-atlantis', 'equipment', 6, 'SL MEDIA REPLICA 1', null, 27], [29, 'bowling-atlantis', 'equipment', 6, 'SL MEDIA REPLICA 2', null, 27], [30, 'bowling-atlantis', 'hypervision', null, "Poste d'hypervision", null, null], [31, 'adidas-arena', 'equipment', 9, 'SL VIDEO SYSTEM 3', null, null],
   [32, 'test-windows', 'equipment', 9, 'SL VIDEO SYSTEM 3', '39', null], [33, 'test-windows', 'hypervision', null, 'Poste hypervision client', '38', null],
-].map(([id, fleet, kind, productId, label, nodeId, parentSlotId]) => ({ id, fleetTag: fleetTag(String(fleet)), kind, productId, label, reference: null, nodeId, keyId: null, keyIssuedAt: null, parentSlotId }));
+].map(([id, fleet, kind, productId, label, nodeId, parentSlotId]) => {
+  const keyId = ({ 24: '33', 25: '34', 26: '38', 32: '40', 33: '39' } as Record<number, string>)[Number(id)] ?? null;
+  return { id, fleetTag: fleetTag(String(fleet)), kind, productId, label, reference: null, nodeId, keyId, keyIssuedAt: keyId ? now : null, parentSlotId };
+});
 const templates = [
   { id: 2, name: 'Piscine', description: "SL TEMPO, SL MEDIA et 3 REPLICA, poste d'hypervision (SL TEMPO et SERVEUR SL MEDIA)", items: [{ kind: 'equipment', productId: 7, count: 1, label: 'SL TEMPO' }, { kind: 'equipment', productId: 6, count: 1, label: 'SL MEDIA', slaves: 3 }, { kind: 'hypervision', productId: null, count: 1, label: "Poste d'hypervision" }, { kind: 'support', productId: null, count: 1, label: 'glegoff', supportTag: 'tag:support-glegoff' }, { kind: 'support', productId: null, count: 1, label: 'mderoir', supportTag: 'tag:support-mderoir' }] },
   { id: 3, name: 'SL Média', description: "SL MEDIA et 2 REPLICA, poste d'hypervision (SERVEUR SL MEDIA)", items: [{ kind: 'equipment', productId: 6, count: 1, label: 'SL MEDIA', slaves: 2 }, { kind: 'hypervision', productId: null, count: 1, label: "Poste d'hypervision" }, { kind: 'support', productId: null, count: 1, label: 'glegoff', supportTag: 'tag:support-glegoff' }] },
@@ -60,7 +63,7 @@ function data(path: string) {
   if (path === 'acl/policy') return policy;
   if (path === 'fleets/profiles') return profiles;
   if (path.startsWith('fleets/profiles/')) return profiles.find((item) => item.tag === decodeURIComponent(path.slice(16))) ?? null;
-  if (path === 'plan') return fleets.map((fleet) => { const items = slots.filter((item) => item.fleetTag === fleet.tag); return { fleetTag: fleet.tag, total: items.length, filled: items.filter((item) => item.nodeId).length, keyIssued: 0 }; });
+  if (path === 'plan') return fleets.map((fleet) => { const items = slots.filter((item) => item.fleetTag === fleet.tag); return { fleetTag: fleet.tag, total: items.length, filled: items.filter((item) => item.nodeId).length, keyIssued: items.filter((item) => item.keyId).length }; });
   if (path.startsWith('plan/')) return planFor(decodeURIComponent(path.slice(5)));
   if (path === 'products') return products;
   if (path === 'products/links') return [{ id: 1, fromId: 6, toId: 6, ports: '*', note: null }, { id: 2, fromId: 7, toId: 6, ports: '*', note: null }];
