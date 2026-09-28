@@ -26,10 +26,11 @@ const PUBLIC_PATHS = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.VERCEL === '1';
 
   // Déploiement vitrine Vercel : les écrans utilisent des réponses fictives,
   // jamais la base locale, Headscale ou une machine client.
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  if (demoMode) {
     if (pathname.startsWith('/api/')) {
       const target = request.nextUrl.clone();
       target.pathname = `/demo-api${pathname.slice(4)}`;

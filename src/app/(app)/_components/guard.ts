@@ -8,7 +8,7 @@ import { currentUser } from '@/features/auth/lib/require-session';
  * retour à l'accueil.
  */
 export async function guard(minRole: Role = 'VIEWER') {
-  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true') {
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === 'true' || process.env.VERCEL === '1') {
     return { userId: 0, username: 'Démo Stramscale', role: 'ADMIN' as Role, mustChangePassword: false };
   }
   const user = await currentUser();
